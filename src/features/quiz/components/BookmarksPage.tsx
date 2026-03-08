@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ChevronLeft, Star, Trash2, LibraryBig } from 'lucide-react';
+import { ChevronLeft, Star, Trash2, LibraryBig, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../lib/db';
 import { Question } from '../types';
@@ -12,6 +12,21 @@ export const BookmarksPage: React.FC = () => {
     const [bookmarks, setBookmarks] = useState<Question[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedSubject, setSelectedSubject] = useState<string>('All');
+    const [showToast, setShowToast] = useState(false);
+
+    const handleResetBookmarks = async () => {
+        if (window.confirm("Are you sure you want to reset all bookmarks? This action cannot be undone.")) {
+            try {
+                await db.clearBookmarks();
+                setBookmarks([]);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+            } catch (error) {
+                console.error("Failed to reset bookmarks:", error);
+                alert("Failed to reset bookmarks. Please try again.");
+            }
+        }
+    };
 
     useEffect(() => {
         const loadBookmarks = async () => {
@@ -59,36 +74,67 @@ export const BookmarksPage: React.FC = () => {
 
     if (bookmarks.length === 0) {
         return (
-            <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 h-full flex flex-col justify-center items-center text-center">
-                <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mb-6">
-                    <Star className="w-12 h-12 text-amber-400" />
+            <>
+                <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 h-full flex flex-col justify-center items-center text-center">
+                    <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mb-6">
+                        <Star className="w-12 h-12 text-amber-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">No Bookmarks Yet</h2>
+                    <p className="text-gray-500 max-w-md mb-8">
+                        Tap the star icon during a quiz to save questions here for later review.
+                    </p>
+                    <Button onClick={() => navigate('/dashboard')} className="bg-indigo-600 hover:bg-indigo-700">
+                        Back to Dashboard
+                    </Button>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">No Bookmarks Yet</h2>
-                <p className="text-gray-500 max-w-md mb-8">
-                    Tap the star icon during a quiz to save questions here for later review.
-                </p>
-                <Button onClick={() => navigate('/dashboard')} className="bg-indigo-600 hover:bg-indigo-700">
-                    Back to Dashboard
-                </Button>
-            </div>
+                {/* Toast Notification */}
+                {showToast && (
+                    <div className="fixed bottom-4 right-4 z-[60] animate-fade-in">
+                        <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                            <span>Bookmarks reset successfully.</span>
+                        </div>
+                    </div>
+                )}
+            </>
         );
     }
 
     return (
         <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="flex items-center space-x-4">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                    <ChevronLeft className="w-6 h-6 text-gray-600" />
-                </button>
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Bookmarks</h1>
-                    <p className="text-sm text-gray-500 mt-1">Review saved questions sorted by subject.</p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                        <ChevronLeft className="w-6 h-6 text-gray-600" />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Bookmarks</h1>
+                        <p className="text-sm text-gray-500 mt-1">Review saved questions sorted by subject.</p>
+                    </div>
                 </div>
+                <button
+                    onClick={handleResetBookmarks}
+                    className="flex items-center gap-2 px-3 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors text-sm font-semibold border border-rose-200"
+                    title="Reset Bookmarks"
+                >
+                    <Trash2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Reset Bookmarks</span>
+                </button>
             </div>
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed bottom-4 right-4 z-[60] animate-fade-in">
+                    <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        <span>Bookmarks reset successfully.</span>
+                    </div>
+                </div>
+            )}
 
             {/* Subject Filters (Capsule Type) */}
             <div className="flex overflow-x-auto py-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide space-x-2">

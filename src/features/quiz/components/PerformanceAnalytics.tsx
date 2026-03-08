@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, BarChart2, TrendingUp, CheckCircle2, XCircle, Clock, Target, AlertCircle } from 'lucide-react';
+import { ChevronLeft, BarChart2, TrendingUp, CheckCircle2, XCircle, Clock, Target, AlertCircle, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../lib/db';
 import { QuizHistoryRecord } from '../types';
@@ -12,6 +12,21 @@ export const PerformanceAnalytics: React.FC = () => {
     const navigate = useNavigate();
     const [history, setHistory] = useState<QuizHistoryRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showToast, setShowToast] = useState(false);
+
+    const handleResetAnalytics = async () => {
+        if (window.confirm("Are you sure you want to reset all analytics data? This action cannot be undone.")) {
+            try {
+                await db.clearQuizHistory();
+                setHistory([]);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+            } catch (error) {
+                console.error("Failed to reset analytics:", error);
+                alert("Failed to reset analytics. Please try again.");
+            }
+        }
+    };
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -68,28 +83,40 @@ export const PerformanceAnalytics: React.FC = () => {
 
     if (history.length === 0) {
         return (
-            <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 h-full flex flex-col justify-center items-center text-center">
-                <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
-                    <BarChart2 className="w-12 h-12 text-indigo-400" />
+            <>
+                <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 h-full flex flex-col justify-center items-center text-center">
+                    <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
+                        <BarChart2 className="w-12 h-12 text-indigo-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">No Data Yet</h2>
+                    <p className="text-gray-500 max-w-md mb-8">
+                        Complete your first quiz to start seeing your performance analytics and detailed report cards.
+                    </p>
+                    <Button onClick={() => navigate('/quiz/config')} className="bg-indigo-600 hover:bg-indigo-700">
+                        Start a Quiz
+                    </Button>
+                    <button onClick={() => navigate('/dashboard')} className="mt-4 text-sm text-gray-500 hover:text-indigo-600 font-medium">
+                        Back to Dashboard
+                    </button>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">No Data Yet</h2>
-                <p className="text-gray-500 max-w-md mb-8">
-                    Complete your first quiz to start seeing your performance analytics and detailed report cards.
-                </p>
-                <Button onClick={() => navigate('/quiz/config')} className="bg-indigo-600 hover:bg-indigo-700">
-                    Start a Quiz
-                </Button>
-                <button onClick={() => navigate('/dashboard')} className="mt-4 text-sm text-gray-500 hover:text-indigo-600 font-medium">
-                    Back to Dashboard
-                </button>
-            </div>
+                {/* Toast Notification */}
+                {showToast && (
+                    <div className="fixed bottom-4 right-4 z-[60] animate-fade-in">
+                        <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                            <span>Analytics reset successfully.</span>
+                        </div>
+                    </div>
+                )}
+            </>
         );
     }
 
     return (
         <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 space-y-8 animate-fade-in">
             {/* Header */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
                 <button
                     onClick={() => navigate('/dashboard')}
                     className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -101,6 +128,25 @@ export const PerformanceAnalytics: React.FC = () => {
                     <p className="text-sm text-gray-500 mt-1">Your detailed learning report card.</p>
                 </div>
             </div>
+            <button
+                onClick={handleResetAnalytics}
+                className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors text-sm font-semibold"
+                title="Reset Analytics"
+            >
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Reset Analytics</span>
+            </button>
+        </div>
+
+        {/* Toast Notification */}
+        {showToast && (
+            <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
+                <div className="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    <span>Analytics reset successfully.</span>
+                </div>
+            </div>
+        )}
 
             {/* High-level KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

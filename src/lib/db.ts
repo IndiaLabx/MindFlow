@@ -207,6 +207,31 @@ export const db = {
      *
      * @returns {Promise<QuizHistoryRecord[]>}
      */
+
+
+
+    /**
+     * Retrieves all quiz history records.
+     *
+     * @returns {Promise<QuizHistoryRecord[]>}
+     */
+    /**
+     * Clears all quiz history records.
+     *
+     * @returns {Promise<void>}
+     */
+    clearQuizHistory: async (): Promise<void> => {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(HISTORY_STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(HISTORY_STORE_NAME);
+            const request = store.clear();
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    },
+
     getQuizHistory: async (): Promise<QuizHistoryRecord[]> => {
         const db = await openDB();
         return new Promise((resolve, reject) => {
@@ -260,6 +285,31 @@ export const db = {
      *
      * @returns {Promise<Question[]>}
      */
+
+
+
+    /**
+     * Retrieves all global bookmarks.
+     *
+     * @returns {Promise<Question[]>}
+     */
+    /**
+     * Clears all global bookmarks.
+     *
+     * @returns {Promise<void>}
+     */
+    clearBookmarks: async (): Promise<void> => {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(BOOKMARKS_STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(BOOKMARKS_STORE_NAME);
+            const request = store.clear();
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    },
+
     getAllBookmarks: async (): Promise<Question[]> => {
         const db = await openDB();
         return new Promise((resolve, reject) => {
