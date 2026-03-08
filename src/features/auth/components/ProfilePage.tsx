@@ -3,6 +3,7 @@ import Cropper from 'react-easy-crop';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { Settings, LogOut, Award, CheckCircle, BarChart, ChevronRight, Pencil, Loader2, AlertTriangle, X } from 'lucide-react';
+import { useProfileStats } from '../hooks/useProfileStats';
 import defaultAvatar from '../../../assets/default-avatar.svg';
 
 interface ProfilePageProps {
@@ -158,10 +159,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigateToSettings }) => {
   
   const avatarUrl = user?.user_metadata?.avatar_url || defaultAvatar;
 
+  const { stats: userStats, loading: statsLoading } = useProfileStats();
+
   const stats = [
-    { name: 'Quizzes Completed', value: 24, icon: Award },
-    { name: 'Correct Answers', value: '1,200', icon: CheckCircle },
-    { name: 'Average Score', value: '85%', icon: BarChart },
+    { name: 'Quizzes Completed', value: statsLoading ? '-' : userStats.quizzesCompleted.toLocaleString(), icon: Award },
+    { name: 'Correct Answers', value: statsLoading ? '-' : userStats.correctAnswers.toLocaleString(), icon: CheckCircle },
+    { name: 'Average Score', value: statsLoading ? '-' : `${userStats.averageScore}%`, icon: BarChart },
   ];
 
   if (!user) {
