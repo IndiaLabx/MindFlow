@@ -38,14 +38,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
             <div className="flex-1 flex flex-col items-center justify-center space-y-10 py-6 relative z-10 animate-fade-in">
                 {/* Hero Section */}
                 <div className="relative text-center max-w-4xl mx-auto mt-6">
-                    <h1 className="text-4xl sm:text-6xl font-black text-gray-900 leading-tight mb-4 drop-shadow-sm">
+                    <h1 className="text-4xl sm:text-6xl font-black text-gray-900 dark:text-slate-100 leading-tight mb-4 drop-shadow-sm">
                         Master Your <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-500">
                             Knowledge.
                         </span>
                     </h1>
 
-                    <p className="text-base text-gray-600 mb-8 max-w-md mx-auto leading-relaxed font-medium">
+                    <p className="text-base text-gray-600 dark:text-slate-300 mb-8 max-w-md mx-auto leading-relaxed font-medium">
                         Adaptive quizzes, detailed analytics, and instant feedback to help you learn faster.
                     </p>
 
@@ -65,13 +65,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                     {/* Card 1 - Custom Quiz */}
                     <div
                         onClick={onStartQuiz}
-                        className="bg-white p-6 rounded-2xl border border-gray-200 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-indigo-300"
+                        className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500"
                     >
-                        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <ListChecks className="w-5 h-5 text-indigo-600" />
+                        <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <ListChecks className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">Create Quiz</h3>
-                        <p className="text-gray-500 text-xs font-medium">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Create Quiz</h3>
+                        <p className="text-gray-500 dark:text-slate-400 text-xs font-medium">
                             Filter by subject, topic, and difficulty.
                         </p>
                     </div>
@@ -79,13 +79,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                     {/* Card 2 - Created Quizzes */}
                     <div
                         onClick={onSavedQuizzes}
-                        className="bg-white p-6 rounded-2xl border border-gray-200 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-green-300"
+                        className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-500"
                     >
-                        <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Save className="w-5 h-5 text-green-600" />
+                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Save className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">Created Quizzes</h3>
-                        <p className="text-gray-500 text-xs font-medium">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Created Quizzes</h3>
+                        <p className="text-gray-500 dark:text-slate-400 text-xs font-medium">
                             Resume paused quizzes or view completed ones.
                         </p>
                     </div>
@@ -93,13 +93,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                     {/* Card 3 - English */}
                     <div
                         onClick={onEnglish}
-                        className="bg-white p-6 rounded-2xl border border-gray-200 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-rose-300"
+                        className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-rose-300 dark:hover:border-rose-500"
                     >
-                        <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Languages className="w-5 h-5 text-rose-600" />
+                        <div className="w-10 h-10 bg-rose-50 dark:bg-rose-900/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Languages className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">English Zone</h3>
-                        <p className="text-gray-500 text-xs font-medium">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">English Zone</h3>
+                        <p className="text-gray-500 dark:text-slate-400 text-xs font-medium">
                             Vocab, Grammar & Mock Tests.
                         </p>
                     </div>
@@ -107,13 +107,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                      {/* Card 4 - Tools */}
                      <div
                         onClick={() => navigate('/tools')}
-                        className="bg-white p-6 rounded-2xl border border-gray-200 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-amber-300"
+                        className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 cursor-pointer group relative z-20 transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-amber-300 dark:hover:border-amber-500"
                     >
-                        <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Wrench className="w-5 h-5 text-amber-600" />
+                        <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Wrench className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">Tools</h3>
-                        <p className="text-gray-500 text-xs font-medium">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Tools</h3>
+                        <p className="text-gray-500 dark:text-slate-400 text-xs font-medium">
                             Flashcard Maker & Utilities.
                         </p>
                     </div>
@@ -121,12 +121,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                     {/* Card 5 - Analytics */}
                     <div
                         onClick={() => navigate('/quiz/analytics')}
-                        className="bg-white p-6 rounded-2xl border border-gray-200 cursor-pointer group transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-blue-300">
-                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <BarChart2 className="w-5 h-5 text-blue-600" />
+                        className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 cursor-pointer group transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500">
+                        <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <BarChart2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">Analytics</h3>
-                        <p className="text-gray-500 text-xs font-medium">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Analytics</h3>
+                        <p className="text-gray-500 dark:text-slate-400 text-xs font-medium">
                             Detailed report cards & stats.
                         </p>
                     </div>
@@ -134,12 +134,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                     {/* Card 6 - Bookmarks */}
                     <div
                         onClick={() => navigate('/quiz/bookmarks')}
-                        className="bg-white p-6 rounded-2xl border border-gray-200 cursor-pointer group transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-violet-300 sm:col-span-2 lg:col-span-1">
-                        <div className="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Star className="w-5 h-5 text-violet-600" />
+                        className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 cursor-pointer group transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md hover:border-violet-300 dark:hover:border-violet-500 sm:col-span-2 lg:col-span-1">
+                        <div className="w-10 h-10 bg-violet-50 dark:bg-violet-900/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <Star className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">Bookmarks</h3>
-                        <p className="text-gray-500 text-xs font-medium">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1">Bookmarks</h3>
+                        <p className="text-gray-500 dark:text-slate-400 text-xs font-medium">
                             Review your saved questions.
                         </p>
                     </div>
@@ -147,7 +147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
 
                 {/* Footer Link */}
                 <div className="w-full text-center pb-4">
-                    <button onClick={onBackToIntro} className="text-xs text-gray-400 hover:text-indigo-500 font-semibold uppercase tracking-widest">
+                    <button onClick={onBackToIntro} className="text-xs text-gray-400 hover:text-indigo-500 dark:text-slate-500 dark:hover:text-indigo-400 font-semibold uppercase tracking-widest">
                         Back to Intro
                     </button>
                 </div>

@@ -141,23 +141,23 @@ const BilingualPdfMaker: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
+        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800/50 font-sans">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 dark:border-slate-800 px-6 py-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm">
                 <button
                     onClick={() => navigate('/tools')}
-                    className="p-2 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 dark:hover:bg-slate-800 rounded-xl text-gray-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 transition-colors"
                     title="Back to Tools"
                 >
                     <ArrowLeft className="w-6 h-6" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+                    <h1 className="text-2xl font-black text-gray-900 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
                         <FileText className="w-6 h-6 text-purple-600" />
                         Bilingual PDF Generator
                     </h1>
                     <div className="flex items-center gap-2">
-                         <p className="text-gray-500 text-sm font-medium">Create a flawless, professional PDF with Answer Key.</p>
+                         <p className="text-gray-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-sm font-medium">Create a flawless, professional PDF with Answer Key.</p>
                          <span className="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-0.5 rounded-md">v14.5</span>
                     </div>
                 </div>
@@ -169,7 +169,7 @@ const BilingualPdfMaker: React.FC = () => {
                 <div
                     className={`
                         border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all duration-200
-                        ${isDragging ? 'border-purple-500 bg-purple-50 scale-[1.02]' : 'border-gray-300 bg-white hover:border-purple-400 hover:bg-gray-50'}
+                        ${isDragging ? 'border-purple-500 bg-purple-50 scale-[1.02]' : 'border-gray-300 bg-white dark:bg-slate-900 dark:bg-slate-900 hover:border-purple-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}
                         ${file ? 'border-purple-500 bg-purple-50 border-solid' : ''}
                     `}
                     onDragOver={handleDragOver}
@@ -190,23 +190,23 @@ const BilingualPdfMaker: React.FC = () => {
                             <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-4">
                                 <Upload className="w-8 h-8" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Upload Questions Data</h3>
-                            <p className="text-gray-500 text-sm">Drag & drop your <code>Questions.json</code> file here or click to select.</p>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 dark:text-slate-100 mb-2">Upload Questions Data</h3>
+                            <p className="text-gray-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-sm">Drag & drop your <code>Questions.json</code> file here or click to select.</p>
                         </>
                     ) : (
-                        <div className="w-full text-left flex items-start justify-between bg-white p-4 rounded-xl border border-purple-200 shadow-sm">
+                        <div className="w-full text-left flex items-start justify-between bg-white dark:bg-slate-900 dark:bg-slate-900 p-4 rounded-xl border border-purple-200 shadow-sm">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 dark:text-slate-100 mb-1 flex items-center gap-2">
                                     <FileText className="w-5 h-5 text-purple-600" />
                                     {file.name}
                                 </h3>
-                                <p className="text-gray-600 text-sm">
+                                <p className="text-gray-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-sm">
                                     <span className="font-semibold">{questionsData.length}</span> questions found
                                 </p>
                             </div>
                             <button
                                 onClick={(e) => { e.stopPropagation(); resetFile(); }}
-                                className="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                className="text-gray-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Remove file"
                             >
                                 <X className="w-5 h-5" />
@@ -217,16 +217,16 @@ const BilingualPdfMaker: React.FC = () => {
 
                 {/* Options Panel */}
                 {file && (
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                            <Settings className="w-5 h-5 text-gray-600" />
-                            <h2 className="text-lg font-bold text-gray-800">Advanced Options</h2>
+                    <div className="bg-white dark:bg-slate-900 dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800/50 flex items-center gap-2">
+                            <Settings className="w-5 h-5 text-gray-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500" />
+                            <h2 className="text-lg font-bold text-gray-800 dark:text-slate-200 dark:text-slate-200">Advanced Options</h2>
                         </div>
 
                         <div className="p-6 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Quiz Title</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 dark:text-slate-300 mb-2">Quiz Title</label>
                                     <input
                                         type="text"
                                         value={quizTitle}
@@ -235,7 +235,7 @@ const BilingualPdfMaker: React.FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Compiler / Author Name</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 dark:text-slate-300 mb-2">Compiler / Author Name</label>
                                     <input
                                         type="text"
                                         value={compilerName}
@@ -246,7 +246,7 @@ const BilingualPdfMaker: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-3">PDF Language</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 dark:text-slate-300 mb-3">PDF Language</label>
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     {[
                                         { id: 'bilingual', label: 'Bilingual (English + Hindi)' },
@@ -262,13 +262,13 @@ const BilingualPdfMaker: React.FC = () => {
                                                 onChange={(e) => setPdfLanguage(e.target.value as any)}
                                                 className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300"
                                             />
-                                            <span className="text-sm font-medium text-gray-700">{lang.label}</span>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-slate-300 dark:text-slate-300">{lang.label}</span>
                                         </label>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="border-t border-gray-100 pt-6">
+                            <div className="border-t border-gray-100 dark:border-slate-800 dark:border-slate-800 pt-6">
                                 <label className="flex items-center gap-3 cursor-pointer mb-4">
                                     <input
                                         type="checkbox"
@@ -276,7 +276,7 @@ const BilingualPdfMaker: React.FC = () => {
                                         onChange={(e) => setIncludeAnswerKey(e.target.checked)}
                                         className="w-5 h-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
                                     />
-                                    <span className="text-sm font-bold text-gray-700">Include Answer Key</span>
+                                    <span className="text-sm font-bold text-gray-700 dark:text-slate-300 dark:text-slate-300">Include Answer Key</span>
                                 </label>
 
                                 {includeAnswerKey && (
@@ -294,16 +294,16 @@ const BilingualPdfMaker: React.FC = () => {
                                                     onChange={(e) => setAnswerKeyLocation(e.target.value as any)}
                                                     className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300"
                                                 />
-                                                <span className="text-sm font-medium text-gray-600">{loc.label}</span>
+                                                <span className="text-sm font-medium text-gray-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">{loc.label}</span>
                                             </label>
                                         ))}
                                     </div>
                                 )}
                             </div>
 
-                            <div className="border-t border-gray-100 pt-6">
-                                <label className="block text-sm font-bold text-gray-700 mb-2">
-                                    Adjust Font Size <span className="font-normal text-gray-500 ml-2">({fontMultiplier.toFixed(1)}x)</span>
+                            <div className="border-t border-gray-100 dark:border-slate-800 dark:border-slate-800 pt-6">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 dark:text-slate-300 mb-2">
+                                    Adjust Font Size <span className="font-normal text-gray-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 ml-2">({fontMultiplier.toFixed(1)}x)</span>
                                 </label>
                                 <input
                                     type="range"

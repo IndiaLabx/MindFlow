@@ -132,21 +132,21 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
     }
 
     return (
-        <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-amber-50/30">
+        <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-amber-50 dark:bg-amber-900/20/30">
             <div className="max-w-3xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
 
                 {/* Header */}
                 <div className="mb-8">
-                    <Button variant="ghost" onClick={onBack} className="text-amber-700 hover:bg-amber-100 pl-0 mb-4 hover:text-amber-900">
+                    <Button variant="ghost" onClick={onBack} className="text-amber-700 dark:text-amber-400 hover:bg-amber-100 pl-0 mb-4 hover:text-amber-900">
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Topics
                     </Button>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-amber-100 rounded-2xl text-amber-600">
+                        <div className="p-3 bg-amber-100 rounded-2xl text-amber-600 dark:text-amber-400">
                             <Quote className="w-8 h-8" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-gray-900">Idioms Practice</h1>
-                            <p className="text-amber-700/80 font-medium">Configure your Flashcards</p>
+                            <h1 className="text-3xl font-black text-gray-900 dark:text-slate-100">Idioms Practice</h1>
+                            <p className="text-amber-700 dark:text-amber-400/80 font-medium">Configure your Flashcards</p>
                         </div>
                     </div>
                 </div>
@@ -154,7 +154,7 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                 <div className="flex-1 space-y-6">
 
                     {/* Alphabetical Filter Card */}
-                    <div className="bg-white p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
                         <div className="flex items-center gap-2 mb-4 text-amber-800 font-bold text-sm uppercase tracking-wider">
                             <Type className="w-4 h-4" /> Alphabetical Order
                         </div>
@@ -164,8 +164,8 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                                 className={cn(
                                     "px-3 py-2 rounded-lg text-xs font-bold transition-all border shadow-sm",
                                     !selectedLetter
-                                        ? "bg-amber-500 text-white border-amber-500 ring-2 ring-amber-200"
-                                        : "bg-white text-gray-500 border-gray-200 hover:border-amber-300 hover:text-amber-600"
+                                        ? "bg-amber-50 dark:bg-amber-900/200 text-white border-amber-500 ring-2 ring-amber-200"
+                                        : "bg-white dark:bg-slate-900 text-gray-500 dark:text-slate-400 dark:text-slate-500 border-gray-200 dark:border-slate-800 hover:border-amber-300 hover:text-amber-600 dark:text-amber-400"
                                 )}
                             >
                                 ALL
@@ -183,8 +183,8 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                                             "w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all border",
                                             isSelected
                                                 ? "bg-amber-100 text-amber-900 border-amber-300 ring-1 ring-amber-300"
-                                                : "bg-white text-gray-600 border-gray-200 hover:border-amber-300 hover:text-amber-700",
-                                            isDisabled && "opacity-30 cursor-not-allowed bg-gray-50 text-gray-300 border-gray-100"
+                                                : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 dark:text-slate-500 border-gray-200 dark:border-slate-800 hover:border-amber-300 hover:text-amber-700 dark:text-amber-400",
+                                            isDisabled && "opacity-30 cursor-not-allowed bg-gray-50 dark:bg-slate-800/50 text-gray-300 border-gray-100 dark:border-slate-800"
                                         )}
                                     >
                                         {letter}
@@ -192,13 +192,13 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                                 )
                             })}
                         </div>
-                        <p className="text-[10px] text-gray-400 mt-2 text-right">
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-2 text-right">
                             * Shows counts based on other selected filters
                         </p>
                     </div>
 
                     {/* Source Name Card */}
-                    <div className="bg-white p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
                         <div className="flex items-center gap-2 mb-4 text-amber-800 font-bold text-sm uppercase tracking-wider">
                             <FileText className="w-4 h-4" /> Source Material
                         </div>
@@ -214,7 +214,7 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                     </div>
 
                     {/* Exam Year Card (New Visuals) */}
-                    <div className="bg-white p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
                         <div className="flex items-center gap-2 mb-4 text-amber-800 font-bold text-sm uppercase tracking-wider">
                             <Calendar className="w-4 h-4" /> Exam Year
                         </div>
@@ -238,14 +238,14 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                                             "px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 border select-none",
                                             isSelected
                                                 ? "bg-amber-100 text-amber-900 border-amber-300 ring-1 ring-amber-300"
-                                                : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300",
-                                            isDisabled && "opacity-40 cursor-not-allowed bg-gray-50"
+                                                : "bg-gray-50 dark:bg-slate-800/50 text-gray-600 dark:text-slate-400 dark:text-slate-500 border-gray-200 dark:border-slate-800 hover:bg-gray-100 dark:hover:bg-slate-800 hover:border-gray-300",
+                                            isDisabled && "opacity-40 cursor-not-allowed bg-gray-50 dark:bg-slate-800/50"
                                         )}
                                     >
                                         {year}
                                         <span className={cn(
                                             "text-[10px] px-1.5 py-0.5 rounded-full min-w-[20px] text-center",
-                                            isSelected ? "bg-amber-200 text-amber-800" : "bg-gray-200 text-gray-500"
+                                            isSelected ? "bg-amber-200 text-amber-800" : "bg-gray-200 text-gray-500 dark:text-slate-400 dark:text-slate-500"
                                         )}>
                                             {count}
                                         </span>
@@ -256,7 +256,7 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                     </div>
 
                     {/* Difficulty Card */}
-                    <div className="bg-white p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-amber-100 border-l-4 border-l-amber-400 shadow-sm relative">
                         <div className="flex items-center gap-2 mb-4 text-amber-800 font-bold text-sm uppercase tracking-wider">
                             <Settings className="w-4 h-4" /> Difficulty Level
                         </div>
@@ -276,7 +276,7 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
 
                 {/* Footer Action */}
                 <div className="mt-8 sticky bottom-4 z-10">
-                    <div className="bg-white/90 backdrop-blur-md border border-amber-200 shadow-xl rounded-2xl p-4">
+                    <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md border border-amber-200 shadow-xl rounded-2xl p-4">
 
                         <div className="mb-4">
                             <ActiveFiltersBar filters={filters} onRemoveFilter={handleRemoveFilter} />
@@ -287,7 +287,7 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                             size="lg"
                             onClick={handleStart}
                             disabled={filteredIdioms.length === 0}
-                            className="bg-amber-500 hover:bg-amber-600 text-white border-none shadow-lg shadow-amber-200"
+                            className="bg-amber-50 dark:bg-amber-900/200 hover:bg-amber-600 text-white border-none shadow-lg shadow-amber-200"
                         >
                             <Play className="w-5 h-5 mr-2 fill-current" /> Start Flashcards ({filteredIdioms.length})
                         </Button>

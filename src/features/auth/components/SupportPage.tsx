@@ -11,16 +11,16 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBack }) => {
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center mb-6">
             <button onClick={onBack} className="p-2 rounded-full hover:bg-slate-200 transition-colors">
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
+              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             </button>
-            <h1 className="text-2xl font-bold text-slate-800 ml-4">Help & Support</h1>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 ml-4">Help & Support</h1>
         </div>
 
         {/* Support Section */}
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 mb-6 overflow-hidden relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-sky-50 rounded-bl-full -z-10"></div>
 
-          <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
+          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-3">
               <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center text-sky-600 border border-sky-200">
                   <HelpCircle className="w-5 h-5" />
               </div>
@@ -33,8 +33,8 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBack }) => {
                   <FileText className="w-6 h-6" />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-bold text-slate-800 text-lg">Help Center</h3>
-                  <p className="text-sm text-slate-500 font-medium mt-0.5">FAQs and Guides</p>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Help Center</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">FAQs and Guides</p>
                 </div>
               </div>
               <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-blue-500 transition-colors" />
@@ -42,12 +42,12 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBack }) => {
 
             <button className="w-full flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all group">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500">
+                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center text-indigo-500">
                   <MessageCircle className="w-6 h-6" />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-bold text-slate-800 text-lg">Contact Support</h3>
-                  <p className="text-sm text-slate-500 font-medium mt-0.5">Get in touch with us</p>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Contact Support</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Get in touch with us</p>
                 </div>
               </div>
               <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
@@ -77,12 +77,12 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBack }) => {
 
         {/* Legal & Policies */}
         <div className="pt-8 pb-4">
-            <div className="flex items-center justify-center gap-6 text-sm font-bold text-slate-500">
-                <a href="#" className="flex items-center gap-2 hover:text-indigo-600 transition-colors">
+            <div className="flex items-center justify-center gap-6 text-sm font-bold text-slate-500 dark:text-slate-400">
+                <a href="#" className="flex items-center gap-2 hover:text-indigo-600 dark:text-indigo-400 transition-colors">
                     <ShieldCheck className="w-4 h-4" /> Privacy Policy
                 </a>
                 <span className="w-1.5 h-1.5 bg-slate-300 rounded-full"></span>
-                <a href="#" className="flex items-center gap-2 hover:text-indigo-600 transition-colors">
+                <a href="#" className="flex items-center gap-2 hover:text-indigo-600 dark:text-indigo-400 transition-colors">
                     <FileText className="w-4 h-4" /> Terms of Service
                 </a>
             </div>

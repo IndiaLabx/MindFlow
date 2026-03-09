@@ -112,7 +112,7 @@ export const SavedQuizzes: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-800/50">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
             </div>
         );
@@ -120,19 +120,19 @@ export const SavedQuizzes: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-800/50 p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
                 <div className="mb-6">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+                        className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:text-indigo-300 transition-colors font-medium"
                     >
                         <Home className="w-5 h-5" /> Back to Home
                     </button>
                 </div>
                 <div className="flex items-center justify-between mb-8">
 
-                    <h1 className="text-2xl font-bold text-gray-900">Created Quizzes</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Created Quizzes</h1>
                     <div className="flex gap-4">
                         <button
                             onClick={() => navigate('/quiz/config')}
@@ -150,10 +150,10 @@ export const SavedQuizzes: React.FC = () => {
                 </div>
 
                 {quizzes.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800">
                         <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No Created Quizzes</h3>
-                        <p className="text-gray-500 mb-6">Start a new quiz to see it here!</p>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">No Created Quizzes</h3>
+                        <p className="text-gray-500 dark:text-slate-400 dark:text-slate-500 mb-6">Start a new quiz to see it here!</p>
                         <button
                             onClick={() => navigate('/quiz/config')}
                             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -167,7 +167,7 @@ export const SavedQuizzes: React.FC = () => {
                             <div
                                 key={quiz.id}
                                 onClick={() => handleResume(quiz)}
-                                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group"
+                                className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-md transition-shadow cursor-pointer group"
                             >
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1 mr-4">
@@ -184,18 +184,18 @@ export const SavedQuizzes: React.FC = () => {
                                                 <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded">
                                                     <Check className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={cancelEdit} className="p-1 text-red-600 hover:bg-red-50 rounded">
+                                                <button onClick={cancelEdit} className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 rounded">
                                                     <X className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-2 mb-2">
-                                                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 group-hover:text-indigo-600 dark:text-indigo-400 transition-colors">
                                                     {quiz.name || 'Untitled Quiz'}
                                                 </h3>
                                                 <button
                                                     onClick={(e) => startEditing(quiz, e)}
-                                                    className="p-1 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="p-1 text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity"
                                                     title="Edit Name"
                                                 >
                                                     <Edit2 className="w-3 h-3" />
@@ -204,7 +204,7 @@ export const SavedQuizzes: React.FC = () => {
                                         )}
 
                                         {/* Metadata */}
-                                        <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                                        <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-slate-400 dark:text-slate-500">
                                             <div className="flex items-center gap-1">
                                                 <BookOpen className="w-4 h-4" />
                                                 <span>{quiz.filters.subject}</span>
@@ -220,7 +220,7 @@ export const SavedQuizzes: React.FC = () => {
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <span className="font-medium text-gray-700">
+                                                <span className="font-medium text-gray-700 dark:text-slate-300">
                                                     {quiz.state.currentQuestionIndex + 1} / {quiz.questions.length}
                                                 </span>
                                             </div>
@@ -231,7 +231,7 @@ export const SavedQuizzes: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={(e) => handleResume(quiz)}
-                                            className="flex items-center gap-1 px-3 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors font-medium text-sm"
+                                            className="flex items-center gap-1 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:bg-indigo-900/40 rounded-lg transition-colors font-medium text-sm"
                                             title={isQuizFinished(quiz) ? "View Results" : isQuizStarted(quiz) ? "Resume Quiz" : "Start Quiz"}
                                         >
                                             <Play className="w-4 h-4" />
@@ -239,7 +239,7 @@ export const SavedQuizzes: React.FC = () => {
                                         </button>
                                         <button
                                             onClick={(e) => handleDelete(quiz.id, e)}
-                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 rounded-lg transition-colors"
                                             title="Delete Quiz"
                                         >
                                             <Trash2 className="w-5 h-5" />

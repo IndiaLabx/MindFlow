@@ -94,7 +94,7 @@ export const DownloadReadyModal: React.FC<DownloadReadyModalProps> = ({
             </div>
 
             <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Download Ready</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100 mb-1">Download Ready</h3>
                 <p className="text-sm text-gray-500 max-w-[250px] mx-auto break-all">
                     {fileName}
                 </p>

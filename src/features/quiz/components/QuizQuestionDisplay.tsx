@@ -92,9 +92,9 @@ export function QuizQuestionDisplay({
             style={{ fontSize: `${zoomLevel}rem` }} // Applies zoom to everything inside via CSS inheritance
         >
             {/* Metadata Header - Visible in all modes for context */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-gray-100 text-[0.75rem] text-gray-400 font-medium select-none">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-gray-100 dark:border-slate-800 text-[0.75rem] text-gray-400 dark:text-slate-500 font-medium select-none">
                 <div className="flex items-center gap-2 flex-wrap">
-                    <span className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded text-gray-500">
+                    <span className="flex items-center gap-1 bg-gray-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded text-gray-500 dark:text-slate-400 dark:text-slate-500">
                          <Hash className="w-3 h-3" /> {question.id}
                     </span>
                     {question.sourceInfo?.examName && (
@@ -105,7 +105,7 @@ export function QuizQuestionDisplay({
                     )}
                     {/* Exam Shift Detail - Now visible on all screens and beside exam name */}
                     {question.sourceInfo?.examDateShift && (
-                        <span className="flex items-center gap-1 text-gray-400 border-l border-gray-200 pl-2 ml-1">
+                        <span className="flex items-center gap-1 text-gray-400 dark:text-slate-500 border-l border-gray-200 dark:border-slate-800 pl-2 ml-1">
                             <Calendar className="w-3 h-3" />
                             {question.sourceInfo.examDateShift}
                         </span>
@@ -119,7 +119,7 @@ export function QuizQuestionDisplay({
                     {/* Main English Text */}
                     {/* Added 'selectable-text' utility and stopPropagation to ensure text selection works on touch devices */}
                     <div 
-                        className="text-gray-900 leading-relaxed font-poppins flex-1 selectable-text relative z-10 [&_pre]:whitespace-pre-wrap [&_pre]:font-inherit [&_pre]:my-2 [&_pre]:bg-gray-50 [&_pre]:p-2 [&_pre]:rounded-md [&_pre]:border [&_pre]:border-gray-200"
+                        className="text-gray-900 dark:text-slate-100 leading-relaxed font-poppins flex-1 selectable-text relative z-10 [&_pre]:whitespace-pre-wrap [&_pre]:font-inherit [&_pre]:my-2 [&_pre]:bg-gray-50 dark:bg-slate-800/50 [&_pre]:p-2 [&_pre]:rounded-md [&_pre]:border [&_pre]:border-gray-200 dark:border-slate-800"
                         dangerouslySetInnerHTML={createSafeMarkup(question.question)}
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
@@ -127,7 +127,7 @@ export function QuizQuestionDisplay({
                     
                     {/* Show Time Spent in Review Mode (if userTime provided) */}
                     {userTime !== undefined && (
-                        <div className="flex items-center gap-1 text-[0.7em] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full whitespace-nowrap select-none self-start">
+                        <div className="flex items-center gap-1 text-[0.7em] font-bold text-gray-500 dark:text-slate-400 dark:text-slate-500 bg-gray-100 px-2 py-1 rounded-full whitespace-nowrap select-none self-start">
                             <Clock className="w-3 h-3" /> {userTime}s
                         </div>
                     )}
@@ -144,7 +144,7 @@ export function QuizQuestionDisplay({
                 {question.question_hi && (
                     <div className="relative group">
                         <div
-                            className="text-gray-800 font-hindi leading-relaxed border-l-4 border-indigo-100 pl-4 pr-12 selectable-text relative z-10 [&_pre]:whitespace-pre-wrap [&_pre]:font-inherit [&_pre]:my-2 [&_pre]:bg-gray-50 [&_pre]:p-2 [&_pre]:rounded-md [&_pre]:border [&_pre]:border-gray-200"
+                            className="text-gray-800 dark:text-slate-200 font-hindi leading-relaxed border-l-4 border-indigo-100 dark:border-indigo-900/30 pl-4 pr-12 selectable-text relative z-10 [&_pre]:whitespace-pre-wrap [&_pre]:font-inherit [&_pre]:my-2 [&_pre]:bg-gray-50 dark:bg-slate-800/50 [&_pre]:p-2 [&_pre]:rounded-md [&_pre]:border [&_pre]:border-gray-200 dark:border-slate-800"
                             dangerouslySetInnerHTML={createSafeMarkup(question.question_hi)}
                             onMouseDown={(e) => e.stopPropagation()}
                             onTouchStart={(e) => e.stopPropagation()}
@@ -164,8 +164,8 @@ export function QuizQuestionDisplay({
                             disabled={isLoading}
                             className={`absolute top-0 right-0 p-2 rounded-full transition-all shadow-sm border ${
                                 isPlaying
-                                    ? 'text-red-600 bg-red-100 border-red-200 hover:bg-red-200 shadow-red-100'
-                                    : 'text-indigo-600 bg-indigo-50 border-indigo-200 hover:bg-indigo-100 shadow-indigo-100'
+                                    ? 'text-red-600 dark:text-red-400 bg-red-100 border-red-200 hover:bg-red-200 shadow-red-100'
+                                    : 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:bg-indigo-900/40 shadow-indigo-100'
                             } active:scale-95`}
                             title={isPlaying ? "Stop reading" : "Read question in Hindi"}
                         >

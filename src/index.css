@@ -10,6 +10,7 @@
 }
 
 body {
+  @apply bg-gray-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300;
   /* Prevents long-press context menu (Save Image, Copy, etc.) globally */
   -webkit-touch-callout: none;
   

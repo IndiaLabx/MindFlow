@@ -229,12 +229,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
               </div>
 
               <div className="mt-4">
-                  <h1 className="text-2xl font-black text-slate-800">{fullName}</h1>
-                  <p className="text-slate-500 font-medium text-sm mt-0.5">{user.email}</p>
+                  <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">{fullName}</h1>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-0.5">{user.email}</p>
               </div>
 
               <div className="mt-3 flex items-center justify-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 border border-indigo-100">
                       <Target className="w-3.5 h-3.5" />
                       Preparing for: {targetExam}
                   </span>
@@ -249,7 +249,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
 
               <button
                   onClick={onNavigateToSettings}
-                  className="mt-5 w-full sm:w-auto px-6 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors border border-slate-200"
+                  className="mt-5 w-full sm:w-auto px-6 py-2.5 bg-slate-100 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 transition-colors border border-slate-200"
               >
                   Edit Profile Info
               </button>
@@ -259,39 +259,39 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
           {/* --- Performance Stats --- */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 relative overflow-hidden group hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/quiz/analytics')}>
             <div className="flex items-center justify-between mb-4">
-               <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+               <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                    <BarChart className="w-5 h-5 text-indigo-500" />
                    Performance
                </h2>
-               <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+               <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:text-indigo-400 transition-colors" />
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/50">
-                  <p className="text-xs text-indigo-600/70 font-bold uppercase tracking-wider mb-1">Accuracy</p>
+              <div className="bg-indigo-50 dark:bg-indigo-900/20/50 p-3 rounded-xl border border-indigo-100/50">
+                  <p className="text-xs text-indigo-600 dark:text-indigo-400/70 font-bold uppercase tracking-wider mb-1">Accuracy</p>
                   <p className="text-xl font-black text-indigo-700">{statsLoading ? '-' : `${userStats.averageScore}%`}</p>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Tests</p>
-                  <p className="text-xl font-black text-slate-800">{statsLoading ? '-' : userStats.quizzesCompleted.toLocaleString()}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Tests</p>
+                  <p className="text-xl font-black text-slate-800 dark:text-slate-100">{statsLoading ? '-' : userStats.quizzesCompleted.toLocaleString()}</p>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Correct</p>
-                  <p className="text-xl font-black text-slate-800">{statsLoading ? '-' : userStats.correctAnswers.toLocaleString()}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Correct</p>
+                  <p className="text-xl font-black text-slate-800 dark:text-slate-100">{statsLoading ? '-' : userStats.correctAnswers.toLocaleString()}</p>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Time Spent</p>
-                  <p className="text-xl font-black text-slate-800 flex items-center gap-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Time Spent</p>
+                  <p className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-1">
                       <Clock className="w-4 h-4 text-slate-400" /> -
                   </p>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-100">
-                 <p className="text-sm font-medium text-slate-600 flex flex-wrap items-center gap-1 mt-1">
-                      <span className="font-bold text-slate-800 mr-1">Weak Topics:</span>
+                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-1 mt-1">
+                      <span className="font-bold text-slate-800 dark:text-slate-100 mr-1">Weak Topics:</span>
                       {statsLoading ? (
-                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 rounded text-xs border border-slate-100 animate-pulse">Loading...</span>
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 dark:text-slate-400 rounded text-xs border border-slate-100 animate-pulse">Loading...</span>
                       ) : userStats.weakTopics.length > 0 ? (
                           userStats.weakTopics.map(topic => (
                               <span key={topic} className="px-2 py-0.5 bg-red-50 text-red-600 rounded text-xs border border-red-100 truncate max-w-[150px]" title={topic}>
@@ -301,7 +301,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
                       ) : userStats.quizzesCompleted > 0 ? (
                           <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-xs border border-green-100">Looking good!</span>
                       ) : (
-                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 rounded text-xs border border-slate-100">Needs more data</span>
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 dark:text-slate-400 rounded text-xs border border-slate-100">Needs more data</span>
                       )}
                  </p>
             </div>
@@ -309,26 +309,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
 
           {/* 3. My Activity */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
-              <h2 className="text-base font-bold text-slate-800 mb-3 px-2">My Activity</h2>
+              <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3 px-2">My Activity</h2>
               <div className="space-y-2">
                   <button onClick={() => navigate('/quiz/analytics')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                       <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600"><FileText className="w-4 h-4" /></div>
-                          <span className="font-bold text-slate-700">Attempted Tests</span>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Attempted Tests</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-purple-600 transition-colors" />
                   </button>
                   <button onClick={() => navigate('/quiz/bookmarks')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                       <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500"><Bookmark className="w-4 h-4" /></div>
-                          <span className="font-bold text-slate-700">Saved Questions</span>
+                          <div className="w-9 h-9 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-center justify-center text-amber-500"><Bookmark className="w-4 h-4" /></div>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Saved Questions</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-amber-500 transition-colors" />
                   </button>
                   <button onClick={() => navigate('/quiz/saved')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                       <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500"><Grid className="w-4 h-4" /></div>
-                          <span className="font-bold text-slate-700">Created Quizzes</span>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Created Quizzes</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500 transition-colors" />
                   </button>
@@ -340,22 +340,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
               <div className="space-y-2">
                   <button onClick={() => navigate('/profile/subscription')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                       <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600"><CreditCard className="w-4 h-4" /></div>
-                          <span className="font-bold text-slate-700">Subscription & Rewards</span>
+                          <div className="w-9 h-9 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400"><CreditCard className="w-4 h-4" /></div>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Subscription & Rewards</span>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-600 transition-colors" />
+                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-600 dark:text-emerald-400 transition-colors" />
                   </button>
                   <button onClick={onNavigateToSettings} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                       <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600"><Shield className="w-4 h-4" /></div>
-                          <span className="font-bold text-slate-700">Settings & Security</span>
+                          <div className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400"><Shield className="w-4 h-4" /></div>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Settings & Security</span>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 dark:text-slate-400 transition-colors" />
                   </button>
                   <button onClick={() => navigate('/profile/support')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                       <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-sky-50 rounded-lg flex items-center justify-center text-sky-500"><HelpCircle className="w-4 h-4" /></div>
-                          <span className="font-bold text-slate-700">Help & Support</span>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Help & Support</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-sky-500 transition-colors" />
                   </button>
@@ -365,7 +365,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
           {/* 5. Logout */}
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 p-4 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-slate-600 font-bold transition-all duration-300"
+            className="w-full flex items-center justify-center gap-2 p-4 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-slate-600 dark:text-slate-400 font-bold transition-all duration-300"
           >
               <LogOut className="w-5 h-5" />
               Sign Out

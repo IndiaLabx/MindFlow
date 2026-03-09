@@ -147,7 +147,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
              <div className="bg-indigo-600 p-2 rounded-lg">
                <BrainCircuit className="h-6 w-6 text-white" />
              </div>
-             <span className="text-2xl font-black tracking-tight text-gray-900">MindFlow</span>
+             <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-slate-100">MindFlow</span>
            </div>
            <div className="flex border-b border-border-color mb-8 text-center">
              <button onClick={() => setIsSignUp(false)} className={`w-1/2 pb-3 font-bold ${!isSignUp ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-text-secondary hover:text-text-main transition-colors'}`}>Sign In</button>
@@ -183,7 +183,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
              <div>
                <div className="flex justify-between items-baseline mb-2">
                  <label className="block text-sm font-semibold text-text-main" htmlFor="password">Password</label>
-                 {!isSignUp && <a href="#!" onClick={() => alert('Forgot password functionality to be implemented')} className="text-sm font-semibold text-indigo-600 hover:underline">Forgot Password?</a>}
+                 {!isSignUp && <a href="#!" onClick={() => alert('Forgot password functionality to be implemented')} className="text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400">Forgot Password?</a>}
                </div>
                <div className="relative">
                  <input

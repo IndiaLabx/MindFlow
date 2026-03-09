@@ -148,7 +148,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
       
       {/* Top Controls */}
       <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => navigate('/quiz/attempted')} className="text-gray-600 hover:bg-gray-100 pl-0 hover:text-gray-900">
+          <Button variant="ghost" onClick={() => navigate('/quiz/attempted')} className="text-gray-600 dark:text-slate-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800 pl-0 hover:text-gray-900 dark:text-slate-100">
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
       </div>
@@ -166,7 +166,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                   {/* Left: Text Summary */}
                   <div className="flex flex-col items-center md:items-start text-center md:text-left">
                       <div className="flex items-center gap-3 mb-2">
-                           <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                           <div className="p-2 bg-white dark:bg-slate-900/10 rounded-lg backdrop-blur-sm">
                                <Award className={cn("w-6 h-6", grade.color)} />
                            </div>
                            <span className="text-sm font-bold uppercase tracking-widest text-white/80">Result Summary</span>
@@ -199,7 +199,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                       
                       {/* Mini Legend */}
                       <div className="flex gap-6 mt-6 text-xs font-bold uppercase tracking-wider bg-black/20 px-6 py-3 rounded-full backdrop-blur-md border border-white/10">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" /> {correct} Correct</div>
+                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-50 dark:bg-emerald-900/200 shadow-[0_0_10px_rgba(34,197,94,0.5)]" /> {correct} Correct</div>
                           <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" /> {incorrect} Wrong</div>
                           <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-gray-400" /> {unanswered} Skipped</div>
                       </div>
@@ -208,7 +208,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
           </div>
 
           {/* KPI Grid */}
-          <div className="bg-white p-6 border-t border-gray-100">
+          <div className="bg-white dark:bg-slate-900 p-6 border-t border-gray-100 dark:border-slate-800">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                   <StatBox label="Total Score" value={score} suffix={`/ ${total}`} icon={<Trophy className="w-4 h-4 text-amber-500" />} />
                   <StatBox label="Attempted" value={attempted} suffix={`/ ${total}`} icon={<Target className="w-4 h-4 text-indigo-500" />} />
@@ -223,17 +223,17 @@ export const QuizResult: React.FC<QuizResultProps> = ({
           
           {/* Column 1: Review Actions */}
           <div className="space-y-5 order-2 lg:order-1">
-             <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                 <List className="w-5 h-5 text-indigo-600" /> Review & Analysis
+             <h3 className="font-bold text-gray-900 dark:text-slate-100 text-lg flex items-center gap-2">
+                 <List className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Review & Analysis
              </h3>
              
              <Card onClick={() => { setReviewFilter('All'); setView('review'); }} className="flex items-center justify-between group border-l-4 border-l-indigo-500 hover:shadow-lg cursor-pointer transition-all">
                  <div>
-                    <span className="font-bold text-gray-800 block">All Questions</span>
-                    <span className="text-xs text-gray-500">View solutions & explanations</span>
+                    <span className="font-bold text-gray-800 dark:text-slate-200 block">All Questions</span>
+                    <span className="text-xs text-gray-500 dark:text-slate-400 dark:text-slate-500">View solutions & explanations</span>
                  </div>
-                 <div className="bg-indigo-50 p-2 rounded-full group-hover:bg-indigo-100 transition-colors">
-                    <ChevronRight className="w-5 h-5 text-indigo-600" />
+                 <div className="bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded-full group-hover:bg-indigo-100 dark:bg-indigo-900/40 transition-colors">
+                    <ChevronRight className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                  </div>
              </Card>
 
@@ -245,8 +245,8 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                 )}
              >
                  <div>
-                    <span className="font-bold text-gray-800 block">Incorrect Only</span>
-                    <span className="text-xs text-gray-500">{incorrect} mistakes to fix</span>
+                    <span className="font-bold text-gray-800 dark:text-slate-200 block">Incorrect Only</span>
+                    <span className="text-xs text-gray-500 dark:text-slate-400 dark:text-slate-500">{incorrect} mistakes to fix</span>
                  </div>
                  <div className="bg-rose-50 p-2 rounded-full group-hover:bg-rose-100 transition-colors">
                     <ChevronRight className="w-5 h-5 text-rose-600" />
@@ -261,19 +261,19 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                 )}
              >
                  <div>
-                    <span className="font-bold text-gray-800 block">Skipped Only</span>
-                    <span className="text-xs text-gray-500">{unanswered} unanswered questions</span>
+                    <span className="font-bold text-gray-800 dark:text-slate-200 block">Skipped Only</span>
+                    <span className="text-xs text-gray-500 dark:text-slate-400 dark:text-slate-500">{unanswered} unanswered questions</span>
                  </div>
                  <div className="bg-gray-100 p-2 rounded-full group-hover:bg-gray-200 transition-colors">
-                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                    <ChevronRight className="w-5 h-5 text-gray-600 dark:text-slate-400 dark:text-slate-500" />
                  </div>
              </Card>
 
              <div className="grid grid-cols-2 gap-3 pt-2">
-                 <Button onClick={onRestart} variant="outline" className="justify-center h-12 border-2 hover:border-indigo-600 hover:text-indigo-600">
+                 <Button onClick={onRestart} variant="outline" className="justify-center h-12 border-2 hover:border-indigo-600 hover:text-indigo-600 dark:text-indigo-400">
                     <RotateCcw className="w-4 h-4 mr-2" /> Retry
                  </Button>
-                 <Button onClick={onGoHome} variant="outline" className="justify-center h-12 border-2 hover:bg-gray-50">
+                 <Button onClick={onGoHome} variant="outline" className="justify-center h-12 border-2 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50">
                     <Home className="w-4 h-4 mr-2" /> Home
                  </Button>
              </div>
@@ -281,20 +281,20 @@ export const QuizResult: React.FC<QuizResultProps> = ({
 
           {/* Column 2: Subject Performance List */}
           <div className="lg:col-span-2 order-1 lg:order-2">
-              <h3 className="font-bold text-gray-900 text-lg mb-5 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-indigo-600" /> Performance Breakdown
+              <h3 className="font-bold text-gray-900 dark:text-slate-100 text-lg mb-5 flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Performance Breakdown
               </h3>
               <div className="space-y-4">
                   {subjectPerformance.map((sub, idx) => (
-                      <div key={sub.name} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-indigo-300 transition-colors animate-in slide-in-from-right-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
+                      <div key={sub.name} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm hover:border-indigo-300 transition-colors animate-in slide-in-from-right-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
                           <div className="flex justify-between items-center mb-2">
-                              <span className="font-bold text-gray-700">{sub.name}</span>
+                              <span className="font-bold text-gray-700 dark:text-slate-300">{sub.name}</span>
                               <div className="flex items-center gap-2">
-                                  <span className="text-xs font-semibold text-gray-400">{sub.correct}/{sub.total}</span>
+                                  <span className="text-xs font-semibold text-gray-400 dark:text-slate-500">{sub.correct}/{sub.total}</span>
                                   <span className={cn(
                                       "text-sm font-bold px-2 py-0.5 rounded",
-                                      sub.accuracy >= 80 ? "bg-emerald-100 text-emerald-700" : 
-                                      sub.accuracy >= 50 ? "bg-amber-100 text-amber-700" : 
+                                      sub.accuracy >= 80 ? "bg-emerald-100 text-emerald-700 dark:text-emerald-400" :
+                                      sub.accuracy >= 50 ? "bg-amber-100 text-amber-700 dark:text-amber-400" :
                                       "bg-rose-100 text-rose-700"
                                   )}>
                                       {sub.accuracy}%
@@ -320,13 +320,13 @@ export const QuizResult: React.FC<QuizResultProps> = ({
 
 // Helper Component for KPI Grid Item
 const StatBox = ({ label, value, suffix, icon }: { label: string, value: number, suffix?: string, icon: React.ReactNode }) => (
-    <div className="flex flex-col items-start p-3 rounded-lg hover:bg-gray-50 transition-colors">
-        <div className="flex items-center gap-2 mb-1 text-gray-500 text-xs font-bold uppercase tracking-wide">
+    <div className="flex flex-col items-start p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors">
+        <div className="flex items-center gap-2 mb-1 text-gray-500 dark:text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wide">
             {icon} {label}
         </div>
-        <div className="text-2xl font-black text-gray-900">
+        <div className="text-2xl font-black text-gray-900 dark:text-slate-100">
             <AnimatedCounter value={value} duration={1000} />
-            <span className="text-sm text-gray-400 font-medium ml-1">{suffix}</span>
+            <span className="text-sm text-gray-400 dark:text-slate-500 font-medium ml-1">{suffix}</span>
         </div>
     </div>
 );

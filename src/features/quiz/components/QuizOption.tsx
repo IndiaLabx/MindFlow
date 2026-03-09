@@ -47,18 +47,18 @@ export const QuizOption: React.FC<QuizOptionProps> = ({
     onClick
 }) => {
     // Default base styles
-    let containerClass = "bg-white border-gray-200 hover:border-indigo-300 hover:bg-gray-50 cursor-pointer relative";
+    let containerClass = "bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 cursor-pointer relative";
     let icon: React.ReactNode = <div className="w-5 h-5 rounded-full border-2 border-gray-300 transition-colors group-hover:border-indigo-400 flex-shrink-0" />;
-    let textClass = "text-gray-700";
+    let textClass = "text-gray-700 dark:text-slate-300";
     let animationClass = "";
 
     // --- MOCK MODE LOGIC ---
     // Simple selection state, no answer reveal
     if (isMockMode) {
         if (isSelected) {
-            containerClass = "bg-indigo-50 border-indigo-600 ring-1 ring-indigo-600 relative";
+            containerClass = "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-600 ring-1 ring-indigo-600 relative";
             icon = <div className="w-5 h-5 rounded-full border-[5px] border-indigo-600 flex-shrink-0" />;
-            textClass = "text-indigo-800 font-medium";
+            textClass = "text-indigo-800 dark:text-indigo-300 font-medium";
         }
     } 
     // --- LEARNING MODE LOGIC ---
@@ -69,8 +69,8 @@ export const QuizOption: React.FC<QuizOptionProps> = ({
         icon = null;
 
         if (isHidden) {
-             containerClass = "bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed shadow-none relative"; 
-             textClass = "text-gray-400 line-through decoration-gray-300 decoration-2 select-none";
+             containerClass = "bg-gray-50 dark:bg-slate-800/50 border-gray-100 dark:border-slate-800 opacity-60 cursor-not-allowed shadow-none relative";
+             textClass = "text-gray-400 dark:text-slate-500 line-through decoration-gray-300 decoration-2 select-none";
              // EyeOff icon indicates this option was removed by a lifeline
              icon = <div className="absolute right-4"><EyeOff className="w-5 h-5 text-gray-300" /></div>;
         }
@@ -90,10 +90,10 @@ export const QuizOption: React.FC<QuizOptionProps> = ({
 
             } else if (isSelected) {
                 // Scenario: User picked the Wrong Answer
-                containerClass = "bg-red-50 border-red-500 ring-1 ring-red-500 relative";
+                containerClass = "bg-red-50 dark:bg-red-900/20 border-red-500 ring-1 ring-red-500 relative";
                 textClass = "text-red-900 font-medium";
                 icon = (
-                    <div className="flex-shrink-0 bg-red-500 rounded-full p-1 shadow-sm">
+                    <div className="flex-shrink-0 bg-red-50 dark:bg-red-900/200 rounded-full p-1 shadow-sm">
                         <X className="w-4 h-4 text-white" />
                     </div>
                 );
@@ -110,11 +110,11 @@ export const QuizOption: React.FC<QuizOptionProps> = ({
                  );
             } else {
                  // Scenario: Irrelevant options fade out to focus attention
-                 containerClass = "opacity-50 bg-gray-50 border-gray-200 relative";
+                 containerClass = "opacity-50 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-800 relative";
             }
         } else if (isSelected) {
             // Fallback for immediate selection before processing (rare in sync mode)
-            containerClass = "bg-indigo-50 border-indigo-600 relative";
+            containerClass = "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-600 relative";
             textClass = "text-indigo-900 font-medium";
         }
     }
