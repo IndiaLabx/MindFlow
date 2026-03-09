@@ -21,6 +21,7 @@ const QuizResult = lazy(() => import('../features/quiz/components/QuizResult').t
 const FlashcardSummary = lazy(() => import('../features/flashcards/components/FlashcardSummary').then(m => ({ default: m.FlashcardSummary })));
 const ToolsHome = lazy(() => import('../features/tools/ToolsHome'));
 const FlashcardMaker = lazy(() => import('../features/tools/flashcard-maker/FlashcardMaker'));
+const BilingualPdfMaker = lazy(() => import('../features/tools/bilingual-pdf-maker/BilingualPdfMaker'));
 
 // Immersive Session Views (No standard layout)
 const LearningSession = lazy(() => import('../features/quiz/learning/LearningSession').then(m => ({ default: m.LearningSession })));
@@ -181,6 +182,7 @@ const AppRoutesContent: React.FC = () => {
 
                     <Route path="/tools" element={<ToolsHome />} />
                     <Route path="/tools/flashcard-maker" element={<FlashcardMaker />} />
+                    <Route path="/tools/bilingual-pdf-maker" element={<BilingualPdfMaker />} />
                 </Route>
 
                 {/* --- Immersive Session Routes (No Layout, Fullscreen) --- */}

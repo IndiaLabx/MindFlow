@@ -19,13 +19,13 @@ const ToolsHome: React.FC = () => {
         },
         {
             id: 'pdf-generator',
-            title: 'PDF Generator',
-            description: 'Generate printable PDF lists from your vocabulary collection.',
-            icon: <FileText className="w-6 h-6 text-gray-400" />,
-            color: 'bg-gray-50',
-            borderColor: 'hover:border-gray-300',
-            action: () => {},
-            disabled: true
+            title: 'Bilingual PDF Generator',
+            description: 'Create flawless bilingual quiz PDFs from your JSON questions.',
+            icon: <FileText className="w-6 h-6 text-purple-600" />,
+            color: 'bg-purple-50',
+            borderColor: 'hover:border-purple-300',
+            action: () => navigate('/tools/bilingual-pdf-maker'),
+            disabled: false
         },
         {
             id: 'ppt-generator',
