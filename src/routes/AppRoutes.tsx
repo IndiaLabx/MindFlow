@@ -184,6 +184,7 @@ const AppRoutesContent: React.FC = () => {
                     <Route path="/tools" element={<ToolsHome />} />
                     <Route path="/tools/flashcard-maker" element={<FlashcardMaker />} />
                     <Route path="/tools/bilingual-pdf-maker" element={<BilingualPdfMaker />} />
+                    <Route path="/tools/quiz-pdf-ppt-generator" element={<QuizPdfPptGenerator />} />
                 </Route>
 
                 {/* --- Immersive Session Routes (No Layout, Fullscreen) --- */}
