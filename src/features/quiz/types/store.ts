@@ -1,4 +1,5 @@
 import { Question, InitialFilters, Idiom, OneWord } from '../../../types/models';
+import { SynonymWord } from './index';
 
 /**
  * Represents the various distinct screens or states of the application.
@@ -15,7 +16,10 @@ export type QuizStatus =
   | 'vocab-home'         // Vocabulary Home
   | 'idioms-config'      // Idioms Configuration
   | 'ows-config'         // One Word Substitution Configuration
+  | 'synonyms-config'    // Synonyms Configuration
   | 'ows-flashcards'     // Active OWS Flashcard Session
+  | 'synonym-flashcards' // Active Synonym Flashcard Session
+  | 'synonym-flashcards-complete'
   | 'profile'            // User Profile Screen
   | 'login';             // Auth Screen (if applicable)
 
@@ -59,6 +63,8 @@ export interface QuizState {
   activeIdioms?: Idiom[];
   /** The subset of OWS active in the current session (if applicable). */
   activeOWS?: OneWord[];
+  /** The subset of Synonyms active in the current session */
+  activeSynonyms?: SynonymWord[];
   /** The filters configuration used to start this session. */
   filters?: InitialFilters;
   /** Whether the session is currently paused. */
@@ -77,12 +83,14 @@ export type QuizAction =
   | { type: 'ENTER_VOCAB_HOME' }
   | { type: 'ENTER_IDIOMS_CONFIG' }
   | { type: 'ENTER_OWS_CONFIG' }
+  | { type: 'ENTER_SYNONYMS_CONFIG' }
   | { type: 'ENTER_PROFILE' }
   | { type: 'ENTER_LOGIN' }
   | { type: 'GO_TO_INTRO' }
   | { type: 'START_QUIZ'; payload: { questions: Question[]; filters: InitialFilters; mode: QuizMode } }
   | { type: 'START_FLASHCARDS'; payload: { idioms: Idiom[]; filters: InitialFilters } }
   | { type: 'START_OWS_FLASHCARDS'; payload: { data: OneWord[]; filters: InitialFilters } }
+  | { type: 'START_SYNONYM_FLASHCARDS'; payload: { data: SynonymWord[]; filters: InitialFilters } }
   | { type: 'ANSWER_QUESTION'; payload: { questionId: string; answer: string; timeTaken: number } }
   | { type: 'LOG_TIME_SPENT'; payload: { questionId: string; timeTaken: number } }
   | { type: 'SAVE_TIMER'; payload: { questionId: string; time: number } }

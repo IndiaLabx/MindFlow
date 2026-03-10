@@ -1,6 +1,5 @@
 import React from 'react';
 import { Book, Target, Quote, ChevronRight, Compass, BookOpen } from 'lucide-react';
-import { VocabularyCard } from './Dashboard';
 
 interface VocabQuizHomeProps {
   onBack: () => void;
@@ -8,6 +7,47 @@ interface VocabQuizHomeProps {
   onOWSClick: () => void;
   onSynonymsClick?: () => void;
 }
+
+
+const VocabularyCard: React.FC<{
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  colorClass: string;
+  onClick: () => void;
+  badgeText?: string;
+}> = ({ title, description, icon, colorClass, onClick, badgeText }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative overflow-hidden rounded-2xl p-6 text-left transition-all hover:-translate-y-1 hover:shadow-lg ${colorClass}`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="mb-4 inline-block rounded-xl bg-white/60 p-3 shadow-sm dark:bg-gray-800/60 backdrop-blur-sm">
+            {icon}
+          </div>
+          <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {title}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            {description}
+          </p>
+        </div>
+        <div className="flex flex-col items-end">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/60 dark:bg-gray-800/60 shadow-sm transition-transform group-hover:scale-110">
+                <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-500" />
+            </div>
+            {badgeText && (
+               <span className="mt-4 inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                   {badgeText}
+               </span>
+            )}
+        </div>
+      </div>
+    </button>
+  );
+};
 
 export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsClick, onOWSClick, onSynonymsClick }) => {
   const items = [
@@ -42,17 +82,7 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
       action: onSynonymsClick,
       badgeText: "New"
     },
-    {
-      id: 'synonyms',
-      title: "Synonyms & Antonyms Master",
-      description: "Master similar and opposite meaning words through grouped clusters.",
-      icon: <BookOpen className="w-6 h-6 text-emerald-600" />,
-      bgClass: "bg-emerald-50",
-      borderClass: "hover:border-emerald-300",
-      iconBg: "bg-emerald-100",
-      action: onSynonymsClick,
-      badgeText: "New"
-    }
+
   ];
 
   return (

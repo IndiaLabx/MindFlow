@@ -60,6 +60,7 @@ export const useQuiz = () => {
   const enterVocabHome = useCallback(() => dispatch({ type: 'ENTER_VOCAB_HOME' }), []);
   const enterIdiomsConfig = useCallback(() => dispatch({ type: 'ENTER_IDIOMS_CONFIG' }), []);
   const enterOWSConfig = useCallback(() => dispatch({ type: 'ENTER_OWS_CONFIG' }), []);
+  const enterSynonymsConfig = useCallback(() => dispatch({ type: 'ENTER_SYNONYMS_CONFIG' }), []);
   const enterProfile = useCallback(() => dispatch({ type: 'ENTER_PROFILE' }), []);
   const enterLogin = useCallback(() => dispatch({ type: 'ENTER_LOGIN' }), []);
   const goToIntro = useCallback(() => dispatch({ type: 'GO_TO_INTRO' }), []);
@@ -225,7 +226,6 @@ export const useQuiz = () => {
     enterVocabHome,
     enterIdiomsConfig,
     enterOWSConfig,
-    enterSynonymsConfig: useCallback(() => dispatch({ type: 'ENTER_CONFIG', payload: 'synonyms' }), []),
     enterSynonymsConfig,
     enterProfile,
     enterLogin,
@@ -233,7 +233,6 @@ export const useQuiz = () => {
     startQuiz,
     startFlashcards,
     startOWSFlashcards,
-    startSynonymFlashcards: useCallback((data: SynonymWord[], filters: InitialFilters) => dispatch({ type: 'START_SYNONYM_FLASHCARDS', payload: { data, filters } }), []),
     startSynonymFlashcards,
     submitSessionResults,
     finishFlashcards,

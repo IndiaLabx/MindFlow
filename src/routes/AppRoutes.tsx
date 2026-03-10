@@ -1,3 +1,7 @@
+import { SynonymsConfig } from '../features/synonyms/SynonymsConfig';
+import { SynonymFlashcardSession } from '../features/synonyms/components/SynonymFlashcardSession';
+import { SynonymClusterList } from '../features/synonyms/components/SynonymClusterList';
+import { SynonymQuizSession } from '../features/synonyms/components/SynonymQuizSession';
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QuizProvider, useQuizContext } from '../features/quiz/context/QuizContext';
@@ -19,14 +23,6 @@ const IdiomsConfig = lazy(() => import('../features/idioms/IdiomsConfig').then(m
 const OWSConfig = lazy(() => import('../features/ows/OWSConfig').then(m => ({ default: m.OWSConfig })));
 const QuizResult = lazy(() => import('../features/quiz/components/QuizResult').then(m => ({ default: m.QuizResult })));
 const FlashcardSummary = lazy(() => import('../features/flashcards/components/FlashcardSummary').then(m => ({ default: m.FlashcardSummary })));
-const SynonymsConfig = lazy(() => import('../features/synonyms/SynonymsConfig').then(m => ({ default: m.SynonymsConfig })));
-const SynonymFlashcardSession = lazy(() => import('../features/synonyms/components/SynonymFlashcardSession').then(m => ({ default: m.SynonymFlashcardSession })));
-const SynonymClusterList = lazy(() => import('../features/synonyms/components/SynonymClusterList').then(m => ({ default: m.SynonymClusterList })));
-const SynonymQuizSession = lazy(() => import('../features/synonyms/components/SynonymQuizSession').then(m => ({ default: m.SynonymQuizSession })));
-const SynonymsConfig = lazy(() => import('../features/synonyms/SynonymsConfig').then(m => ({ default: m.SynonymsConfig })));
-const SynonymFlashcardSession = lazy(() => import('../features/synonyms/components/SynonymFlashcardSession').then(m => ({ default: m.SynonymFlashcardSession })));
-const SynonymClusterList = lazy(() => import('../features/synonyms/components/SynonymClusterList').then(m => ({ default: m.SynonymClusterList })));
-const SynonymQuizSession = lazy(() => import('../features/synonyms/components/SynonymQuizSession').then(m => ({ default: m.SynonymQuizSession })));
 const ToolsHome = lazy(() => import('../features/tools/ToolsHome'));
 const QuizPdfPptGenerator = lazy(() => import('../features/tools/quiz-pdf-ppt-generator/QuizPdfPptGenerator').then(module => ({ default: module.QuizPdfPptGenerator })));
 const FlashcardMaker = lazy(() => import('../features/tools/flashcard-maker/FlashcardMaker'));
@@ -108,7 +104,6 @@ const AppRoutesContent: React.FC = () => {
                             onBack={() => { enterEnglishHome(); navTo('/english'); }}
                             onIdiomsClick={() => { enterIdiomsConfig(); navTo('/idioms/config'); }}
                             onOWSClick={() => { enterOWSConfig(); navTo('/ows/config'); }}
-                            onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }}
                             onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }}
                         />
                     } />
