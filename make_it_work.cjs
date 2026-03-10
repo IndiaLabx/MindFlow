@@ -1,4 +1,28 @@
-import React from 'react';
+const fs = require('fs');
+
+// We're just going to rewrite the files that are broken with the correct, simple code.
+// The constant string replacements are failing because of edge cases and formatting differences.
+
+// 1. types/index.ts
+let types = fs.readFileSync('src/features/quiz/types/index.ts', 'utf8');
+if(!types.includes('activeSynonyms')) {
+  types = types.replace(
+    "activeIdioms?: Idiom[];",
+    "activeIdioms?: Idiom[];\n  activeSynonyms?: any[];"
+  );
+}
+
+if(!types.includes("'START_SYNONYM_FLASHCARDS'")) {
+    types = types.replace(
+      "| { type: 'START_OWS_FLASHCARDS'; payload: { data: OneWord[]; filters: InitialFilters } }",
+      "| { type: 'START_OWS_FLASHCARDS'; payload: { data: OneWord[]; filters: InitialFilters } }\n  | { type: 'START_SYNONYM_FLASHCARDS'; payload: { data: any[]; filters: InitialFilters } }"
+    );
+}
+
+fs.writeFileSync('src/features/quiz/types/index.ts', types);
+
+// 2. VocabQuizHome.tsx
+const vocabContent = `import React from 'react';
 import { Book, Target, Quote, ChevronRight, Compass, BookOpen } from 'lucide-react';
 import { VocabularyCard } from './Dashboard';
 
@@ -30,17 +54,6 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
       borderClass: "hover:border-purple-300",
       iconBg: "bg-purple-100",
       action: onOWSClick
-    },
-    {
-      id: 'synonyms',
-      title: "Synonyms & Antonyms Master",
-      description: "Master similar and opposite meaning words through grouped clusters.",
-      icon: <BookOpen className="w-6 h-6 text-emerald-600" />,
-      bgClass: "bg-emerald-50",
-      borderClass: "hover:border-emerald-300",
-      iconBg: "bg-emerald-100",
-      action: onSynonymsClick,
-      badgeText: "New"
     },
     {
       id: 'synonyms',
@@ -85,7 +98,7 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
             title={item.title}
             description={item.description}
             icon={item.icon}
-            colorClass={`${item.bgClass} dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 ${item.borderClass}`}
+            colorClass={\`\${item.bgClass} dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 \${item.borderClass}\`}
             onClick={item.action || (() => {})}
             badgeText={item.badgeText}
           />
@@ -93,4 +106,12 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
       </div>
     </main>
   );
-};
+};`;
+fs.writeFileSync('src/features/quiz/components/VocabQuizHome.tsx', vocabContent);
+
+// 3. useQuiz.ts hook return value fix
+let useQuiz = fs.readFileSync('src/features/quiz/hooks/useQuiz.ts', 'utf8');
+if (!useQuiz.includes("enterSynonymsConfig,")) {
+  useQuiz = useQuiz.replace("enterOWSConfig,", "enterOWSConfig,\n    enterSynonymsConfig,");
+}
+fs.writeFileSync('src/features/quiz/hooks/useQuiz.ts', useQuiz);

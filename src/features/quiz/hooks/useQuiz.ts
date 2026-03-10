@@ -2,7 +2,7 @@ import { useReducer, useCallback, useEffect, useState } from 'react';
 import { logEvent } from '../services/analyticsService';
 import { APP_CONFIG } from '../../../constants/config';
 import { quizReducer, initialState, loadState } from '../stores/quizReducer';
-import { Question, InitialFilters, QuizMode, Idiom, OneWord, QuizState, QuizHistoryRecord, SubjectStats } from '../types';
+import { Question, InitialFilters, QuizMode, Idiom, OneWord, SynonymWord, QuizState, QuizHistoryRecord, SubjectStats } from '../types';
 
 import { db } from '../../../lib/db';
 import { v4 as uuidv4 } from 'uuid';
@@ -81,6 +81,10 @@ export const useQuiz = () => {
 
   const startOWSFlashcards = useCallback((data: OneWord[], filters: InitialFilters) => {
     dispatch({ type: 'START_OWS_FLASHCARDS', payload: { data, filters } });
+  }, []);
+
+  const startSynonymFlashcards = useCallback((data: SynonymWord[], filters: InitialFilters) => {
+    dispatch({ type: 'START_SYNONYM_FLASHCARDS', payload: { data, filters } });
   }, []);
 
   // Interaction Actions (Legacy/Direct Dispatch)
@@ -221,12 +225,16 @@ export const useQuiz = () => {
     enterVocabHome,
     enterIdiomsConfig,
     enterOWSConfig,
+    enterSynonymsConfig: useCallback(() => dispatch({ type: 'ENTER_CONFIG', payload: 'synonyms' }), []),
+    enterSynonymsConfig,
     enterProfile,
     enterLogin,
     goToIntro,
     startQuiz,
     startFlashcards,
     startOWSFlashcards,
+    startSynonymFlashcards: useCallback((data: SynonymWord[], filters: InitialFilters) => dispatch({ type: 'START_SYNONYM_FLASHCARDS', payload: { data, filters } }), []),
+    startSynonymFlashcards,
     submitSessionResults,
     finishFlashcards,
     answerQuestion,

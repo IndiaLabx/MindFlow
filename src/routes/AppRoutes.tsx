@@ -19,6 +19,14 @@ const IdiomsConfig = lazy(() => import('../features/idioms/IdiomsConfig').then(m
 const OWSConfig = lazy(() => import('../features/ows/OWSConfig').then(m => ({ default: m.OWSConfig })));
 const QuizResult = lazy(() => import('../features/quiz/components/QuizResult').then(m => ({ default: m.QuizResult })));
 const FlashcardSummary = lazy(() => import('../features/flashcards/components/FlashcardSummary').then(m => ({ default: m.FlashcardSummary })));
+const SynonymsConfig = lazy(() => import('../features/synonyms/SynonymsConfig').then(m => ({ default: m.SynonymsConfig })));
+const SynonymFlashcardSession = lazy(() => import('../features/synonyms/components/SynonymFlashcardSession').then(m => ({ default: m.SynonymFlashcardSession })));
+const SynonymClusterList = lazy(() => import('../features/synonyms/components/SynonymClusterList').then(m => ({ default: m.SynonymClusterList })));
+const SynonymQuizSession = lazy(() => import('../features/synonyms/components/SynonymQuizSession').then(m => ({ default: m.SynonymQuizSession })));
+const SynonymsConfig = lazy(() => import('../features/synonyms/SynonymsConfig').then(m => ({ default: m.SynonymsConfig })));
+const SynonymFlashcardSession = lazy(() => import('../features/synonyms/components/SynonymFlashcardSession').then(m => ({ default: m.SynonymFlashcardSession })));
+const SynonymClusterList = lazy(() => import('../features/synonyms/components/SynonymClusterList').then(m => ({ default: m.SynonymClusterList })));
+const SynonymQuizSession = lazy(() => import('../features/synonyms/components/SynonymQuizSession').then(m => ({ default: m.SynonymQuizSession })));
 const ToolsHome = lazy(() => import('../features/tools/ToolsHome'));
 const QuizPdfPptGenerator = lazy(() => import('../features/tools/quiz-pdf-ppt-generator/QuizPdfPptGenerator').then(module => ({ default: module.QuizPdfPptGenerator })));
 const FlashcardMaker = lazy(() => import('../features/tools/flashcard-maker/FlashcardMaker'));
@@ -47,6 +55,8 @@ const AppRoutesContent: React.FC = () => {
     const {
         state,
         enterHome, enterConfig, enterEnglishHome, enterVocabHome, enterIdiomsConfig, enterOWSConfig,
+        enterSynonymsConfig,
+        startSynonymFlashcards,
         enterProfile, enterLogin, goToIntro, startQuiz, startFlashcards, startOWSFlashcards,
         finishFlashcards, nextQuestion, prevQuestion, jumpToQuestion, submitSessionResults,
         restartQuiz, goHome, pauseQuiz, resumeQuiz, saveTimer, answerQuestion, toggleBookmark, useFiftyFifty,
@@ -98,6 +108,8 @@ const AppRoutesContent: React.FC = () => {
                             onBack={() => { enterEnglishHome(); navTo('/english'); }}
                             onIdiomsClick={() => { enterIdiomsConfig(); navTo('/idioms/config'); }}
                             onOWSClick={() => { enterOWSConfig(); navTo('/ows/config'); }}
+                            onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }}
+                            onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }}
                         />
                     } />
 
@@ -125,6 +137,30 @@ const AppRoutesContent: React.FC = () => {
                             }}
                         />
                     } />
+
+                    <Route path="/synonyms/config" element={
+                        <SynonymsConfig
+                            onBack={() => { enterVocabHome(); navTo('/vocab'); }}
+                            onStart={(data: any, filters: any) => {
+                                startSynonymFlashcards(data, filters);
+                                navTo('/synonyms/session');
+                            }}
+                        />
+                    } />
+                    <Route path="/synonyms/list" element={<SynonymClusterList onExit={() => navTo('/synonyms/config')} />} />
+                    <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
+
+                    <Route path="/synonyms/config" element={
+                        <SynonymsConfig
+                            onBack={() => { enterVocabHome(); navTo('/vocab'); }}
+                            onStart={(data: any, filters: any) => {
+                                startSynonymFlashcards(data, filters);
+                                navTo('/synonyms/session');
+                            }}
+                        />
+                    } />
+                    <Route path="/synonyms/list" element={<SynonymClusterList onExit={() => navTo('/synonyms/config')} />} />
+                    <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
 
                     <Route path="/ows/config" element={
                         <OWSConfig
@@ -238,6 +274,32 @@ const AppRoutesContent: React.FC = () => {
                         onPrev={prevQuestion}
                         onExit={navHome}
                         onFinish={() => { finishFlashcards(); navTo('/flashcards/summary'); }}
+                        filters={state.filters || {} as any}
+                        onJump={jumpToQuestion}
+                    />
+                } />
+
+                <Route path="/synonyms/session" element={
+                    <SynonymFlashcardSession
+                        data={state.activeSynonyms || []}
+                        currentIndex={state.currentQuestionIndex}
+                        onNext={nextQuestion}
+                        onPrev={prevQuestion}
+                        onExit={navHome}
+                        onFinish={() => navTo('/flashcards/summary')}
+                        filters={state.filters || {} as any}
+                        onJump={jumpToQuestion}
+                    />
+                } />
+
+                <Route path="/synonyms/session" element={
+                    <SynonymFlashcardSession
+                        data={state.activeSynonyms || []}
+                        currentIndex={state.currentQuestionIndex}
+                        onNext={nextQuestion}
+                        onPrev={prevQuestion}
+                        onExit={navHome}
+                        onFinish={() => navTo('/flashcards/summary')}
                         filters={state.filters || {} as any}
                         onJump={jumpToQuestion}
                     />

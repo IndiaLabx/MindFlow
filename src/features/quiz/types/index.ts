@@ -110,3 +110,41 @@ export interface SettingsContextType {
   /** Toggles Background Animations on/off. */
   toggleBgAnimations: () => void;
 }
+
+
+export interface Synonym {
+  text: string;
+  meaning?: string;
+  hindiMeaning?: string;
+  pos?: string;
+  cluster_id: string;
+}
+
+export interface Antonym {
+  text: string;
+  meaning?: string;
+  hindiMeaning?: string;
+  pos?: string;
+}
+
+export interface SynonymWord {
+  id: string;
+  word: string;
+  pos: string;
+  repetition_raw: string;
+  importance_score: number;
+  lifetime_frequency: number;
+  recent_trend: number;
+  meaning?: string;
+  hindiMeaning?: string;
+  theme: string;
+  cluster_id: string;
+  confusable_with: string[];
+  synonyms: Synonym[];
+  antonyms: Antonym[];
+}
+
+
+export interface Synonym { text: string; meaning?: string; hindiMeaning?: string; pos?: string; cluster_id: string; }
+export interface Antonym { text: string; meaning?: string; hindiMeaning?: string; pos?: string; }
+export interface SynonymWord { id: string; word: string; pos: string; repetition_raw: string; importance_score: number; lifetime_frequency: number; recent_trend: number; meaning?: string; hindiMeaning?: string; theme: string; cluster_id: string; confusable_with: string[]; synonyms: Synonym[]; antonyms: Antonym[]; }
