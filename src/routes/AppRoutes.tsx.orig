@@ -116,6 +116,16 @@ const AppRoutesContent: React.FC = () => {
                     <Route path="/quiz/analytics" element={<PerformanceAnalytics />} />
                     <Route path="/quiz/bookmarks" element={<BookmarksPage />} />
 
+                    <Route path="/quiz/config" element={
+                        <QuizConfig
+                            onBack={() => { goHome(); navTo('/dashboard'); }}
+                            onStart={(questions, filters, mode) => {
+                                startQuiz(questions, filters, mode);
+                                navTo(mode === 'mock' ? '/quiz/session/mock' : '/quiz/session/learning');
+                            }}
+                        />
+                    } />
+
                     <Route path="/idioms/config" element={
                         <IdiomsConfig
                             onBack={() => { enterVocabHome(); navTo('/vocab'); }}
@@ -209,16 +219,6 @@ const AppRoutesContent: React.FC = () => {
                 </Route>
 
                 {/* --- Immersive Session Routes (No Layout, Fullscreen) --- */}
-
-                    <Route path="/quiz/config" element={
-                        <QuizConfig
-                            onBack={() => { goHome(); navTo('/dashboard'); }}
-                            onStart={(questions, filters, mode) => {
-                                startQuiz(questions, filters, mode);
-                                navTo(mode === 'mock' ? '/quiz/session/mock' : '/quiz/session/learning');
-                            }}
-                        />
-                    } />
 
                 {/* Learning Mode: Interactive per-question session */}
                 <Route path="/quiz/session/learning" element={

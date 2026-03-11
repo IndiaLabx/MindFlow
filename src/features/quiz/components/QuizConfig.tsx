@@ -301,7 +301,7 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
       <div className="px-6 pt-6 pb-2">
         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4 cursor-pointer hover:text-indigo-600 dark:text-indigo-400 w-fit" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
-          <span className="font-medium">HOME</span>
+          <span className="font-medium">Back</span>
         </div>
 
         <div className="text-center mb-4">
