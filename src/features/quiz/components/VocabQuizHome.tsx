@@ -20,11 +20,11 @@ const VocabularyCard: React.FC<{
   return (
     <button
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-2xl p-6 text-left transition-all hover:-translate-y-1 hover:shadow-lg ${colorClass}`}
+      className={`group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-200 shadow-sm active:translate-y-1 active:border-b ${colorClass}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="mb-4 inline-block rounded-xl bg-white/60 p-3 shadow-sm dark:bg-gray-800/60 backdrop-blur-sm">
+          <div className="mb-4 inline-block rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 p-3 shadow-sm group-hover:scale-110 transition-transform">
             {icon}
           </div>
           <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -56,8 +56,8 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
       title: "Idioms & Phrases",
       description: "Master common expressions and their hidden meanings.",
       icon: <Quote className="w-6 h-6 text-amber-600" />,
-      bgClass: "bg-amber-50",
-      borderClass: "hover:border-amber-300",
+      bgClass: "bg-amber-50 dark:bg-amber-950/30",
+      borderClass: "border-amber-100 dark:border-amber-900/40 border-b-4 border-b-amber-200 dark:border-b-amber-700 hover:border-amber-300 dark:hover:border-amber-500",
       iconBg: "bg-amber-100",
       action: onIdiomsClick
     },
@@ -66,8 +66,8 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
       title: "One Word Substitution",
       description: "Learn single words that replace entire phrases.",
       icon: <Target className="w-6 h-6 text-purple-600" />,
-      bgClass: "bg-purple-50",
-      borderClass: "hover:border-purple-300",
+      bgClass: "bg-purple-50 dark:bg-purple-950/30",
+      borderClass: "border-purple-100 dark:border-purple-900/40 border-b-4 border-b-purple-200 dark:border-b-purple-700 hover:border-purple-300 dark:hover:border-purple-500",
       iconBg: "bg-purple-100",
       action: onOWSClick
     },
@@ -76,8 +76,8 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
       title: "Synonyms & Antonyms Master",
       description: "Master similar and opposite meaning words through grouped clusters.",
       icon: <BookOpen className="w-6 h-6 text-emerald-600" />,
-      bgClass: "bg-emerald-50",
-      borderClass: "hover:border-emerald-300",
+      bgClass: "bg-emerald-50 dark:bg-emerald-950/30",
+      borderClass: "border-emerald-100 dark:border-emerald-900/40 border-b-4 border-b-emerald-200 dark:border-b-emerald-700 hover:border-emerald-300 dark:hover:border-emerald-500",
       iconBg: "bg-emerald-100",
       action: onSynonymsClick,
       badgeText: "New"
@@ -115,7 +115,7 @@ export const VocabQuizHome: React.FC<VocabQuizHomeProps> = ({ onBack, onIdiomsCl
             title={item.title}
             description={item.description}
             icon={item.icon}
-            colorClass={`${item.bgClass} dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 ${item.borderClass}`}
+            colorClass={`${item.bgClass} border ${item.borderClass}`}
             onClick={item.action || (() => {})}
             badgeText={item.badgeText}
           />
