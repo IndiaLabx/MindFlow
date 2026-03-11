@@ -1,3 +1,4 @@
+import { useSynonymsData } from '../hooks/useSynonymsData';
 import React, { useState, useEffect, useMemo } from 'react';
 import { SynonymWord } from '../../quiz/types';
 import { quizEngine } from '../../quiz/engine';

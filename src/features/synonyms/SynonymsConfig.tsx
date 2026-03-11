@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SynonymWord } from '../quiz/types';
 import { quizEngine } from '../quiz/engine';
@@ -8,8 +8,10 @@ interface SynonymsConfigProps {
 }
 
 export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart }) => {
-    const [data, setData] = useState<SynonymWord[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+    const [sortedData, setSortedData] = useState<SynonymWord[]>([]);
+    const [isDataLoading, setIsDataLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         // Load and sort data
@@ -18,11 +20,12 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
                 // In a real scenario, this might be a fetch or complex parse
                 const parsed = await quizEngine.getPlugin<SynonymWord, string>('synonym').loadQuestions();
                 parsed.sort((a, b) => (a.word || '').localeCompare(b.word || ''));
-                setData(parsed);
+                setSortedData(parsed);
             } catch(e) {
                 console.error("Failed to load synonyms data", e);
+                setError(e as Error);
             } finally {
-                setIsLoading(false);
+                setIsDataLoading(false);
             }
         };
         load();

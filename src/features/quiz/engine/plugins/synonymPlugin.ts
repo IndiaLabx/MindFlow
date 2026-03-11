@@ -8,7 +8,7 @@ export const synonymPlugin: QuizPlugin<SynonymWord, string> = {
   async loadQuestions(): Promise<SynonymWord[]> {
     try {
       const { data, error } = await supabase
-        .from('Synonyms')
+        .from('synonym')
         .select('*');
 
       if (error) throw error;
