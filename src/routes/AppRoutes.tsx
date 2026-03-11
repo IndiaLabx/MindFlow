@@ -150,8 +150,6 @@ const AppRoutesContent: React.FC = () => {
                     } />
 
 
-                    <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
-                    <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
 
                     <Route path="/ows/config" element={
                         <OWSConfig
@@ -270,18 +268,7 @@ const AppRoutesContent: React.FC = () => {
                     />
                 } />
 
-                <Route path="/synonyms/session" element={
-                    <SynonymFlashcardSession
-                        data={state.activeSynonyms || []}
-                        currentIndex={state.currentQuestionIndex}
-                        onNext={nextQuestion}
-                        onPrev={prevQuestion}
-                        onExit={() => navTo('/synonyms/config')}
-                        onFinish={() => navTo('/flashcards/summary')}
-                        filters={state.filters || {} as any}
-                        onJump={jumpToQuestion}
-                    />
-                } />
+
 
                 <Route path="/synonyms/session" element={
                     <SynonymFlashcardSession
@@ -297,6 +284,8 @@ const AppRoutesContent: React.FC = () => {
                 } />
 
                 <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
+                <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
+                <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
 
 
                 <Route path="/ows/session" element={
