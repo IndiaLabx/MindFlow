@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SynonymWord } from '../quiz/types';
-import rawSynonymsData from '../quiz/data/processed_synonyms.json';
+import { useSynonymsData } from './hooks/useSynonymsData';
 
 interface SynonymsConfigProps {
     onBack: () => void;
@@ -11,25 +11,17 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
     const [data, setData] = useState<SynonymWord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const { data: fetchedData, isLoading: isDataLoading } = useSynonymsData();
+
     useEffect(() => {
-        // Load and sort data
-        const load = async () => {
-            try {
-                // In a real scenario, this might be a fetch or complex parse
-                const parsed = rawSynonymsData as unknown as SynonymWord[];
-
-                // Sort by importance_score descending (Heatmap Hot first)
-                parsed.sort((a, b) => b.importance_score - a.importance_score);
-
-                setData(parsed);
-            } catch(e) {
-                console.error("Failed to load synonyms data", e);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        load();
-    }, []);
+        if (!isDataLoading && fetchedData && fetchedData.length > 0) {
+            const sortedData = [...fetchedData].sort((a, b) => b.importance_score - a.importance_score);
+            setData(sortedData);
+            setIsLoading(false);
+        } else if (!isDataLoading && (!fetchedData || fetchedData.length === 0)) {
+            setIsLoading(false);
+        }
+    }, [fetchedData, isDataLoading]);
 
     const handleStartLearning = () => {
         onStart(data, { mode: 'learning' });

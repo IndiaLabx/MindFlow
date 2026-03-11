@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SynonymWord } from '../../quiz/types';
-import rawSynonymsData from '../../quiz/data/processed_synonyms.json';
+import { useSynonymsData } from '../hooks/useSynonymsData';
 import { ImposterGame } from './ImposterGame';
 import { ConnectGame } from './ConnectGame';
 import { SpeedGame } from './SpeedGame';
@@ -27,6 +27,8 @@ export const SynonymQuizSession: React.FC<SynonymQuizSessionProps> = ({ onExit }
     const TOTAL_ROUNDS = 10;
     const [currentRound, setCurrentRound] = useState(1);
 
+    const { data: fetchedData, isLoading: isDataLoading } = useSynonymsData();
+
     useEffect(() => {
         // Parse mode from hash routing manually since we're outside standard react-router in this block
         const hash = window.location.hash;
@@ -34,12 +36,14 @@ export const SynonymQuizSession: React.FC<SynonymQuizSessionProps> = ({ onExit }
         const modeParam = searchParams.get('mode') as 'imposter' | 'connect' | 'speed' | null;
         setMode(modeParam || 'imposter');
 
-        const parsedData = rawSynonymsData as unknown as SynonymWord[];
-        // Sort by importance to prefer high frequency
-        parsedData.sort((a, b) => b.importance_score - a.importance_score);
-        setData(parsedData);
-        setIsLoading(false);
-    }, []);
+        if (!isDataLoading && fetchedData && fetchedData.length > 0) {
+            const sortedData = [...fetchedData].sort((a, b) => b.importance_score - a.importance_score);
+            setData(sortedData);
+            setIsLoading(false);
+        } else if (!isDataLoading && (!fetchedData || fetchedData.length === 0)) {
+            setIsLoading(false);
+        }
+    }, [fetchedData, isDataLoading]);
 
     const handleCorrect = (bonus: number = 0) => {
         if ('vibrate' in navigator) navigator.vibrate(50);
