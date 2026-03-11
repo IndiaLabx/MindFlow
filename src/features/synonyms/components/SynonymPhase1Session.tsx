@@ -21,6 +21,8 @@ export const SynonymPhase1Session: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [detailsVisible, setDetailsVisible] = useState(false);
+    const [allSynonymsExpanded, setAllSynonymsExpanded] = useState(false);
+    const [allAntonymsExpanded, setAllAntonymsExpanded] = useState(false);
     const [groupingMode, setGroupingMode] = useState<'chunked' | 'alphabetical'>('chunked');
 
     // Expanded groups in nav panel
@@ -102,6 +104,8 @@ export const SynonymPhase1Session: React.FC = () => {
         setCurrentGroupIndex(idx);
         setCurrentWordIndex(0);
         setDetailsVisible(false);
+        setAllSynonymsExpanded(false);
+        setAllAntonymsExpanded(false);
         setExpandedGroupIdx(idx);
         if (window.innerWidth <= 768) {
             setIsNavOpen(false);
@@ -111,6 +115,8 @@ export const SynonymPhase1Session: React.FC = () => {
     const jumpToWord = (wordIdx: number) => {
         setCurrentWordIndex(wordIdx);
         setDetailsVisible(false);
+        setAllSynonymsExpanded(false);
+        setAllAntonymsExpanded(false);
         if (window.innerWidth <= 768) {
             setIsNavOpen(false);
         }
@@ -123,6 +129,8 @@ export const SynonymPhase1Session: React.FC = () => {
         if (currentWordIndex < currentGroup.words.length - 1) {
             setCurrentWordIndex(currentWordIndex + 1);
             setDetailsVisible(false);
+            setAllSynonymsExpanded(false);
+            setAllAntonymsExpanded(false);
         } else {
             // End of group
             if (currentGroupIndex < vocabularyGroups.length - 1) {
@@ -141,6 +149,8 @@ export const SynonymPhase1Session: React.FC = () => {
         if (currentWordIndex > 0) {
             setCurrentWordIndex(currentWordIndex - 1);
             setDetailsVisible(false);
+            setAllSynonymsExpanded(false);
+            setAllAntonymsExpanded(false);
         } else {
             // Start of group
             if (currentGroupIndex > 0) {
@@ -150,6 +160,8 @@ export const SynonymPhase1Session: React.FC = () => {
                     setCurrentWordIndex(vocabularyGroups[prevGroupIdx].words.length - 1);
                     setExpandedGroupIdx(prevGroupIdx);
                     setDetailsVisible(false);
+                    setAllSynonymsExpanded(false);
+                    setAllAntonymsExpanded(false);
                 }
             }
         }
@@ -377,7 +389,7 @@ export const SynonymPhase1Session: React.FC = () => {
 
             {/* --- Main Content Area --- */}
             {currentWordObj ? (
-                <div className="flex-1 flex flex-col items-center pt-24 pb-12 px-4 md:px-8 z-10 w-full max-w-4xl mx-auto animate-[containerFadeIn_0.8s_ease-out]">
+                <div className="flex-1 flex flex-col items-center pt-16 md:pt-24 pb-20 px-4 md:px-8 z-10 w-full max-w-4xl mx-auto animate-[containerFadeIn_0.8s_ease-out]">
 
                     <div className="w-full bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
                         {/* Inner Gradient Decor */}
@@ -404,7 +416,7 @@ export const SynonymPhase1Session: React.FC = () => {
                         <div className="flex flex-col md:flex-row items-center justify-center gap-6 my-8">
                             <h1
                                 ref={wordDisplayRef}
-                                className="text-6xl md:text-8xl font-extrabold text-white text-center break-words drop-shadow-xl"
+                                className="text-5xl md:text-8xl font-extrabold text-white text-center break-all sm:break-words drop-shadow-xl flex-wrap"
                             >
                                 {currentWordObj.word}
                             </h1>
@@ -420,7 +432,7 @@ export const SynonymPhase1Session: React.FC = () => {
                         {/* POS & Tags */}
                         <div className="text-center mb-8">
                             {currentWordObj.pos && (
-                                <span className="text-xl italic text-white/90 font-medium mr-3">({currentWordObj.pos})</span>
+                                <span className="text-lg md:text-xl italic text-white/90 font-medium mr-3">({currentWordObj.pos})</span>
                             )}
                             {currentWordObj.repetition_raw && (
                                 <span className="bg-gradient-to-r from-pink-400 to-yellow-400 text-white font-bold px-3 py-1 rounded text-sm shadow-sm inline-block">
@@ -453,10 +465,21 @@ export const SynonymPhase1Session: React.FC = () => {
                                 {/* Synonyms */}
                                 {hasSynonyms && (
                                     <div className="bg-gradient-to-br from-emerald-400/20 to-teal-400/20 border border-emerald-400/30 border-l-4 border-l-emerald-400 p-6 rounded-2xl backdrop-blur-md text-white shadow-md">
-                                        <h3 className="font-bold text-xl mb-4 bg-white/10 inline-block px-4 py-2 rounded-lg backdrop-blur-md border border-white/20">Synonyms</h3>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <h3 className="font-bold text-xl bg-white/10 inline-block px-4 py-2 rounded-lg backdrop-blur-md border border-white/20 m-0">Synonyms</h3>
+                                            <button
+                                                onClick={() => setAllSynonymsExpanded(!allSynonymsExpanded)}
+                                                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all text-white/70 hover:text-white"
+                                                title={allSynonymsExpanded ? "Collapse all" : "Expand all"}
+                                            >
+                                                <span className={`transition-transform duration-300 ${allSynonymsExpanded ? 'rotate-90' : ''}`}>
+                                                    ▶
+                                                </span>
+                                            </button>
+                                        </div>
                                         <div className="flex flex-col gap-2">
                                             {currentWordObj.synonyms!.map((syn, idx) => (
-                                                <ExpandableListItem key={idx} item={syn} isHindi={true} accentColor="emerald" />
+                                                <ExpandableListItem key={idx} item={syn} isHindi={true} accentColor="emerald" forceExpanded={allSynonymsExpanded} />
                                             ))}
                                         </div>
                                     </div>
@@ -465,10 +488,21 @@ export const SynonymPhase1Session: React.FC = () => {
                                 {/* Antonyms */}
                                 {hasAntonyms && (
                                     <div className="bg-gradient-to-br from-pink-400/20 to-rose-400/20 border border-pink-400/30 border-l-4 border-l-pink-400 p-6 rounded-2xl backdrop-blur-md text-white shadow-md">
-                                        <h3 className="font-bold text-xl mb-4 bg-white/10 inline-block px-4 py-2 rounded-lg backdrop-blur-md border border-white/20">Antonyms</h3>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <h3 className="font-bold text-xl bg-white/10 inline-block px-4 py-2 rounded-lg backdrop-blur-md border border-white/20 m-0">Antonyms</h3>
+                                            <button
+                                                onClick={() => setAllAntonymsExpanded(!allAntonymsExpanded)}
+                                                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all text-white/70 hover:text-white"
+                                                title={allAntonymsExpanded ? "Collapse all" : "Expand all"}
+                                            >
+                                                <span className={`transition-transform duration-300 ${allAntonymsExpanded ? 'rotate-90' : ''}`}>
+                                                    ▶
+                                                </span>
+                                            </button>
+                                        </div>
                                         <div className="flex flex-col gap-2">
                                             {currentWordObj.antonyms!.map((ant, idx) => (
-                                                <ExpandableListItem key={idx} item={ant} isHindi={true} accentColor="pink" />
+                                                <ExpandableListItem key={idx} item={ant} isHindi={true} accentColor="pink" forceExpanded={allAntonymsExpanded} />
                                             ))}
                                         </div>
                                     </div>
@@ -477,11 +511,11 @@ export const SynonymPhase1Session: React.FC = () => {
                         )}
 
                         {/* Controls */}
-                        <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
+                        <div className="flex flex-row items-center justify-center gap-4 md:gap-6 mt-8 w-full">
                             <button
                                 onClick={prevWord}
                                 disabled={currentGroupIndex === 0 && currentWordIndex === 0}
-                                className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                                className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm md:text-base shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center flex-shrink-0"
                             >
                                 Prev
                             </button>
@@ -489,7 +523,7 @@ export const SynonymPhase1Session: React.FC = () => {
                             <button
                                 onClick={toggleDetails}
                                 disabled={!canShowDetails}
-                                className="w-28 h-28 rounded-full bg-gradient-to-br from-amber-100 to-amber-600 text-slate-900 font-bold shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-center p-2"
+                                className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-amber-100 to-amber-600 text-slate-900 font-bold text-xs md:text-sm leading-tight shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-center p-1 md:p-2 flex-shrink-0"
                                 style={{ background: canShowDetails ? 'linear-gradient(135deg, #e7dfdb 0%, #b49b79 100%)' : 'gray' }}
                             >
                                 {detailsVisible ? 'Hide Details' : 'Show Details'}
@@ -498,7 +532,7 @@ export const SynonymPhase1Session: React.FC = () => {
                             <button
                                 onClick={nextWord}
                                 disabled={currentGroupIndex === vocabularyGroups.length - 1 && currentWordIndex === currentGroup.words.length - 1}
-                                className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                                className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm md:text-base shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center flex-shrink-0"
                             >
                                 Next
                             </button>
@@ -517,8 +551,14 @@ export const SynonymPhase1Session: React.FC = () => {
 
 
 // Helper component for Synonym/Antonym list items
-const ExpandableListItem: React.FC<{item: any, isHindi?: boolean, accentColor: string}> = ({item, isHindi, accentColor}) => {
+const ExpandableListItem: React.FC<{item: any, isHindi?: boolean, accentColor: string, forceExpanded?: boolean}> = ({item, isHindi, accentColor, forceExpanded}) => {
     const [expanded, setExpanded] = React.useState(false);
+
+    React.useEffect(() => {
+        if (forceExpanded !== undefined) {
+            setExpanded(forceExpanded);
+        }
+    }, [forceExpanded]);
 
     // Safety check
     if (!item || !item.text) return null;
@@ -538,14 +578,14 @@ const ExpandableListItem: React.FC<{item: any, isHindi?: boolean, accentColor: s
                         </span>
                     )}
                 </div>
-                <span className="font-bold text-lg flex-1 text-white">{item.text}</span>
+                <span className="font-bold text-base md:text-lg flex-1 text-white break-words">{item.text}</span>
             </div>
 
             {expanded && hasDetails && (
                 <div className="p-4 pt-0 pl-10 bg-black/10 border-t border-white/10 text-sm animate-[detailsSlideDown_0.2s_ease-out] text-white">
                     {item.pos && (
                         <div className="mb-3">
-                            <span className="bg-white/20 px-2 py-1 rounded font-semibold text-white/90">
+                            <span className="bg-white/20 px-2 py-1 rounded font-semibold text-white/90 text-xs md:text-sm">
                                 [{item.pos}]
                             </span>
                         </div>

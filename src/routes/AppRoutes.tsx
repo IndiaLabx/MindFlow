@@ -136,19 +136,6 @@ const AppRoutesContent: React.FC = () => {
 
 
 
-                    <Route path="/synonyms/config" element={
-                        <SynonymsConfig
-                            onBack={() => { enterVocabHome(); navTo('/vocab'); }}
-                            onStart={(data: any, filters: any) => {
-                                startSynonymFlashcards(data, filters);
-                                navTo('/synonyms/session');
-                            }}
-                        />
-                    } />
-                    <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
-
-                    <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
-                    <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
 
 
 
@@ -161,7 +148,7 @@ const AppRoutesContent: React.FC = () => {
                             }}
                         />
                     } />
-                    <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
+
 
                     <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
                     <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
@@ -308,6 +295,9 @@ const AppRoutesContent: React.FC = () => {
                         onJump={jumpToQuestion}
                     />
                 } />
+
+                <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
+
 
                 <Route path="/ows/session" element={
                     <OWSSession
