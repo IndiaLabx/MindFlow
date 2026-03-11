@@ -59,12 +59,6 @@ export interface QuizState {
   hiddenOptions: Record<string, string[]>;
   /** The subset of questions active in the current session. */
   activeQuestions: Question[];
-  /** The subset of idioms active in the current session (if applicable). */
-  activeIdioms?: Idiom[];
-  /** The subset of OWS active in the current session (if applicable). */
-  activeOWS?: OneWord[];
-  /** The subset of Synonyms active in the current session */
-  activeSynonyms?: SynonymWord[];
   /** The filters configuration used to start this session. */
   filters?: InitialFilters;
   /** Whether the session is currently paused. */

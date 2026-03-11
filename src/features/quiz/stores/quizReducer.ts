@@ -18,8 +18,8 @@ export const initialState: QuizState = {
   markedForReview: [],
   hiddenOptions: {},
   activeQuestions: [],
-  activeIdioms: [],
-  activeOWS: [],
+
+
   filters: undefined,
   isPaused: false,
 };
@@ -37,7 +37,7 @@ export const loadState = (defaultState: QuizState): QuizState => {
     if (saved) {
       const parsed = JSON.parse(saved);
       // Only restore if we are in a valid active/result state to prevent stuck UIs
-      if (parsed.status === 'quiz' || parsed.status === 'result' || parsed.status === 'flashcards' || parsed.status === 'flashcards-complete' || parsed.status === 'ows-flashcards') {
+      if (parsed.status === 'quiz' || parsed.status === 'result') {
         return { ...defaultState, ...parsed };
       }
     }
@@ -114,38 +114,6 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
       };
     }
 
-    case 'START_FLASHCARDS': {
-      const { idioms, filters } = action.payload;
-      return {
-        ...initialState,
-        status: 'flashcards',
-        activeIdioms: idioms,
-        filters: filters,
-        currentQuestionIndex: 0
-      };
-    }
-
-    case 'START_OWS_FLASHCARDS': {
-      const { data, filters } = action.payload;
-      return {
-        ...initialState,
-        status: 'ows-flashcards',
-        activeOWS: data,
-        filters: filters,
-        currentQuestionIndex: 0
-      };
-    }
-    case 'START_SYNONYM_FLASHCARDS': {
-      const { data, filters } = action.payload;
-      return {
-        ...initialState,
-        status: 'synonym-flashcards',
-        activeSynonyms: data,
-        filters: filters,
-        currentQuestionIndex: 0
-      };
-    }
-
     case 'ANSWER_QUESTION': {
       const { questionId, answer, timeTaken } = action.payload;
       const question = state.activeQuestions.find(q => q.id === questionId);
@@ -199,19 +167,11 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
     }
 
     case 'NEXT_QUESTION': {
-      const maxIndex = state.status === 'flashcards'
-        ? (state.activeIdioms?.length || 0)
-        : state.status === 'ows-flashcards'
-          ? (state.activeOWS?.length || 0)
-          : state.activeQuestions.length;
+      const maxIndex = state.activeQuestions.length;
 
       const nextIndex = state.currentQuestionIndex + 1;
 
       if (nextIndex >= maxIndex) {
-        // Stay on last card if flashcards (wait for explicit finish)
-        if (state.status === 'flashcards' || state.status === 'ows-flashcards') {
-          return state;
-        }
         // Auto-finish quiz if last question reached (or wait for submit? usually manual submit in mock)
         // Here, we auto-transition to result for now or user clicks 'Finish'.
         // Assuming NEXT on last question goes to results:
@@ -310,19 +270,8 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
     }
 
     case 'FINISH_FLASHCARDS':
-      return { ...state, status: 'flashcards-complete' };
 
     case 'RESTART_QUIZ': {
-      // If restarting flashcards (Idioms or OWS)
-      if (state.status === 'flashcards' || state.status === 'ows-flashcards' || state.status === 'flashcards-complete') {
-        // Determine previous flashcard type based on active data availability
-        const isOWS = state.activeOWS && state.activeOWS.length > 0;
-        return {
-          ...state,
-          status: isOWS ? 'ows-flashcards' : 'flashcards',
-          currentQuestionIndex: 0
-        };
-      }
 
       // If restarting regular quiz
       const globalTime = state.mode === 'mock'

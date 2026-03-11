@@ -6,6 +6,7 @@ import { SynonymPhase1Session } from '../features/synonyms/components/SynonymPha
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QuizProvider, useQuizContext } from '../features/quiz/context/QuizContext';
+import { useFlashcardStore } from '../features/quiz/stores/useFlashcardStore';
 import { QuizLayout } from '../features/quiz/QuizLayout';
 import { useAuth } from '../features/auth/context/AuthContext';
 
@@ -53,15 +54,16 @@ const AppRoutesContent: React.FC = () => {
         state,
         enterHome, enterConfig, enterEnglishHome, enterVocabHome, enterIdiomsConfig, enterOWSConfig,
         enterSynonymsConfig,
-        startSynonymFlashcards,
-        enterProfile, enterLogin, goToIntro, startQuiz, startFlashcards, startOWSFlashcards,
-        finishFlashcards, nextQuestion, prevQuestion, jumpToQuestion, submitSessionResults,
+
+        enterProfile, enterLogin, goToIntro, startQuiz,
+         nextQuestion, prevQuestion, jumpToQuestion, submitSessionResults,
         restartQuiz, goHome, pauseQuiz, resumeQuiz, saveTimer, answerQuestion, toggleBookmark, useFiftyFifty,
         syncGlobalTimer
     } = useQuizContext();
 
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
+    const flashcardStore = useFlashcardStore();
 
     // Helper: Standardized navigation wrapper
     const navTo = (path: string) => navigate(path);
@@ -128,7 +130,7 @@ const AppRoutesContent: React.FC = () => {
                         <IdiomsConfig
                             onBack={() => { enterVocabHome(); navTo('/vocab'); }}
                             onStart={(data, filters) => {
-                                startFlashcards(data as any, filters);
+                                flashcardStore.startIdioms(data as any, filters);
                                 navTo('/flashcards/session');
                             }}
                         />
@@ -143,7 +145,7 @@ const AppRoutesContent: React.FC = () => {
                         <SynonymsConfig
                             onBack={() => { enterVocabHome(); navTo('/vocab'); }}
                             onStart={(data: any, filters: any) => {
-                                startSynonymFlashcards(data, filters);
+                                flashcardStore.startSynonyms(data, filters);
                                 navTo('/synonyms/session');
                             }}
                         />
@@ -155,7 +157,7 @@ const AppRoutesContent: React.FC = () => {
                         <OWSConfig
                             onBack={() => { enterVocabHome(); navTo('/vocab'); }}
                             onStart={(data, filters) => {
-                                startOWSFlashcards(data, filters);
+                                flashcardStore.startOWS(data, filters);
                                 navTo('/ows/session');
                             }}
                         />
@@ -199,9 +201,13 @@ const AppRoutesContent: React.FC = () => {
 
                     <Route path="/flashcards/summary" element={
                         <FlashcardSummary
-                            totalCards={state.activeOWS?.length || state.activeIdioms?.length || 0}
-                            filters={state.filters || {} as any}
-                            onRestart={() => { restartQuiz(); navTo(state.activeOWS ? '/ows/config' : '/idioms/config'); }}
+                            totalCards={flashcardStore.idioms.length || flashcardStore.ows.length || flashcardStore.synonyms.length || 0}
+                            filters={flashcardStore.filters || {} as any}
+                            onRestart={() => {
+                                flashcardStore.resetSession();
+                                const dest = flashcardStore.type === 'ows' ? '/ows/config' : flashcardStore.type === 'synonyms' ? '/synonyms/config' : '/idioms/config';
+                                navTo(dest);
+                            }}
                             onHome={navHome}
                         />
                     } />
@@ -257,14 +263,14 @@ const AppRoutesContent: React.FC = () => {
                 {/* Flashcard Sessions */}
                 <Route path="/flashcards/session" element={
                     <FlashcardSession
-                        idioms={state.activeIdioms || []}
-                        currentIndex={state.currentQuestionIndex}
-                        onNext={nextQuestion}
-                        onPrev={prevQuestion}
+                        idioms={flashcardStore.idioms}
+                        currentIndex={flashcardStore.currentIndex}
+                        onNext={flashcardStore.nextCard}
+                        onPrev={flashcardStore.prevCard}
                         onExit={navHome}
-                        onFinish={() => { finishFlashcards(); navTo('/flashcards/summary'); }}
-                        filters={state.filters || {} as any}
-                        onJump={jumpToQuestion}
+                        onFinish={() => { flashcardStore.finishSession(); navTo('/flashcards/summary'); }}
+                        filters={flashcardStore.filters || {} as any}
+                        onJump={flashcardStore.jumpToCard}
                     />
                 } />
 
@@ -272,32 +278,32 @@ const AppRoutesContent: React.FC = () => {
 
                 <Route path="/synonyms/session" element={
                     <SynonymFlashcardSession
-                        data={state.activeSynonyms || []}
-                        currentIndex={state.currentQuestionIndex}
-                        onNext={nextQuestion}
-                        onPrev={prevQuestion}
+                        data={flashcardStore.synonyms}
+                        currentIndex={flashcardStore.currentIndex}
+                        onNext={flashcardStore.nextCard}
+                        onPrev={flashcardStore.prevCard}
                         onExit={() => navTo('/synonyms/config')}
-                        onFinish={() => navTo('/flashcards/summary')}
-                        filters={state.filters || {} as any}
-                        onJump={jumpToQuestion}
+                        onFinish={() => { flashcardStore.finishSession(); navTo('/flashcards/summary'); }}
+                        filters={flashcardStore.filters || {} as any}
+                        onJump={flashcardStore.jumpToCard}
                     />
                 } />
 
                 <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
-                <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
+                <Route path="/synonyms/list" element={<SynonymClusterList data={flashcardStore.synonyms} onSelectWord={(word) => { flashcardStore.jumpToCard(flashcardStore.synonyms.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
                 <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
 
 
                 <Route path="/ows/session" element={
                     <OWSSession
-                        data={state.activeOWS || []}
-                        currentIndex={state.currentQuestionIndex}
-                        onNext={nextQuestion}
-                        onPrev={prevQuestion}
-                        onExit={navHome}
-                        onFinish={() => { finishFlashcards(); navTo('/flashcards/summary'); }}
-                        filters={state.filters || {} as any}
-                        onJump={jumpToQuestion}
+                        data={flashcardStore.ows}
+                        currentIndex={flashcardStore.currentIndex}
+                        onNext={flashcardStore.nextCard}
+                        onPrev={flashcardStore.prevCard}
+                        onExit={() => navTo('/ows/config')}
+                        onFinish={() => { flashcardStore.finishSession(); navTo('/flashcards/summary'); }}
+                        filters={flashcardStore.filters || {} as any}
+                        onJump={flashcardStore.jumpToCard}
                     />
                 } />
 

@@ -80,15 +80,7 @@ export const useQuiz = () => {
     dispatch({ type: 'START_FLASHCARDS', payload: { idioms, filters } });
   }, []);
 
-  const startOWSFlashcards = useCallback((data: OneWord[], filters: InitialFilters) => {
-    dispatch({ type: 'START_OWS_FLASHCARDS', payload: { data, filters } });
-  }, []);
-
-  const startSynonymFlashcards = useCallback((data: SynonymWord[], filters: InitialFilters) => {
-    dispatch({ type: 'START_SYNONYM_FLASHCARDS', payload: { data, filters } });
-  }, []);
-
-  // Interaction Actions (Legacy/Direct Dispatch)
+      // Interaction Actions (Legacy/Direct Dispatch)
   const answerQuestion = useCallback((questionId: string, answer: string, timeTaken: number) => {
     dispatch({ type: 'ANSWER_QUESTION', payload: { questionId, answer, timeTaken } });
   }, []);
@@ -197,11 +189,7 @@ export const useQuiz = () => {
     dispatch({ type: 'FINISH_QUIZ' });
   }, []);
 
-  const finishFlashcards = useCallback(() => {
-    dispatch({ type: 'FINISH_FLASHCARDS' });
-  }, []);
-
-  const restartQuiz = useCallback(() => dispatch({ type: 'RESTART_QUIZ' }), []);
+    const restartQuiz = useCallback(() => dispatch({ type: 'RESTART_QUIZ' }), []);
   const goHome = useCallback(() => dispatch({ type: 'GO_HOME' }), []);
 
   // Derived state helpers
@@ -231,12 +219,8 @@ export const useQuiz = () => {
     enterLogin,
     goToIntro,
     startQuiz,
-    startFlashcards,
-    startOWSFlashcards,
-    startSynonymFlashcards,
-    submitSessionResults,
-    finishFlashcards,
-    answerQuestion,
+                submitSessionResults,
+        answerQuestion,
     logTimeSpent,
     saveTimer,
     syncGlobalTimer,

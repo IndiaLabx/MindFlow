@@ -22,7 +22,8 @@
     "react-latex-next": "^3.0.0",
     "react-router-dom": "^7.9.6",
     "uuid": "^13.0.0",
-    "workbox-window": "^7.0.0"
+    "workbox-window": "^7.0.0",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
