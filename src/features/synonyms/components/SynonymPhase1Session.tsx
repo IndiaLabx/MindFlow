@@ -477,11 +477,11 @@ export const SynonymPhase1Session: React.FC = () => {
                         )}
 
                         {/* Controls */}
-                        <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
+                        <div className="flex flex-row items-center justify-center gap-4 md:gap-6 mt-8 w-full">
                             <button
                                 onClick={prevWord}
                                 disabled={currentGroupIndex === 0 && currentWordIndex === 0}
-                                className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                                className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm md:text-base shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center flex-shrink-0"
                             >
                                 Prev
                             </button>
@@ -489,7 +489,7 @@ export const SynonymPhase1Session: React.FC = () => {
                             <button
                                 onClick={toggleDetails}
                                 disabled={!canShowDetails}
-                                className="w-28 h-28 rounded-full bg-gradient-to-br from-amber-100 to-amber-600 text-slate-900 font-bold shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-center p-2"
+                                className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-amber-100 to-amber-600 text-slate-900 font-bold text-xs md:text-sm leading-tight shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-center p-1 md:p-2 flex-shrink-0"
                                 style={{ background: canShowDetails ? 'linear-gradient(135deg, #e7dfdb 0%, #b49b79 100%)' : 'gray' }}
                             >
                                 {detailsVisible ? 'Hide Details' : 'Show Details'}
@@ -498,7 +498,7 @@ export const SynonymPhase1Session: React.FC = () => {
                             <button
                                 onClick={nextWord}
                                 disabled={currentGroupIndex === vocabularyGroups.length - 1 && currentWordIndex === currentGroup.words.length - 1}
-                                className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                                className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm md:text-base shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center flex-shrink-0"
                             >
                                 Next
                             </button>
