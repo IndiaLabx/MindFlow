@@ -71,6 +71,21 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
                     </div>
                 </div>
 
+                                <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-200">Phase 1: Foundation</h3>
+                <div className="grid grid-cols-1 gap-4 mb-8">
+                    {/* Phase 1: Guided Learning */}
+                    <button
+                        onClick={() => window.location.hash = '#/synonyms/phase1'}
+                        className="flex flex-col text-left bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-amber-500 dark:hover:border-amber-500 hover:shadow-md transition-all group"
+                    >
+                        <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                            📖
+                        </div>
+                        <h4 className="text-lg font-bold mb-1">Guided Word Exploration</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Discover words with deep meanings, Hindi translations, and audio pronunciation. Perfect for building a strong foundation.</p>
+                    </button>
+                </div>
+
                 <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-200">Phase 2: Learn & Master</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
 

@@ -2,6 +2,7 @@ import { SynonymsConfig } from '../features/synonyms/SynonymsConfig';
 import { SynonymFlashcardSession } from '../features/synonyms/components/SynonymFlashcardSession';
 import { SynonymClusterList } from '../features/synonyms/components/SynonymClusterList';
 import { SynonymQuizSession } from '../features/synonyms/components/SynonymQuizSession';
+import { SynonymPhase1Session } from '../features/synonyms/components/SynonymPhase1Session';
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QuizProvider, useQuizContext } from '../features/quiz/context/QuizContext';
@@ -133,17 +134,7 @@ const AppRoutesContent: React.FC = () => {
                         />
                     } />
 
-                    <Route path="/synonyms/config" element={
-                        <SynonymsConfig
-                            onBack={() => { enterVocabHome(); navTo('/vocab'); }}
-                            onStart={(data: any, filters: any) => {
-                                startSynonymFlashcards(data, filters);
-                                navTo('/synonyms/session');
-                            }}
-                        />
-                    } />
-                    <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
-                    <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
+
 
                     <Route path="/synonyms/config" element={
                         <SynonymsConfig
@@ -154,6 +145,24 @@ const AppRoutesContent: React.FC = () => {
                             }}
                         />
                     } />
+                    <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
+
+                    <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
+                    <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
+
+
+
+                    <Route path="/synonyms/config" element={
+                        <SynonymsConfig
+                            onBack={() => { enterVocabHome(); navTo('/vocab'); }}
+                            onStart={(data: any, filters: any) => {
+                                startSynonymFlashcards(data, filters);
+                                navTo('/synonyms/session');
+                            }}
+                        />
+                    } />
+                    <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
+
                     <Route path="/synonyms/list" element={<SynonymClusterList data={state.activeSynonyms || []} onSelectWord={(word) => { jumpToQuestion(state.activeSynonyms?.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
                     <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
 
