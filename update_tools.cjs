@@ -1,12 +1,17 @@
+const fs = require('fs');
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Wrench, Image as ImageIcon, FileText, Presentation, ArrowLeft, ChevronRight } from 'lucide-react';
+const path = './src/features/tools/ToolsHome.tsx';
+let content = fs.readFileSync(path, 'utf8');
 
-const ToolsHome: React.FC = () => {
-    const navigate = useNavigate();
+// Replace lucide imports
+content = content.replace(
+    /import \{ Wrench, Image as ImageIcon, FileText, Presentation, ArrowLeft \} from 'lucide-react';/,
+    "import { Wrench, Image as ImageIcon, FileText, Presentation, ArrowLeft, ChevronRight } from 'lucide-react';"
+);
 
-    const tools = [
+// The tools array modification logic
+const toolsArrayRegex = /const tools = \[\s*\{[\s\S]*?\}\s*\];/;
+const newToolsArray = `const tools = [
         {
             id: 'flashcard-maker',
             title: 'Flashcard Image Maker',
@@ -40,38 +45,23 @@ const ToolsHome: React.FC = () => {
             action: () => navigate('/tools/quiz-pdf-ppt-generator'),
             disabled: false
         }
-    ];
+    ];`;
 
-    return (
-        <div className="flex flex-col min-h-full bg-gray-50 dark:bg-slate-900">
-             {/* Header */}
-             <div className="bg-white dark:bg-gray-800 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-6 py-4 flex items-center gap-4 sticky top-0 z-10 shadow-sm">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:hover:bg-slate-800 rounded-xl text-gray-600 dark:text-gray-400 transition-colors"
-                >
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
-                <div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                        <Wrench className="w-6 h-6 text-amber-500" />
-                        Tools & Utilities
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-sm font-medium">Helper tools to enhance your content creation.</p>
-                </div>
-            </div>
+content = content.replace(toolsArrayRegex, newToolsArray);
 
-            <div className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+// The mapped grid container modifications
+const gridRegex = /<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/;
+
+const newGridHTML = `<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tools.map((tool) => (
                         <div
                             key={tool.id}
                             onClick={!tool.disabled ? tool.action : undefined}
-                            className={`
+                            className={\`
                                 p-6 rounded-2xl relative z-20 transition-all duration-200 shadow-sm flex items-center justify-between
-                                ${tool.bgColorClass} ${tool.borderClasses}
-                                ${tool.disabled ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer active:translate-y-1 active:border-b group'}
-                            `}
+                                \${tool.bgColorClass} \${tool.borderClasses}
+                                \${tool.disabled ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer active:translate-y-1 active:border-b group'}
+                            \`}
                         >
                             <div className="flex items-center gap-4 flex-1">
                                 <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
@@ -92,14 +82,23 @@ const ToolsHome: React.FC = () => {
                                 </div>
                             </div>
                             {!tool.disabled && (
-                                <ChevronRight className={`w-5 h-5 ${tool.chevronClass} flex-shrink-0 group-hover:translate-x-1 transition-transform`} />
+                                <ChevronRight className={\`w-5 h-5 \${tool.chevronClass} flex-shrink-0 group-hover:translate-x-1 transition-transform\`} />
                             )}
                         </div>
                     ))}
                 </div>
             </div>
-        </div>
-    );
-};
+        </div>`;
 
-export default ToolsHome;
+content = content.replace(gridRegex, newGridHTML);
+
+// Clean up redundant dark classes
+content = content.replace(/dark:text-white dark:text-white dark:text-slate-100 dark:text-slate-100/g, 'dark:text-white');
+content = content.replace(/dark:text-gray-300 dark:text-gray-300 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500/g, 'dark:text-gray-400');
+content = content.replace(/dark:bg-gray-900 dark:bg-gray-900 dark:bg-slate-800\/50 dark:bg-slate-800\/50/g, 'dark:bg-slate-900');
+content = content.replace(/dark:bg-slate-900 dark:bg-slate-900/g, 'dark:bg-slate-900');
+content = content.replace(/dark:border-gray-700 dark:border-gray-700 dark:border-slate-800 dark:border-slate-800/g, 'dark:border-slate-800');
+content = content.replace(/dark:text-gray-300 dark:text-gray-300 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500/g, 'dark:text-gray-400');
+
+fs.writeFileSync(path, content, 'utf8');
+console.log("ToolsHome cards updated.");

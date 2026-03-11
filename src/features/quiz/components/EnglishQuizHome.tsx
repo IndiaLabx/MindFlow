@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, BookA, PenTool, FileText } from 'lucide-react';
+import { ArrowLeft, BookA, PenTool, FileText, ChevronRight } from 'lucide-react';
 import { Button } from '../../../components/Button/Button';
 
 interface EnglishQuizHomeProps {
@@ -28,7 +28,7 @@ export const EnglishQuizHome: React.FC<EnglishQuizHomeProps> = ({ onBack, onVoca
            <Button 
               variant="ghost" 
               onClick={onBack} 
-              className="text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2 transition-colors"
+              className="text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2 transition-colors"
            >
              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
            </Button>
@@ -36,54 +36,73 @@ export const EnglishQuizHome: React.FC<EnglishQuizHomeProps> = ({ onBack, onVoca
 
         {/* Hero Header */}
         <div className="text-center max-w-4xl mx-auto px-4">
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-gray-900 dark:text-white dark:text-white dark:text-slate-100 leading-tight mb-6 transition-colors">
+          <h1 className="text-4xl sm:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight mb-6 transition-colors">
             English <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500">Proficiency</span>
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 dark:text-gray-300 dark:text-slate-400 max-w-2xl mx-auto transition-colors">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto transition-colors">
             Master vocabulary, grammar, and comprehension with targeted quizzes designed for competitive exams.
           </p>
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto px-4">
-          
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-6xl mx-auto px-4">
+
           {/* Card 1: Vocab Quiz */}
           <div 
             onClick={onVocabClick}
-            className="bg-white dark:bg-gray-800 dark:bg-slate-900 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 dark:border-gray-700 dark:border-slate-800 cursor-pointer group relative z-20 transition-all duration-300 ease-out hover:-translate-y-2 shadow-[12px_2px_0px_0px_#e2e8f0,0px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[12px_2px_0px_0px_#1e293b,0px_10px_20px_rgba(0,0,0,0.3)] hover:shadow-[12px_2px_0px_0px_#10b981,0px_20px_30px_rgba(16,185,129,0.3)] dark:hover:shadow-[12px_2px_0px_0px_#10b981,0px_20px_30px_rgba(16,185,129,0.2)] hover:border-emerald-300 dark:hover:border-emerald-500/50"
+            className="bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-emerald-100 dark:border-emerald-900/40 border-b-4 border-b-emerald-200 dark:border-b-emerald-700 hover:border-emerald-300 dark:hover:border-emerald-500"
           >
-            <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 group-hover:shadow-emerald-200 dark:group-hover:shadow-emerald-900/50">
-              <BookA className="w-6 h-6 text-emerald-600" />
+            <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                    <BookA className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="flex-1 pr-2">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Vocab Quiz</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
+                        Idioms, One-word substitutions, Synonyms, and Antonyms.
+                    </p>
+                </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white dark:text-slate-100 mb-3 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">Vocab Quiz</h3>
-            <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-slate-400 text-sm leading-relaxed font-medium group-hover:text-gray-600 dark:text-gray-300 dark:group-hover:text-slate-300 transition-colors">
-              Idioms, One-word substitutions, Synonyms, and Antonyms.
-            </p>
+            <ChevronRight className="w-5 h-5 text-emerald-400 dark:text-emerald-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
           </div>
-
           {/* Card 2: Grammar Quiz */}
-          <div className="bg-white dark:bg-gray-800 dark:bg-slate-900 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 dark:border-gray-700 dark:border-slate-800 cursor-pointer group relative z-20 transition-all duration-300 ease-out hover:-translate-y-2 shadow-[12px_2px_0px_0px_#e2e8f0,0px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[12px_2px_0px_0px_#1e293b,0px_10px_20px_rgba(0,0,0,0.3)] hover:shadow-[12px_2px_0px_0px_#8b5cf6,0px_20px_30px_rgba(139,92,246,0.3)] dark:hover:shadow-[12px_2px_0px_0px_#8b5cf6,0px_20px_30px_rgba(139,92,246,0.2)] hover:border-violet-300 dark:hover:border-violet-500/50">
-            <div className="w-12 h-12 bg-violet-50 dark:bg-violet-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm group-hover:bg-violet-100 dark:group-hover:bg-violet-900/40 group-hover:shadow-violet-200 dark:group-hover:shadow-violet-900/50">
-              <PenTool className="w-6 h-6 text-violet-600" />
+          <div
+            onClick={undefined}
+            className="bg-violet-50 dark:bg-violet-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-violet-100 dark:border-violet-900/40 border-b-4 border-b-violet-200 dark:border-b-violet-700 hover:border-violet-300 dark:hover:border-violet-500"
+          >
+            <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                    <PenTool className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div className="flex-1 pr-2">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Grammar Quiz</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
+                        Test your grammar skills with error detection and sentence improvement.
+                    </p>
+                </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white dark:text-slate-100 mb-3 group-hover:text-violet-700 dark:group-hover:text-violet-400 transition-colors">Grammar Quiz</h3>
-            <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-slate-400 text-sm leading-relaxed font-medium group-hover:text-gray-600 dark:text-gray-300 dark:group-hover:text-slate-300 transition-colors">
-              Test your grammar skills with error detection and sentence improvement.
-            </p>
+            <ChevronRight className="w-5 h-5 text-violet-400 dark:text-violet-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
           </div>
-
           {/* Card 3: Mock Test */}
-          <div className="bg-white dark:bg-gray-800 dark:bg-slate-900 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 dark:border-gray-700 dark:border-slate-800 cursor-pointer group relative z-20 transition-all duration-300 ease-out hover:-translate-y-2 shadow-[12px_2px_0px_0px_#e2e8f0,0px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[12px_2px_0px_0px_#1e293b,0px_10px_20px_rgba(0,0,0,0.3)] hover:shadow-[12px_2px_0px_0px_#f43f5e,0px_20px_30px_rgba(244,63,94,0.3)] dark:hover:shadow-[12px_2px_0px_0px_#f43f5e,0px_20px_30px_rgba(244,63,94,0.2)] hover:border-rose-300 dark:hover:border-rose-500/50">
-            <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm group-hover:bg-rose-100 dark:group-hover:bg-rose-900/40 group-hover:shadow-rose-200 dark:group-hover:shadow-rose-900/50">
-              <FileText className="w-6 h-6 text-rose-600" />
+          <div
+            onClick={undefined}
+            className="bg-rose-50 dark:bg-rose-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-rose-100 dark:border-rose-900/40 border-b-4 border-b-rose-200 dark:border-b-rose-700 hover:border-rose-300 dark:hover:border-rose-500"
+          >
+            <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                    <FileText className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+                </div>
+                <div className="flex-1 pr-2">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">English Mock</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
+                        Full length mock test with 25-30 questions. (Coming Soon)
+                    </p>
+                </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white dark:text-slate-100 mb-3 group-hover:text-rose-700 dark:group-hover:text-rose-400 transition-colors">English Mock</h3>
-            <p className="text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-slate-400 text-sm leading-relaxed font-medium group-hover:text-gray-600 dark:text-gray-300 dark:group-hover:text-slate-300 transition-colors">
-              Full length mock test with 25-30 questions. (Coming Soon)
-            </p>
+            <ChevronRight className="w-5 h-5 text-rose-400 dark:text-rose-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
           </div>
-
         </div>
+      </div>
       </div>
     </div>
   );
