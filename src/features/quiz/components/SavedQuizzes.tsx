@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Save, Home, PlusCircle, CheckCircle } from 'lucide-react';
+import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Save, Home, PlusCircle, CheckCircle, Mic } from 'lucide-react';
 import { db } from '../../../lib/db';
 import { SavedQuiz } from '../types';
 import { useQuizContext } from '../context/QuizContext';
@@ -225,10 +225,21 @@ export const SavedQuizzes: React.FC = () => {
                                         </div>
                                     </div>
 
+
                                     {/* Action Buttons */}
                                     <div className="flex items-center gap-2">
+                                        {!isQuizFinished(quiz) && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); navigate('/quiz/live/' + quiz.id); }}
+                                                className="flex items-center gap-1 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:bg-amber-900/40 rounded-lg transition-colors font-medium text-sm"
+                                                title="Talk to Quiz Master"
+                                            >
+                                                <Mic className="w-4 h-4" />
+                                                Talk
+                                            </button>
+                                        )}
                                         <button
-                                            onClick={(e) => handleResume(quiz)}
+                                            onClick={(e) => { e.stopPropagation(); handleResume(quiz); }}
                                             className="flex items-center gap-1 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:bg-indigo-900/40 rounded-lg transition-colors font-medium text-sm"
                                             title={isQuizFinished(quiz) ? "View Results" : isQuizStarted(quiz) ? "Resume Quiz" : "Start Quiz"}
                                         >
@@ -243,6 +254,7 @@ export const SavedQuizzes: React.FC = () => {
                                             <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
+
                                 </div>
                             </div>
                         ))}

@@ -19,6 +19,7 @@ const PerformanceAnalytics = lazy(() => import('../features/quiz/components/Perf
 const BookmarksPage = lazy(() => import('../features/quiz/components/BookmarksPage').then(m => ({ default: m.BookmarksPage })));
 const IdiomsConfig = lazy(() => import('../features/idioms/IdiomsConfig').then(m => ({ default: m.IdiomsConfig })));
 const OWSConfig = lazy(() => import('../features/ows/OWSConfig').then(m => ({ default: m.OWSConfig })));
+const LiveQuizRoom = lazy(() => import('../features/quiz/live/LiveQuizRoom').then(m => ({ default: m.LiveQuizRoom })));
 const SynonymsConfig = lazy(() => import('../features/synonyms/SynonymsConfig').then(m => ({ default: m.SynonymsConfig })));
 const SynonymFlashcardSession = lazy(() => import('../features/synonyms/components/SynonymFlashcardSession').then(m => ({ default: m.SynonymFlashcardSession })));
 const SynonymClusterList = lazy(() => import('../features/synonyms/components/SynonymClusterList').then(m => ({ default: m.SynonymClusterList })));
@@ -222,7 +223,10 @@ const AppRoutesContent: React.FC = () => {
                         />
                     } />
 
+
                 {/* Learning Mode: Interactive per-question session */}
+                <Route path="/quiz/live/:id" element={<LiveQuizRoom />} />
+
                 <Route path="/quiz/session/learning" element={
                     <LearningSession
                         questions={state.activeQuestions}
