@@ -8,8 +8,6 @@ import { MultiSelectDropdown } from '../quiz/components/ui/MultiSelectDropdown';
 import { SegmentedControl } from '../quiz/components/ui/SegmentedControl';
 import { ActiveFiltersBar } from '../quiz/components/ui/ActiveFiltersBar';
 import { cn } from '../../utils/cn';
-// Import JSON directly
-import owsData from '../quiz/data/ows.json';
 
 interface OWSConfigProps {
     onStart: (data: OneWord[], filters?: InitialFilters) => void;
@@ -34,14 +32,24 @@ export const OWSConfig: React.FC<OWSConfigProps> = ({ onStart, onBack }) => {
     const [metadata, setMetadata] = useState<OneWord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load data from JSON
+    // Load data from JSON dynamically
     useEffect(() => {
-        // Simulate async load for smoother UX
-        const timer = setTimeout(() => {
-            setMetadata(owsData as OneWord[]);
-            setIsLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
+        let isMounted = true;
+        const loadData = async () => {
+            try {
+                // Dynamically import the heavy JSON file
+                const module = await import('../quiz/data/ows.json');
+                if (isMounted) {
+                    setMetadata(module.default as OneWord[]);
+                    setIsLoading(false);
+                }
+            } catch (err) {
+                console.error('Error loading OWS data:', err);
+                if (isMounted) setIsLoading(false);
+            }
+        };
+        loadData();
+        return () => { isMounted = false; };
     }, []);
 
     // Derived Options

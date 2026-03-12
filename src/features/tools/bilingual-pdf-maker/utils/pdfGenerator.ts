@@ -1,5 +1,3 @@
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 
 export interface PDFOptions {
     quizTitle: string;
@@ -15,7 +13,11 @@ export const generateBilingualPdf = async (
     options: PDFOptions,
     onProgress: (progress: number, message: string) => void
 ) => {
-    onProgress(0, `🚀 Preparing your PDF with ${questions.length} questions...`);
+    onProgress(0, `🚀 Loading required libraries (jsPDF, html2canvas)...`);
+    const { jsPDF } = await import('jspdf');
+    const html2canvas = (await import('html2canvas')).default;
+
+    onProgress(5, `🚀 Preparing your PDF with ${questions.length} questions...`);
 
     const subjectsSet = new Set<string>();
     const difficultiesSet = new Set<string>();

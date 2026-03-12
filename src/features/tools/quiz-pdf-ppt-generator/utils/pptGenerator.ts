@@ -1,4 +1,3 @@
-import pptxgen from "pptxgenjs";
 import { Question, InitialFilters } from "../../../quiz/types";
 
 // Helper for PPT text cleaning
@@ -49,6 +48,7 @@ export const generatePowerPoint = async (
     if (!questions || questions.length === 0) return;
 
     try {
+        const pptxgen = (await import('pptxgenjs')).default;
         const pptx = new pptxgen();
 
         pptx.layout = 'LAYOUT_16x9';

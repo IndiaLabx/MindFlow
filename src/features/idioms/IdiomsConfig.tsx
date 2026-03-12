@@ -7,8 +7,6 @@ import { MultiSelectDropdown } from '../quiz/components/ui/MultiSelectDropdown';
 import { SegmentedControl } from '../quiz/components/ui/SegmentedControl';
 import { ActiveFiltersBar } from '../quiz/components/ui/ActiveFiltersBar';
 import { cn } from '../../utils/cn';
-// Import JSON directly
-import idiomsData from '../quiz/data/idioms.json';
 
 interface IdiomsConfigProps {
     onStart: (questions: any[], filters?: InitialFilters, mode?: QuizMode) => void;
@@ -33,14 +31,24 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
     const [metadata, setMetadata] = useState<Idiom[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load data from JSON
+    // Load data from JSON dynamically
     useEffect(() => {
-        // Simulate async load for smoother UX
-        const timer = setTimeout(() => {
-            setMetadata(idiomsData as Idiom[]);
-            setIsLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
+        let isMounted = true;
+        const loadData = async () => {
+            try {
+                // Dynamically import the heavy JSON file
+                const module = await import('../quiz/data/idioms.json');
+                if (isMounted) {
+                    setMetadata(module.default as Idiom[]);
+                    setIsLoading(false);
+                }
+            } catch (err) {
+                console.error('Error loading Idioms data:', err);
+                if (isMounted) setIsLoading(false);
+            }
+        };
+        loadData();
+        return () => { isMounted = false; };
     }, []);
 
     // Derived Options

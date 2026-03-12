@@ -1,4 +1,4 @@
-import { jsPDF } from 'jspdf';
+import type { jsPDF } from 'jspdf';
 import { Question, InitialFilters } from '../../../quiz/types';
 
 // Helper for PDF text cleaning
@@ -14,6 +14,7 @@ export const generatePDF = async (
     if (!questions || questions.length === 0) return;
 
     try {
+        const { jsPDF } = await import('jspdf');
         const doc = new jsPDF({ unit: 'pt', format: 'a4' });
 
         const MARGIN = 40;
