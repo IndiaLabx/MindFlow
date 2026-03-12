@@ -21,7 +21,7 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
         onStateChange?.('connecting');
         try {
             // @ts-ignore
-            let apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+            let apiKey = process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY;
 
             if (!apiKey) {
                 throw new Error("Missing API Key. Please check your .env file or environment variables.");
