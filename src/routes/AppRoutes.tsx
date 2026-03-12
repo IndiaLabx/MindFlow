@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { QuizProvider, useQuizContext } from '../features/quiz/context/QuizContext';
 import { useFlashcardStore } from '../features/quiz/stores/useFlashcardStore';
 import { QuizLayout } from '../features/quiz/QuizLayout';
@@ -67,6 +67,7 @@ const AppRoutesContent: React.FC = () => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const flashcardStore = useFlashcardStore();
+    const location = useLocation();
 
     // Helper: Standardized navigation wrapper
     const navTo = (path: string) => navigate(path);
@@ -74,7 +75,11 @@ const AppRoutesContent: React.FC = () => {
     const navHome = () => { goHome(); navigate('/dashboard'); };
 
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><SynapticLoader size="xl" /></div>}>
+        <Suspense fallback={
+            location.pathname === '/'
+                ? <div className="min-h-screen w-full bg-white dark:bg-slate-900" />
+                : <div className="min-h-screen flex items-center justify-center"><SynapticLoader size="xl" /></div>
+        }>
             <Routes>
                 {/* --- Public / Landing Route --- */}
                 <Route path="/" element={

@@ -9,6 +9,16 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onReveal }) => {
   const [phase, setPhase] = useState<'initial' | 'pre-zoom' | 'expanding' | 'vanishing' | 'done'>('initial');
 
   useEffect(() => {
+    // Check if intro was already played this session
+    if (sessionStorage.getItem('mindflow_intro_seen')) {
+      onReveal();
+      setPhase('done');
+      return;
+    }
+
+    // Mark intro as seen for this session
+    sessionStorage.setItem('mindflow_intro_seen', 'true');
+
     // Phase 1: Let the logo breathe for 2s
     const preZoomTimer = setTimeout(() => {
       setPhase('pre-zoom');

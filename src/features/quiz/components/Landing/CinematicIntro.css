@@ -87,7 +87,8 @@
 }
 
 .mf-brand-name {
-  margin-top: 50px;
+  position: absolute;
+  bottom: 25%;
   font-weight: 800;
   font-size: 34px;
   color: #0f172a;
@@ -136,8 +137,9 @@
 }
 
 .pwa-splash-screen.final-vanish {
-  transition: opacity 0.3s ease;
+  transition: none;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 

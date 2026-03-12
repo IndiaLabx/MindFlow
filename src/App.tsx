@@ -33,7 +33,12 @@ const App: React.FC = () => {
   }, []);
 
   if (!isReady) {
-    // Show a loading spinner while Supabase initializes
+    // Show a loading spinner while Supabase initializes, UNLESS we are on the entry page
+    // where the CinematicIntro will handle the initial visual experience.
+    const isEntryPage = window.location.hash === '' || window.location.hash === '#/';
+    if (isEntryPage) {
+      return <div className="h-screen w-screen bg-white dark:bg-slate-900" />;
+    }
     return <div className="h-screen flex items-center justify-center"><SynapticLoader size="xl" /></div>;
   }
 
