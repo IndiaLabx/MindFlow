@@ -29,6 +29,7 @@ const SynonymPhase1Session = lazy(() => import('../features/synonyms/components/
 const QuizResult = lazy(() => import('../features/quiz/components/QuizResult').then(m => ({ default: m.QuizResult })));
 const FlashcardSummary = lazy(() => import('../features/flashcards/components/FlashcardSummary').then(m => ({ default: m.FlashcardSummary })));
 const ToolsHome = lazy(() => import('../features/tools/ToolsHome'));
+const AIHome = lazy(() => import('../features/ai/AIHome').then(m => ({ default: m.AIHome })));
 const QuizPdfPptGenerator = lazy(() => import('../features/tools/quiz-pdf-ppt-generator/QuizPdfPptGenerator').then(module => ({ default: module.QuizPdfPptGenerator })));
 const FlashcardMaker = lazy(() => import('../features/tools/flashcard-maker/FlashcardMaker'));
 const BilingualPdfMaker = lazy(() => import('../features/tools/bilingual-pdf-maker/BilingualPdfMaker'));
@@ -211,6 +212,7 @@ const AppRoutesContent: React.FC = () => {
                     } />
 
                     <Route path="/tools" element={<ToolsHome />} />
+                    <Route path="/ai" element={<AIHome />} />
                     <Route path="/tools/flashcard-maker" element={<FlashcardMaker />} />
                     <Route path="/tools/bilingual-pdf-maker" element={<BilingualPdfMaker />} />
                     <Route path="/tools/quiz-pdf-ppt-generator" element={<QuizPdfPptGenerator />} />

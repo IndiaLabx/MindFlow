@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { BrainCircuit, Home, Compass, PlusCircle, User, Settings, LogIn, Sun, Moon } from 'lucide-react';
+import { BrainCircuit, Home, Compass, PlusCircle, User, Settings, LogIn, Sun, Moon, Brain } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { useQuizContext } from '../features/quiz/context/QuizContext';
@@ -10,7 +10,7 @@ import { ClaymorphismSwitch } from '../features/quiz/components/ui/ClaymorphismS
 /**
  * Unique identifiers for the main navigation tabs.
  */
-export type TabID = 'home' | 'explore' | 'create' | 'profile' | 'login';
+export type TabID = 'home' | 'explore' | 'create' | 'profile' | 'login' | 'ai';
 
 /**
  * Props for the MainLayout component.
