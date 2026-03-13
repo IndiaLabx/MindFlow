@@ -11,7 +11,7 @@ export function Accordion({ title, children }: { title: string; children: React.
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
-        <span className="font-bold text-gray-800 dark:text-gray-100">{title}</span>
+        <span className="font-bold px-3 py-1 rounded-md bg-amber-100/80 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200 border border-amber-200/50 dark:border-amber-700/30 shadow-sm">{title}</span>
         <ChevronDown className={cn("w-5 h-5 text-gray-500 transition-transform duration-300", isOpen && "rotate-180")} />
       </button>
       <div
