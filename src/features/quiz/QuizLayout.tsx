@@ -20,6 +20,7 @@ export const QuizLayout: React.FC = () => {
     const getActiveTab = (): TabID => {
         const path = location.pathname;
         if (path.includes('/login')) return 'login';
+        if (path.includes('/ai')) return 'ai';
         if (path.includes('/profile') || path.includes('/settings')) return 'profile';
         if (path.includes('/english') || path.includes('/vocab') || path.includes('/idioms') || path.includes('/ows')) return 'explore';
         if (path.includes('/quiz/config')) return 'create';
@@ -48,6 +49,9 @@ export const QuizLayout: React.FC = () => {
                     enterLogin();
                     navigate('/login');
                 }
+                break;
+            case 'ai':
+                navigate('/ai');
                 break;
             case 'login':
                 enterLogin();
