@@ -22,7 +22,7 @@ export const ScrollableCapsules = React.memo(function ScrollableCapsules({
   tooltip
 }: ScrollableCapsulesProps) {
   return (
-    <div className="w-full min-w-0">
+    <div className="w-full min-w-0 max-w-full">
       {label && (
         <div className="flex items-center gap-1.5 mb-2">
           <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</label>
@@ -40,7 +40,7 @@ export const ScrollableCapsules = React.memo(function ScrollableCapsules({
 
       {/* Scrollable Container */}
       <div
-        className="flex overflow-x-auto py-2 -mx-2 px-2 scrollbar-hide space-x-2 w-full snap-x snap-mandatory"
+        className="flex overflow-x-auto py-2 -mx-2 px-2 scrollbar-hide space-x-2 w-full snap-x snap-mandatory min-w-0"
         style={{ WebkitOverflowScrolling: 'touch' }}
         role="group"
         aria-label={label || "Capsule Filter Group"}
