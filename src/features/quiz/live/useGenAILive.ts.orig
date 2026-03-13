@@ -92,7 +92,7 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
                 throw new Error("Missing API Key. Please check your .env file or environment variables.");
             }
 
-            const ai = new GoogleGenAI({ apiKey, httpOptions: { baseUrl: 'https://generativelanguage.googleapis.com' } });
+            const ai = new GoogleGenAI({ apiKey });
 
             // Initialize Audio Context immediately for correct user gesture bindings
             const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
