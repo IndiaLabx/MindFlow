@@ -148,12 +148,14 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
                                 sessionPromise.then(session => {
                                     if (!isConnectedRef.current || !session) return;
                                     try {
+                                        // Using the exact object from the working code
                                         session.sendRealtimeInput({
                                             media: {
                                                 mimeType: "audio/pcm;rate=16000",
                                                 data: base64Data
                                             }
-                                        });
+                                        } as any); // Cast as any to bypass Google SDK typings if they conflict locally
+
                                     } catch (err) {
                                         if (isConnectedRef.current) console.warn("Socket send error:", err);
                                     }
@@ -161,7 +163,8 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
                             };
 
                             sourceNodeRef.current.connect(workletNodeRef.current);
-                            // We don't connect worklet to destination to avoid mic feedback loop
+                            // Connect worklet to destination to keep it active.
+                            // To prevent feedback loop, the worklet itself returns 'true' but doesn't output audio data to the next node by default.
                             workletNodeRef.current.connect(audioContextRef.current.destination);
 
                         } catch (micError) {
