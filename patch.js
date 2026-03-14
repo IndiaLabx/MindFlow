@@ -1,53 +1,9 @@
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import { Bot, User, Copy, Check, Volume2, RotateCcw } from 'lucide-react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useState } from 'react';
-import { cn } from '../../../utils/cn';
-import { AIChatMessage } from '../../../lib/db';
+const fs = require('fs');
 
-interface ChatMessageProps {
-    isGenerating?: boolean;
-    message: AIChatMessage;
-    onRegenerate?: () => void;
-}
+const file = 'src/features/ai/chat/ChatMessage.tsx';
+let content = fs.readFileSync(file, 'utf8');
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate, isGenerating }) => {
-    const isUser = message.role === 'user';
-    const [isCopied, setIsCopied] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-
-    const handleCopy = () => {
-        navigator.clipboard.writeText(message.content);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-    };
-
-    const handleTTS = () => {
-        if (!window.speechSynthesis) return;
-
-        if (isPlaying) {
-            window.speechSynthesis.cancel();
-            setIsPlaying(false);
-            return;
-        }
-
-        const utterance = new SpeechSynthesisUtterance(message.content);
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-
-        utterance.onend = () => setIsPlaying(false);
-        utterance.onerror = () => setIsPlaying(false);
-
-        setIsPlaying(true);
-        window.speechSynthesis.speak(utterance);
-    };
-
-    // Helper function to format timestamp
+const replacement = `    // Helper function to format timestamp
     const formatTime = (isoString: string) => {
         const date = new Date(isoString);
         let hours = date.getHours();
@@ -56,7 +12,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
         hours = hours % 12;
         hours = hours ? hours : 12; // the hour '0' should be '12'
         const minutesStr = minutes < 10 ? '0' + minutes : minutes;
-        return `${hours}:${minutesStr} ${ampm}`;
+        return \`\${hours}:\${minutesStr} \${ampm}\`;
     };
 
     const timestamp = message.created_at ? formatTime(message.created_at) : '';
@@ -67,17 +23,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
             isUser ? "justify-end" : "justify-start"
         )}>
             <div className={cn(
-                "flex max-w-[85%] md:max-w-[75%] gap-2 items-end",
+                "flex max-w-[85%] md:max-w-[75%] gap-2",
                 isUser ? "flex-row-reverse" : "flex-row"
             )}>
-                <div className="flex-shrink-0 mb-1">
+                <div className="flex-shrink-0 mt-1">
                     {isUser ? (
-                        <div className="hidden">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600">
                             <User className="h-5 w-5 text-white" />
                         </div>
                     ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                            <img src="/mindflow-icon.svg" alt="AI" className="h-4 w-4" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
+                            <img src="/mindflow-icon.svg" alt="AI" className="h-5 w-5" />
                         </div>
                     )}
                 </div>
@@ -85,26 +41,26 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
                 <div className={cn(
                     "relative flex flex-col min-w-0 rounded-2xl px-4 py-3 shadow-sm",
                     isUser
-                        ? "bg-[#dcf8c6] dark:bg-[#005c4b] text-gray-900 dark:text-gray-100 rounded-br-sm" // WhatsApp style right bubble colors
-                        : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-sm" // WhatsApp style left bubble colors
+                        ? "bg-indigo-600 text-white rounded-tr-sm"
+                        : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-tl-sm"
                 )}>
                     <div className={cn(
                         "prose prose-sm md:prose-base max-w-none break-words",
-                        "dark:prose-invert"
+                        isUser ? "prose-invert" : "dark:prose-invert"
                     )}>
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm, remarkMath]}
                             rehypePlugins={[rehypeKatex]}
                             components={{
-                                a: ({ node, ...props }) => <a {...props} className={cn(isUser ? "text-blue-600 hover:text-blue-500" : "text-indigo-600 hover:text-indigo-500 dark:text-indigo-400")} target="_blank" rel="noopener noreferrer" />,
-                                table: ({ node, ...props }) => <div className="overflow-x-auto my-4"><table className={cn("min-w-full divide-y rounded-lg border", isUser ? "divide-gray-400 border-gray-400" : "divide-gray-300 dark:divide-gray-700 border-gray-200 dark:border-gray-800")} {...props} /></div>,
-                                thead: ({ node, ...props }) => <thead className={isUser ? "bg-black/5" : "bg-gray-50 dark:bg-gray-800/80"} {...props} />,
-                                tbody: ({ node, ...props }) => <tbody className={cn("divide-y", isUser ? "divide-gray-400 bg-transparent" : "divide-gray-200 dark:divide-gray-800 bg-white dark:bg-slate-900")} {...props} />,
-                                tr: ({ node, ...props }) => <tr className={cn("transition-colors", isUser ? "hover:bg-black/5" : "hover:bg-gray-50 dark:hover:bg-gray-800/50")} {...props} />,
-                                th: ({ node, ...props }) => <th className={cn("px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider", isUser ? "text-gray-800 dark:text-gray-200" : "text-gray-900 dark:text-gray-100")} {...props} />,
-                                td: ({ node, ...props }) => <td className={cn("px-3 py-4 text-sm whitespace-pre-wrap", isUser ? "text-gray-800 dark:text-gray-200" : "text-gray-700 dark:text-gray-300")} {...props} />,
+                                a: ({ node, ...props }) => <a {...props} className={cn(isUser ? "text-indigo-200 hover:text-white" : "text-indigo-600 hover:text-indigo-500 dark:text-indigo-400")} target="_blank" rel="noopener noreferrer" />,
+                                table: ({ node, ...props }) => <div className="overflow-x-auto my-4"><table className={cn("min-w-full divide-y rounded-lg border", isUser ? "divide-indigo-400 border-indigo-400" : "divide-gray-300 dark:divide-gray-700 border-gray-200 dark:border-gray-800")} {...props} /></div>,
+                                thead: ({ node, ...props }) => <thead className={isUser ? "bg-indigo-700/50" : "bg-gray-50 dark:bg-gray-800/80"} {...props} />,
+                                tbody: ({ node, ...props }) => <tbody className={cn("divide-y", isUser ? "divide-indigo-400 bg-indigo-600" : "divide-gray-200 dark:divide-gray-800 bg-white dark:bg-slate-900")} {...props} />,
+                                tr: ({ node, ...props }) => <tr className={cn("transition-colors", isUser ? "hover:bg-indigo-700/50" : "hover:bg-gray-50 dark:hover:bg-gray-800/50")} {...props} />,
+                                th: ({ node, ...props }) => <th className={cn("px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider", isUser ? "text-indigo-100" : "text-gray-900 dark:text-gray-100")} {...props} />,
+                                td: ({ node, ...props }) => <td className={cn("px-3 py-4 text-sm whitespace-pre-wrap", isUser ? "text-indigo-50" : "text-gray-700 dark:text-gray-300")} {...props} />,
                                 code({ node, className, children, ...props }: any) {
-                                    const match = /language-(w+)/.exec(className || '');
+                                    const match = /language-(\w+)/.exec(className || '');
                                     return match ? (
                                         <SyntaxHighlighter
                                             {...props}
@@ -113,15 +69,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
                                             PreTag="div"
                                             className="rounded-md my-4 shadow-sm"
                                         >
-                                            {String(children).replace(/\n$/, '')}
+                                            {String(children).replace(/\\n$/, '')}
                                         </SyntaxHighlighter>
                                     ) : (
-                                        <code {...props} className={cn("px-1.5 py-0.5 rounded-md text-sm", isUser ? "bg-black/10 text-gray-900 dark:text-gray-100" : "bg-gray-100 dark:bg-gray-800 text-indigo-600 dark:text-indigo-400", className)}>
+                                        <code {...props} className={cn("px-1.5 py-0.5 rounded-md text-sm", isUser ? "bg-indigo-700 text-white" : "bg-gray-100 dark:bg-gray-800 text-indigo-600 dark:text-indigo-400", className)}>
                                             {children}
                                         </code>
                                     );
                                 },
-                                p: ({ node, ...props }) => <p className="mb-1 last:mb-0" {...props} />
+                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />
                             }}
                         >
                             {message.content + (isGenerating ? " ●" : "")}
@@ -130,7 +86,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
 
                     <div className={cn(
                         "flex items-center mt-1 space-x-2 text-[10px]",
-                        isUser ? "justify-end text-gray-500 dark:text-gray-400" : "justify-between text-gray-500 dark:text-gray-400"
+                        isUser ? "justify-end text-indigo-200" : "justify-between text-gray-500 dark:text-gray-400"
                     )}>
                         {/* Action Bar for AI Messages */}
                         {!isUser && message.content && (
@@ -166,7 +122,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
                         {/* Timestamp */}
                         {timestamp && (
                             <span className={cn(
-                                "flex-shrink-0 pt-1",
+                                "flex-shrink-0",
                                 !isUser && "ml-auto" // Push timestamp to right in AI bubble
                             )}>
                                 {timestamp}
@@ -177,4 +133,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
             </div>
         </div>
     );
-};
+};`;
+
+content = content.replace(/    return \([\s\S]*?\);\n\};/, replacement);
+
+fs.writeFileSync(file, content);
