@@ -76,20 +76,7 @@ export const useAIChat = () => {
     useEffect(() => {
         loadConversations();
         return () => {
-                    const quotaCheck = quota.checkCanRequest();
-        if (!quotaCheck.allowed) {
-            setMessages(prev => [...prev, {
-                id: uuidv4(),
-                conversation_id: currentConversationId || uuidv4(),
-                role: 'assistant',
-                content: `**Quota Alert:** ${quotaCheck.reason}`,
-                created_at: new Date().toISOString()
-            }]);
-            return;
-        }
-        quota.trackRequest();
-
-        if (abortControllerRef.current) {
+            if (abortControllerRef.current) {
                 abortControllerRef.current.abort();
             }
         };
@@ -182,6 +169,19 @@ export const useAIChat = () => {
 
     const sendMessage = useCallback(async (content: string, imageBase64?: string) => {
         if (!content.trim() && !imageBase64) return;
+
+        const quotaCheck = quota.checkCanRequest();
+        if (!quotaCheck.allowed) {
+            setMessages(prev => [...prev, {
+                id: uuidv4(),
+                conversation_id: currentConversationId || uuidv4(),
+                role: 'assistant',
+                content: `**Quota Alert:** ${quotaCheck.reason}`,
+                created_at: new Date().toISOString()
+            }]);
+            return;
+        }
+        quota.trackRequest();
 
         // Cancel previous request if any
         if (abortControllerRef.current) {

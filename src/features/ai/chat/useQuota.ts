@@ -2,6 +2,20 @@ import { useState, useEffect } from 'react';
 
 // Define limits based on user specs
 export const MODEL_CONFIGS = {
+  'gemini-3.1-flash-lite-preview': {
+    id: 'gemini-3.1-flash-lite-preview',
+    displayName: 'Fast 3x',
+    rpm: 15,
+    tpm: 250000,
+    rpd: 500
+  },
+  'gemini-2.5-flash-lite': {
+    id: 'gemini-2.5-flash-lite',
+    displayName: 'Fast 2x',
+    rpm: 10,
+    tpm: 250000,
+    rpd: 20
+  },
   'gemini-2.5-flash': {
     id: 'gemini-2.5-flash',
     displayName: 'Fast',
@@ -9,26 +23,12 @@ export const MODEL_CONFIGS = {
     tpm: 250000,
     rpd: 20
   },
-  'gemini-3-flash': { // Assuming v3 syntax based on request
-    id: 'gemini-3.0-flash',
+  'gemini-3-flash-preview': {
+    id: 'gemini-3-flash-preview',
     displayName: 'Pro model',
     rpm: 5,
     tpm: 250000,
     rpd: 20
-  },
-  'gemini-2.5-flash-lite': { // Assuming lite variant syntax
-    id: 'gemini-2.5-flash-8b',
-    displayName: 'Fast 2x',
-    rpm: 10,
-    tpm: 250000,
-    rpd: 20
-  },
-  'gemini-3.1-flash-lite': { // Based on explicit instructions
-    id: 'gemini-3.1-flash-lite', // Using placeholder ID for future/hypothetical model
-    displayName: 'Fast 3x',
-    rpm: 15,
-    tpm: 250000,
-    rpd: 500
   }
 };
 

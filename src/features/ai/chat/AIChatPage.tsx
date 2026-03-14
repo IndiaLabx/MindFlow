@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2, Search, Download } from 'lucide-react';
+import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2, Search, Download, Zap } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ChatMessage } from './ChatMessage';
@@ -280,6 +280,23 @@ export const AIChatPage: React.FC = () => {
                         </div>
 
                         <div className="hidden md:flex items-center gap-2">
+                            <div className="w-px h-4 bg-gray-300 dark:bg-gray-700 mx-2"></div>
+
+                            <div className="flex items-center gap-2 mr-2">
+                                <Zap className="h-4 w-4 text-amber-500" />
+                                <select
+                                    value={activeModel}
+                                    onChange={(e) => setActiveModel(e.target.value as any)}
+                                    className="bg-transparent font-medium text-xs text-gray-700 dark:text-gray-300 border-0 outline-none focus:ring-0 p-0"
+                                >
+                                    {Object.values(MODEL_CONFIGS).map(m => (
+                                        <option key={m.id} value={m.id} className="text-gray-900 dark:text-white bg-white dark:bg-slate-900">
+                                            {m.displayName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <span className="text-xs font-medium text-gray-500 dark:text-gray-400">App Context</span>
                             <button
                                 onClick={() => setIncludeAppData(!includeAppData)}
