@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2, Search, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { useAIChat, AI_PERSONAS } from './useAIChat';
@@ -20,11 +22,14 @@ export const AIChatPage: React.FC = () => {
         deleteConversation,
         stopGenerating,
         activePersona,
-        setActivePersona
+        setActivePersona,
+        includeAppData,
+        setIncludeAppData
     } = useAIChat();
 
     const [inputValue, setInputValue] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const quickStarters = [
         "Explain quantum computing in simple terms.",
@@ -35,7 +40,7 @@ export const AIChatPage: React.FC = () => {
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const groupConversations = () => {
+    const groupedHistory = useMemo(() => {
         const today: AIChatConversation[] = [];
         const last7Days: AIChatConversation[] = [];
         const last30Days: AIChatConversation[] = [];
@@ -43,7 +48,11 @@ export const AIChatPage: React.FC = () => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
 
-        conversations.forEach(c => {
+        const filtered = conversations.filter(c =>
+            c.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        filtered.forEach(c => {
             const date = new Date(c.updated_at);
             date.setHours(0, 0, 0, 0);
             const diffTime = Math.abs(now.getTime() - date.getTime());
@@ -59,9 +68,7 @@ export const AIChatPage: React.FC = () => {
         });
 
         return { today, last7Days, last30Days };
-    };
-
-    const groupedHistory = groupConversations();
+    }, [conversations, searchQuery]);
 
     const SidebarGroup = ({ title, items }: { title: string, items: AIChatConversation[] }) => {
         if (items.length === 0) return null;
@@ -111,6 +118,55 @@ export const AIChatPage: React.FC = () => {
     }, [messages, isLoading]);
 
 
+
+    const [isExporting, setIsExporting] = useState(false);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+
+    const exportToPDF = async () => {
+        if (!chatContainerRef.current || messages.length === 0) return;
+        setIsExporting(true);
+
+        try {
+            const canvas = await html2canvas(chatContainerRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff' // Force white background for PDF readability
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const JsPDFClass = jsPDF as any;
+            const pdf = new JsPDFClass({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            // Handle multi-page if chat is very long
+            let position = 0;
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            while (position < pdfHeight) {
+                pdf.addImage(imgData, 'JPEG', 0, -position, pdfWidth, pdfHeight);
+                position += pageHeight;
+                if (position < pdfHeight) {
+                    pdf.addPage();
+                }
+            }
+
+            const title = conversations.find(c => c.id === currentConversationId)?.title || 'MindFlow_Chat';
+            pdf.save(`${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+        } catch (error) {
+            console.error('Failed to export PDF', error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const handleRegenerate = () => {
         // Find the last user message
         const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
@@ -149,8 +205,22 @@ export const AIChatPage: React.FC = () => {
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-2">
-                    <SidebarGroup title="Today" items={groupedHistory.today} />
+                <div className="flex-1 overflow-y-auto p-2 flex flex-col">
+                    <div className="px-2 mb-4 sticky top-0 bg-gray-50 dark:bg-slate-900 pt-2 pb-2 z-10">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search history..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-1.5 pl-8 pr-3 text-sm text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-shadow"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto">
+                        <SidebarGroup title="Today" items={groupedHistory.today} />
                     <SidebarGroup title="Previous 7 Days" items={groupedHistory.last7Days} />
                     <SidebarGroup title="Previous 30 Days" items={groupedHistory.last30Days} />
 
@@ -160,6 +230,7 @@ export const AIChatPage: React.FC = () => {
                             <p className="text-sm">No recent chats</p>
                         </div>
                     )}
+                    </div>
                 </div>
             </div>
 
@@ -188,24 +259,54 @@ export const AIChatPage: React.FC = () => {
                     >
                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
                     </button>
-                    <div className="flex items-center gap-2">
-                        <Brain className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                        <select
-                            value={activePersona}
-                            onChange={(e) => setActivePersona(e.target.value as any)}
-                            className="bg-transparent font-semibold text-gray-900 dark:text-white border-0 outline-none focus:ring-0 p-0 text-base"
-                        >
-                            {Object.values(AI_PERSONAS).map(p => (
-                                <option key={p.id} value={p.id} className="text-gray-900 dark:text-white bg-white dark:bg-slate-900">
-                                    {p.name}
-                                </option>
-                            ))}
-                        </select>
+                    <div className="flex flex-1 items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Brain className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            <select
+                                value={activePersona}
+                                onChange={(e) => setActivePersona(e.target.value as any)}
+                                className="bg-transparent font-semibold text-gray-900 dark:text-white border-0 outline-none focus:ring-0 p-0 text-base"
+                            >
+                                {Object.values(AI_PERSONAS).map(p => (
+                                    <option key={p.id} value={p.id} className="text-gray-900 dark:text-white bg-white dark:bg-slate-900">
+                                        {p.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="hidden md:flex items-center gap-2">
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">App Context</span>
+                            <button
+                                onClick={() => setIncludeAppData(!includeAppData)}
+                                className={cn(
+                                    "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
+                                    includeAppData ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                                )}
+                            >
+                                <span className={cn(
+                                    "inline-block h-3 w-3 transform rounded-full bg-white transition-transform",
+                                    includeAppData ? 'translate-x-5' : 'translate-x-1'
+                                )} />
+                            </button>
+
+                            <div className="w-px h-4 bg-gray-300 dark:bg-gray-700 mx-2"></div>
+
+                            <button
+                                onClick={exportToPDF}
+                                disabled={isExporting || messages.length === 0}
+                                className="p-1.5 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors disabled:opacity-50"
+                                title="Download as PDF"
+                            >
+                                {isExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+                            </button>
+                        </div>
                     </div>
                 </header>
 
                 {/* Messages Scroll Area */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                    <div ref={chatContainerRef} className="flex flex-col min-h-full">
                     {messages.length === 0 ? (
                         <div className="flex h-full flex-col items-center justify-center p-8 text-center animate-fade-in">
                             <div className="mb-4 rounded-full bg-indigo-50 dark:bg-indigo-900/30 p-4 ring-1 ring-indigo-100 dark:ring-indigo-800">
@@ -264,6 +365,7 @@ export const AIChatPage: React.FC = () => {
                             <div ref={messagesEndRef} className="h-4" />
                         </div>
                     )}
+                    </div>
                 </div>
 
                 {/* Input Area */}

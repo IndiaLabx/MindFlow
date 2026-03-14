@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useProfileStats } from '../../auth/hooks/useProfileStats';
 import { v4 as uuidv4 } from 'uuid';
 import {
     AIChatConversation,
@@ -59,6 +60,8 @@ type PersonaId = keyof typeof AI_PERSONAS;
 export const useAIChat = () => {
     const [messages, setMessages] = useState<AIChatMessage[]>([]);
     const [activePersona, setActivePersona] = useState<PersonaId>('general');
+    const [includeAppData, setIncludeAppData] = useState(false);
+    const { stats } = useProfileStats();
     const [conversations, setConversations] = useState<AIChatConversation[]>([]);
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -112,6 +115,43 @@ export const useAIChat = () => {
         }
     };
 
+
+    const generateTitle = async (convId: string, firstMessage: string) => {
+        // @ts-ignore
+        const apiKey = process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY;
+        if (!apiKey) return;
+
+        try {
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ role: 'user', parts: [{ text: `Generate a short 3-5 word title for a conversation that starts with: "${firstMessage}". Do not use quotes in the response.` }] }],
+                        generationConfig: { temperature: 0.3, maxOutputTokens: 20 }
+                    })
+                }
+            );
+            if (response.ok) {
+                const data = await response.json();
+                let title = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+                title = title.replace(/^["']|["']$/g, ''); // remove surrounding quotes
+
+                if (title) {
+                    setConversations(prev => {
+                        const updated = prev.map(c => c.id === convId ? { ...c, title } : c);
+                        const convToSave = updated.find(c => c.id === convId);
+                        if (convToSave) saveChatConversation(convToSave);
+                        return updated;
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Auto-title failed", e);
+        }
+    };
+
     const deleteConversation = async (id: string) => {
         try {
             await dbDeleteConversation(id);
@@ -137,8 +177,10 @@ export const useAIChat = () => {
         const now = new Date().toISOString();
 
         // 1. Create a new conversation if one doesn't exist
+        let isNewConv = false;
         if (!activeConvId) {
             activeConvId = uuidv4();
+            isNewConv = true;
             const newConv: AIChatConversation = {
                 id: activeConvId,
                 title: content.slice(0, 30) + (content.length > 30 ? '...' : ''),
@@ -169,6 +211,11 @@ export const useAIChat = () => {
 
         setMessages(prev => [...prev, userMessage]);
         await saveChatMessage(userMessage);
+
+        if (isNewConv) {
+            // Fire and forget auto-titling in background
+            generateTitle(activeConvId, content);
+        }
 
         // 3. Prepare AI request (Streaming)
         setIsLoading(true);
@@ -224,9 +271,16 @@ export const useAIChat = () => {
                 parts: userParts
             });
 
+            let finalSystemPrompt = AI_PERSONAS[activePersona].prompt;
+
+            if (includeAppData && stats) {
+                const contextStr = `\n\nUSER PROFILE CONTEXT:\nThe user has completed ${stats.quizzesCompleted} quizzes.\nTotal Correct: ${stats.correctAnswers}\nAverage Score: ${Math.round(stats.averageScore)}%\nWeak Topics: ${stats.weakTopics.join(', ')}\nUse this context to personalize your advice and point out areas of improvement if relevant.`;
+                finalSystemPrompt += contextStr;
+            }
+
             const requestBody = {
                 systemInstruction: {
-                    parts: [{ text: AI_PERSONAS[activePersona].prompt }]
+                    parts: [{ text: finalSystemPrompt }]
                 },
                 contents: historyToSent,
                 generationConfig: {
@@ -320,6 +374,8 @@ export const useAIChat = () => {
         deleteConversation,
         stopGenerating,
         activePersona,
-        setActivePersona
+        setActivePersona,
+        includeAppData,
+        setIncludeAppData
     };
 };
