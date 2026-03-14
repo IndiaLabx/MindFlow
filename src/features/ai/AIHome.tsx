@@ -144,7 +144,7 @@ export const AIHome: React.FC = () => {
                             description={feature.description}
                             icon={feature.icon}
                             colorClass={cn("border", feature.bgClass, feature.borderClass)}
-                            onClick={feature.onClick ? feature.onClick : () => handleFeatureClick(feature.title)}
+                            onClick={feature.onClick ? feature.onClick : () => handleFeatureClick(feature.id, feature.title)}
                             badgeText={feature.badgeText}
                         />
                     ))}

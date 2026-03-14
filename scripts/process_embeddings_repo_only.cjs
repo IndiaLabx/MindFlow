@@ -17,7 +17,11 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function getEmbeddingsBatch(texts) {
     const url = `https://generativelanguage.googleapis.com/v1beta/${MODEL_NAME}:batchEmbedContents?key=${GEMINI_API_KEY}`;
+<<<<<<< Updated upstream
 
+=======
+
+>>>>>>> Stashed changes
     const requests = texts.map(text => ({
         model: MODEL_NAME,
         content: { parts: [{ text: text }] }
@@ -47,16 +51,26 @@ async function runRepoBackfill() {
     }
 
     const allQuestions = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+<<<<<<< Updated upstream
 
+=======
+
+>>>>>>> Stashed changes
     // Load existing progress to know what to skip
     let processedData = [];
     if (fs.existsSync(outputPath)) {
         processedData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
         console.log(`Resuming. Found ${processedData.length} existing processed embeddings in repo.`);
     }
+<<<<<<< Updated upstream
 
     const processedIds = new Set(processedData.map(p => p.id));
 
+=======
+
+    const processedIds = new Set(processedData.map(p => p.id));
+
+>>>>>>> Stashed changes
     // Filter out questions that have already been processed locally OR have embeddings in the raw file
     const questionsToProcess = allQuestions
         .filter(q => !processedIds.has(q.id) && !q.embedding)
@@ -73,7 +87,11 @@ async function runRepoBackfill() {
         const batch = questionsToProcess.slice(i, i + BATCH_SIZE);
         const batchNum = Math.floor(i / BATCH_SIZE) + 1;
         const totalBatches = Math.ceil(questionsToProcess.length / BATCH_SIZE);
+<<<<<<< Updated upstream
 
+=======
+
+>>>>>>> Stashed changes
         console.log(`\n[${new Date().toISOString()}] Executing Batch ${batchNum} of ${totalBatches} (${batch.length} items)...`);
 
         const textsToEmbed = batch.map(q => {
@@ -84,7 +102,11 @@ async function runRepoBackfill() {
         try {
             // 1. Get embeddings
             const embeddings = await getEmbeddingsBatch(textsToEmbed);
+<<<<<<< Updated upstream
 
+=======
+
+>>>>>>> Stashed changes
             // 2. Format results to save locally
             const batchResults = batch.map((q, idx) => ({
                 id: q.id,
@@ -92,11 +114,19 @@ async function runRepoBackfill() {
             }));
 
             processedData = processedData.concat(batchResults);
+<<<<<<< Updated upstream
 
             // 3. Save to file immediately so progress is safe
             fs.writeFileSync(outputPath, JSON.stringify(processedData, null, 2));
             console.log(`✅ Saved ${batch.length} embeddings locally. (Total saved: ${processedData.length})`);
 
+=======
+
+            // 3. Save to file immediately so progress is safe
+            fs.writeFileSync(outputPath, JSON.stringify(processedData, null, 2));
+            console.log(`✅ Saved ${batch.length} embeddings locally. (Total saved: ${processedData.length})`);
+
+>>>>>>> Stashed changes
         } catch (e) {
              console.error(`❌ Batch ${batchNum} failed:`, e.message);
         }
@@ -106,7 +136,11 @@ async function runRepoBackfill() {
             await sleep(SLEEP_MS);
         }
     }
+<<<<<<< Updated upstream
 
+=======
+
+>>>>>>> Stashed changes
     console.log(`\n🎉 Local Execution Complete! Saved ${processedData.length} total records to repo.`);
 }
 

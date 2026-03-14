@@ -18,11 +18,19 @@ const embeddings = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
 async function inject() {
     let success = 0;
     console.log(`Injecting ${embeddings.length} embeddings using Service Role Key...`);
+<<<<<<< Updated upstream
 
     // Process in batches of 10 to avoid overwhelming the database connection
     for (let i = 0; i < embeddings.length; i += 10) {
         const batch = embeddings.slice(i, i + 10);
 
+=======
+
+    // Process in batches of 10 to avoid overwhelming the database connection
+    for (let i = 0; i < embeddings.length; i += 10) {
+        const batch = embeddings.slice(i, i + 10);
+
+>>>>>>> Stashed changes
         const promises = batch.map(async (record) => {
             if (!record.id || !record.embedding) return;
             const vectorStr = `[${record.embedding.join(',')}]`;
@@ -33,7 +41,11 @@ async function inject() {
                 success++;
             }
         });
+<<<<<<< Updated upstream
 
+=======
+
+>>>>>>> Stashed changes
         await Promise.all(promises);
         console.log(`Processed batch ${Math.floor(i/10) + 1}/${Math.ceil(embeddings.length/10)}. Total Success: ${success}`);
     }

@@ -11,19 +11,30 @@ async function fetchAll() {
     let allData = [];
     let from = 0;
     const limit = 1000;
+<<<<<<< Updated upstream
 
     console.log("Fetching all questions from Supabase...");
 
+=======
+
+    console.log("Fetching all questions from Supabase...");
+
+>>>>>>> Stashed changes
     while (true) {
         const { data, error } = await supabase
             .from('questions')
             .select('id, question, options, correct, subject, topic, subTopic')
             .range(from, from + limit - 1);
+<<<<<<< Updated upstream
 
+=======
+
+>>>>>>> Stashed changes
         if (error) {
             console.error("Error fetching data:", error);
             break;
         }
+<<<<<<< Updated upstream
 
         if (!data || data.length === 0) {
             break;
@@ -32,15 +43,32 @@ async function fetchAll() {
         allData = allData.concat(data);
         console.log(`Fetched ${data.length} rows (Total: ${allData.length})`);
 
+=======
+
+        if (!data || data.length === 0) {
+            break;
+        }
+
+        allData = allData.concat(data);
+        console.log(`Fetched ${data.length} rows (Total: ${allData.length})`);
+
+>>>>>>> Stashed changes
         if (data.length < limit) {
             break;
         }
         from += limit;
     }
+<<<<<<< Updated upstream
 
     const dir = path.join(__dirname, 'data');
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
+=======
+
+    const dir = path.join(__dirname, 'data');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+
+>>>>>>> Stashed changes
     const outputPath = path.join(dir, 'all_questions.json');
     fs.writeFileSync(outputPath, JSON.stringify(allData, null, 2));
     console.log(`Saved ${allData.length} questions to ${outputPath}`);
