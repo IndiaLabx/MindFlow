@@ -1,16 +1,48 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bot, User } from 'lucide-react';
+import { Bot, User, Copy, Check, Volume2, RotateCcw } from 'lucide-react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useState } from 'react';
 import { cn } from '../../../utils/cn';
 import { AIChatMessage } from '../../../lib/db';
 
 interface ChatMessageProps {
     message: AIChatMessage;
+    onRegenerate?: () => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate }) => {
     const isUser = message.role === 'user';
+    const [isCopied, setIsCopied] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(message.content);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
+    const handleTTS = () => {
+        if (!window.speechSynthesis) return;
+
+        if (isPlaying) {
+            window.speechSynthesis.cancel();
+            setIsPlaying(false);
+            return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(message.content);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+
+        utterance.onend = () => setIsPlaying(false);
+        utterance.onerror = () => setIsPlaying(false);
+
+        setIsPlaying(true);
+        window.speechSynthesis.speak(utterance);
+    };
 
     return (
         <div className={cn(
@@ -34,11 +66,64 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                     <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
-                            a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+                            a: ({ node, ...props }) => <a {...props} className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400" target="_blank" rel="noopener noreferrer" />,
+                            code({ node, className, children, ...props }: any) {
+                                const match = /language-(\w+)/.exec(className || '');
+                                return match ? (
+                                    <SyntaxHighlighter
+                                        {...props}
+                                        style={vscDarkPlus}
+                                        language={match[1]}
+                                        PreTag="div"
+                                        className="rounded-md my-4 shadow-sm"
+                                    >
+                                        {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                ) : (
+                                    <code {...props} className={cn("bg-gray-100 dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-md text-sm", className)}>
+                                        {children}
+                                    </code>
+                                );
+                            }
                         }}
                     >
                         {message.content}
                     </ReactMarkdown>
+
+                    {/* Action Bar for AI Messages */}
+                    {!isUser && message.content && (
+                        <div className="flex items-center gap-2 pt-2 text-gray-500 dark:text-gray-400">
+                            <button
+                                onClick={handleCopy}
+                                className="flex items-center gap-1.5 rounded-md p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                title="Copy message"
+                            >
+                                {isCopied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                                <span className="text-xs">{isCopied ? "Copied" : "Copy"}</span>
+                            </button>
+                            <button
+                                onClick={handleTTS}
+                                className={cn(
+                                    "flex items-center gap-1.5 rounded-md p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors",
+                                    isPlaying && "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30"
+                                )}
+                                title={isPlaying ? "Stop listening" : "Listen"}
+                            >
+                                <Volume2 className="h-4 w-4" />
+                                <span className="text-xs">{isPlaying ? "Stop" : "Listen"}</span>
+                            </button>
+                            {onRegenerate && (
+                                <button
+                                    onClick={onRegenerate}
+                                    className="flex items-center gap-1.5 rounded-md p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                                    title="Regenerate response"
+                                >
+                                    <RotateCcw className="h-4 w-4" />
+                                    <span className="text-xs">Regenerate</span>
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
