@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Brain, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2 } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { useAIChat } from './useAIChat';
@@ -22,6 +22,14 @@ export const AIChatPage: React.FC = () => {
 
     const [inputValue, setInputValue] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const quickStarters = [
+        "Explain quantum computing in simple terms.",
+        "Give me a 5-question vocabulary quiz.",
+        "How do I prepare for the UPSC exam?",
+        "What are some common English idioms?"
+    ];
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -31,6 +39,15 @@ export const AIChatPage: React.FC = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isLoading]);
+
+
+    const handleRegenerate = () => {
+        // Find the last user message
+        const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+        if (lastUserMsg && !isLoading) {
+            sendMessage(lastUserMsg.content);
+        }
+    };
 
     const handleSubmit = () => {
         if (!inputValue.trim() || isLoading) return;
@@ -135,15 +152,55 @@ export const AIChatPage: React.FC = () => {
                                 <Brain className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">How can I help you learn today?</h2>
-                            <p className="max-w-md text-gray-500 dark:text-gray-400">
+                            <p className="max-w-md text-gray-500 dark:text-gray-400 mb-8">
                                 Ask a question, request an explanation, or practice your vocabulary with MindFlow AI.
                             </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4 md:px-0">
+                                {quickStarters.map((starter, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => {
+                                            if (!isLoading) {
+                                                sendMessage(starter);
+                                            }
+                                        }}
+                                        className="flex items-start text-left gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all duration-200 group"
+                                    >
+                                        <div className="mt-0.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 p-2 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                            <MessageSquare className="h-4 w-4" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-900 dark:group-hover:text-indigo-300">
+                                            {starter}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     ) : (
                         <div className="flex flex-col pb-4">
                             {messages.map((message) => (
-                                <ChatMessage key={message.id} message={message} />
+                                <ChatMessage
+                                    key={message.id}
+                                    message={message}
+                                    onRegenerate={handleRegenerate}
+                                />
                             ))}
+                            {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
+                                <div className="flex w-full px-4 py-6 bg-gray-50 dark:bg-gray-800/50 animate-fade-in">
+                                    <div className="mx-auto flex w-full max-w-3xl gap-4 items-start">
+                                        <div className="flex-shrink-0">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-indigo-600/20 dark:bg-indigo-500/20">
+                                                <Brain className="h-5 w-5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 h-8 text-sm text-gray-500 dark:text-gray-400 italic">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            MindFlow AI is thinking...
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div ref={messagesEndRef} className="h-4" />
                         </div>
                     )}
