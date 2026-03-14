@@ -125,7 +125,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
         onAnswer(currentQuestion.id, 'TIME_UP', 0);
         playWrong();
         if (isHapticEnabled && 'vibrate' in navigator) {
-            navigator.vibrate([100, 50, 100]);
+            navigator.vibrate(50);
         }
     }, [currentQuestion.id, playWrong, onAnswer, isHapticEnabled]);
 
@@ -209,7 +209,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
         } else {
             playWrong();
             if (isHapticEnabled && 'vibrate' in navigator) {
-                navigator.vibrate([100, 50, 100]);
+                navigator.vibrate(50);
             }
         }
     };
