@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNavSpinner } from '../../hooks/useNavSpinner';
+import { Loader2 } from 'lucide-react';
 import { Brain, ArrowLeft, MessageSquare, Mic, Wand2, Calendar, ChevronRight, Search } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -10,9 +12,10 @@ interface AICardProps {
     colorClass: string;
     onClick: () => void;
     badgeText?: string;
+    isLoading?: boolean;
 }
 
-const AICard: React.FC<AICardProps> = ({ title, description, icon, colorClass, onClick, badgeText }) => {
+const AICard: React.FC<AICardProps> = ({ title, description, icon, colorClass, onClick, badgeText, isLoading }) => {
     return (
         <button
             onClick={onClick}
@@ -21,7 +24,12 @@ const AICard: React.FC<AICardProps> = ({ title, description, icon, colorClass, o
                 colorClass
             )}
         >
-            <div className="flex items-start justify-between">
+            {isLoading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-2xl">
+                    <Loader2 className="w-8 h-8 text-current animate-spin opacity-80" />
+                </div>
+            )}
+            <div className={`flex items-start justify-between transition-opacity ${isLoading ? 'opacity-30' : 'opacity-100'}`}>
                 <div className="flex-1">
                     <div className="mb-4 inline-block rounded-xl bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 p-3 shadow-sm group-hover:scale-110 transition-transform">
                         {icon}
@@ -50,13 +58,14 @@ const AICard: React.FC<AICardProps> = ({ title, description, icon, colorClass, o
 
 export const AIHome: React.FC = () => {
     const navigate = useNavigate();
+    const { loadingId, handleNavigation } = useNavSpinner();
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     const handleFeatureClick = (featureId: string, featureName: string) => {
         if (featureId === 'chat') {
-            navigate('/ai/chat');
+            handleNavigation(featureId, () => navigate('/ai/chat'));
         } else if (featureId === 'talk') {
-            navigate('/ai/talk');
+            handleNavigation(featureId, () => navigate('/ai/talk'));
         } else {
             setToastMessage(`"${featureName}" is coming soon!`);
             setTimeout(() => setToastMessage(null), 3000);
@@ -136,6 +145,7 @@ export const AIHome: React.FC = () => {
                             colorClass={cn("border", feature.bgClass, feature.borderClass)}
                             onClick={() => handleFeatureClick(feature.id, feature.title)}
                             badgeText={feature.badgeText}
+                            isLoading={loadingId === feature.id || (feature.id === 'semantic-search' && loadingId === 'semantic-search')}
                         />
                     ))}
                 </div>

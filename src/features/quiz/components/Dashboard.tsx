@@ -2,6 +2,8 @@ import React from 'react';
 import { ListChecks, FileText, BookOpen, Languages, Save, Wrench, BarChart2, Star, ChevronRight } from 'lucide-react';
 import { Button } from '../../../components/Button/Button';
 import { useNavigate } from 'react-router-dom';
+import { useNavSpinner } from '../../../hooks/useNavSpinner';
+import { Loader2 } from 'lucide-react';
 
 /**
  * Props for the Dashboard component.
@@ -32,6 +34,7 @@ interface DashboardProps {
  */
 export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, onBackToIntro, onSavedQuizzes }) => {
     const navigate = useNavigate();
+    const { loadingId, handleNavigation } = useNavSpinner();
 
     return (
         <div className="flex flex-col">
@@ -52,10 +55,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                     <div className="flex items-center justify-center gap-3 relative z-20">
                         <Button
                             size="lg"
-                            onClick={onStartQuiz}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl shadow-xl shadow-indigo-200 transition-all transform active:scale-95"
+                            onClick={() => handleNavigation('create-btn', onStartQuiz)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl shadow-xl shadow-indigo-200 transition-all transform active:scale-95 relative"
                         >
-                            Create Quiz
+                            {loadingId === 'create-btn' ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                "Create Quiz"
+                            )}
                         </Button>
                     </div>
                 </div>
@@ -64,10 +71,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                     {/* Card 1 - Custom Quiz */}
                     <div
-                        onClick={onStartQuiz}
+                        onClick={() => handleNavigation('card-1', onStartQuiz)}
                         className="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-indigo-100 dark:border-indigo-900/40 border-b-4 border-b-indigo-200 dark:border-b-indigo-700 hover:border-indigo-300 dark:hover:border-indigo-500"
                     >
-                        <div className="flex items-center gap-4 flex-1">
+                        {loadingId === 'card-1' ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                            </div>
+                        ) : null}
+                        <div className={`flex items-center gap-4 flex-1 transition-opacity ${loadingId === 'card-1' ? 'opacity-0' : 'opacity-100'}`}>
                             <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
                                 <ListChecks className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                             </div>
@@ -78,14 +90,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                                 </p>
                             </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-indigo-400 dark:text-indigo-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className={`w-5 h-5 text-indigo-400 dark:text-indigo-500 flex-shrink-0 group-hover:translate-x-1 transition-transform ${loadingId === 'card-1' ? 'opacity-0' : 'opacity-100'}`} />
                     </div>
                     {/* Card 2 - Created Quizzes */}
                     <div
-                        onClick={onSavedQuizzes}
+                        onClick={() => handleNavigation('card-2', onSavedQuizzes)}
                         className="bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-emerald-100 dark:border-emerald-900/40 border-b-4 border-b-emerald-200 dark:border-b-emerald-700 hover:border-emerald-300 dark:hover:border-emerald-500"
                     >
-                        <div className="flex items-center gap-4 flex-1">
+                        {loadingId === 'card-2' ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+                            </div>
+                        ) : null}
+                        <div className={`flex items-center gap-4 flex-1 transition-opacity ${loadingId === 'card-2' ? 'opacity-0' : 'opacity-100'}`}>
                             <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
                                 <Save className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
@@ -96,14 +113,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                                 </p>
                             </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-emerald-400 dark:text-emerald-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className={`w-5 h-5 text-emerald-400 dark:text-emerald-500 flex-shrink-0 group-hover:translate-x-1 transition-transform ${loadingId === 'card-2' ? 'opacity-0' : 'opacity-100'}`} />
                     </div>
                     {/* Card 3 - English */}
                     <div
-                        onClick={onEnglish}
+                        onClick={() => handleNavigation('card-3', onEnglish)}
                         className="bg-rose-50 dark:bg-rose-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-rose-100 dark:border-rose-900/40 border-b-4 border-b-rose-200 dark:border-b-rose-700 hover:border-rose-300 dark:hover:border-rose-500"
                     >
-                        <div className="flex items-center gap-4 flex-1">
+                        {loadingId === 'card-3' ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
+                            </div>
+                        ) : null}
+                        <div className={`flex items-center gap-4 flex-1 transition-opacity ${loadingId === 'card-3' ? 'opacity-0' : 'opacity-100'}`}>
                             <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
                                 <Languages className="w-6 h-6 text-rose-600 dark:text-rose-400" />
                             </div>
@@ -114,14 +136,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                                 </p>
                             </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-rose-400 dark:text-rose-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className={`w-5 h-5 text-rose-400 dark:text-rose-500 flex-shrink-0 group-hover:translate-x-1 transition-transform ${loadingId === 'card-3' ? 'opacity-0' : 'opacity-100'}`} />
                     </div>
                     {/* Card 4 - Tools */}
                     <div
-                        onClick={() => navigate('/tools')}
+                        onClick={() => handleNavigation('card-4', () => navigate('/tools'))}
                         className="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-amber-100 dark:border-amber-900/40 border-b-4 border-b-amber-200 dark:border-b-amber-700 hover:border-amber-300 dark:hover:border-amber-500"
                     >
-                        <div className="flex items-center gap-4 flex-1">
+                        {loadingId === 'card-4' ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+                            </div>
+                        ) : null}
+                        <div className={`flex items-center gap-4 flex-1 transition-opacity ${loadingId === 'card-4' ? 'opacity-0' : 'opacity-100'}`}>
                             <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
                                 <Wrench className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                             </div>
@@ -132,14 +159,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                                 </p>
                             </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-amber-400 dark:text-amber-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className={`w-5 h-5 text-amber-400 dark:text-amber-500 flex-shrink-0 group-hover:translate-x-1 transition-transform ${loadingId === 'card-4' ? 'opacity-0' : 'opacity-100'}`} />
                     </div>
                     {/* Card 5 - Analytics */}
                     <div
-                        onClick={() => navigate('/quiz/analytics')}
+                        onClick={() => handleNavigation('card-5', () => navigate('/quiz/analytics'))}
                         className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-blue-100 dark:border-blue-900/40 border-b-4 border-b-blue-200 dark:border-b-blue-700 hover:border-blue-300 dark:hover:border-blue-500"
                     >
-                        <div className="flex items-center gap-4 flex-1">
+                        {loadingId === 'card-5' ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                            </div>
+                        ) : null}
+                        <div className={`flex items-center gap-4 flex-1 transition-opacity ${loadingId === 'card-5' ? 'opacity-0' : 'opacity-100'}`}>
                             <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
                                 <BarChart2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                             </div>
@@ -150,14 +182,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                                 </p>
                             </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-blue-400 dark:text-blue-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className={`w-5 h-5 text-blue-400 dark:text-blue-500 flex-shrink-0 group-hover:translate-x-1 transition-transform ${loadingId === 'card-5' ? 'opacity-0' : 'opacity-100'}`} />
                     </div>
                     {/* Card 6 - Bookmarks */}
                     <div
-                        onClick={() => navigate('/quiz/bookmarks')}
+                        onClick={() => handleNavigation('card-6', () => navigate('/quiz/bookmarks'))}
                         className="bg-violet-50 dark:bg-violet-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-violet-100 dark:border-violet-900/40 border-b-4 border-b-violet-200 dark:border-b-violet-700 hover:border-violet-300 dark:hover:border-violet-500 sm:col-span-2 lg:col-span-1"
                     >
-                        <div className="flex items-center gap-4 flex-1">
+                        {loadingId === 'card-6' ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
+                            </div>
+                        ) : null}
+                        <div className={`flex items-center gap-4 flex-1 transition-opacity ${loadingId === 'card-6' ? 'opacity-0' : 'opacity-100'}`}>
                             <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
                                 <Star className="w-6 h-6 text-violet-600 dark:text-violet-400" />
                             </div>
@@ -168,7 +205,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                                 </p>
                             </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-violet-400 dark:text-violet-500 flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className={`w-5 h-5 text-violet-400 dark:text-violet-500 flex-shrink-0 group-hover:translate-x-1 transition-transform ${loadingId === 'card-6' ? 'opacity-0' : 'opacity-100'}`} />
                     </div>
                 </div>
 

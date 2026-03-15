@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNavSpinner } from '../../hooks/useNavSpinner';
+import { Loader2 } from 'lucide-react';
 import { SynonymWord } from '../quiz/types';
 import { quizEngine } from '../quiz/engine';
 import { SynapticLoader } from './SynapticLoader';
@@ -10,6 +12,7 @@ interface SynonymsConfigProps {
 
 export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart }) => {
     const navigate = useNavigate();
+    const { loadingId, handleNavigation } = useNavSpinner();
     const [sortedData, setSortedData] = useState<SynonymWord[]>([]);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -95,7 +98,7 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
 
                     {/* Daily Challenge */}
                     <button
-                        onClick={() => navigate('/synonyms/quiz?mode=speed')}
+                        onClick={() => handleNavigation('daily-challenge', () => navigate('/synonyms/quiz?mode=speed'))}
                         className="w-full text-left bg-sky-50 dark:bg-sky-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-sky-100 dark:border-sky-900/40 border-b-4 border-b-sky-200 dark:border-b-sky-700 hover:border-sky-300 dark:hover:border-sky-500 mb-8 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-900"
                     >
                         <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -122,7 +125,7 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
                     <div className="grid grid-cols-1 gap-4 mb-8">
                         {/* Phase 1: Guided Learning */}
                         <button
-                            onClick={() => navigate('/synonyms/phase1')}
+                            onClick={() => handleNavigation('guided-learning', () => navigate('/synonyms/phase1'))}
                             className="w-full text-left bg-amber-50 dark:bg-amber-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-amber-100 dark:border-amber-900/40 border-b-4 border-b-amber-200 dark:border-b-amber-700 hover:border-amber-300 dark:hover:border-amber-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 dark:focus:ring-offset-slate-900"
                         >
                             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -162,10 +165,10 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
 
                         {/* Mode 2: Cluster List */}
                         <button
-                            onClick={() => {
+                            onClick={() => handleNavigation('master-list', () => {
                                 onStart(sortedData, { mode: 'list' });
                                 navigate('/synonyms/list');
-                            }}
+                            })}
                             className="w-full text-left bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-emerald-100 dark:border-emerald-900/40 border-b-4 border-b-emerald-200 dark:border-b-emerald-700 hover:border-emerald-300 dark:hover:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900"
                         >
                             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -188,7 +191,7 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
 
                         {/* Game 1: The Imposter Trap */}
                         <button
-                            onClick={() => navigate('/synonyms/quiz?mode=imposter')}
+                            onClick={() => handleNavigation('game-1', () => navigate('/synonyms/quiz?mode=imposter'))}
                             className="w-full text-left bg-violet-50 dark:bg-violet-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-violet-100 dark:border-violet-900/40 border-b-4 border-b-violet-200 dark:border-b-violet-700 hover:border-violet-300 dark:hover:border-violet-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 dark:focus:ring-offset-slate-900"
                         >
                             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -206,7 +209,7 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
 
                         {/* Game 2: Tap & Connect */}
                         <button
-                            onClick={() => navigate('/synonyms/quiz?mode=connect')}
+                            onClick={() => handleNavigation('game-2', () => navigate('/synonyms/quiz?mode=connect'))}
                             className="w-full text-left bg-rose-50 dark:bg-rose-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-rose-100 dark:border-rose-900/40 border-b-4 border-b-rose-200 dark:border-b-rose-700 hover:border-rose-300 dark:hover:border-rose-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 dark:focus:ring-offset-slate-900"
                         >
                             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -225,7 +228,7 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
 
                         {/* Game 3: Speed Mode */}
                         <button
-                            onClick={() => navigate('/synonyms/quiz?mode=speed')}
+                            onClick={() => handleNavigation('game-3', () => navigate('/synonyms/quiz?mode=speed'))}
                             className="w-full text-left bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-indigo-100 dark:border-indigo-900/40 border-b-4 border-b-indigo-200 dark:border-b-indigo-700 hover:border-indigo-300 dark:hover:border-indigo-500 md:col-span-2 lg:col-span-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900"
                         >
                             <div className="flex items-center gap-4 flex-1 min-w-0">

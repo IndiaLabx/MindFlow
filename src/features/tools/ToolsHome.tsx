@@ -1,10 +1,13 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNavSpinner } from '../../hooks/useNavSpinner';
+import { Loader2 } from 'lucide-react';
 import { Wrench, Image as ImageIcon, FileText, Presentation, ArrowLeft, ChevronRight } from 'lucide-react';
 
 const ToolsHome: React.FC = () => {
     const navigate = useNavigate();
+    const { loadingId, handleNavigation } = useNavSpinner();
 
     const tools = [
         {
@@ -66,14 +69,19 @@ const ToolsHome: React.FC = () => {
                     {tools.map((tool) => (
                         <div
                             key={tool.id}
-                            onClick={!tool.disabled ? tool.action : undefined}
+                            onClick={!tool.disabled ? () => handleNavigation(tool.id, tool.action) : undefined}
                             className={`
                                 p-6 rounded-2xl relative z-20 transition-all duration-200 shadow-sm flex items-center justify-between
                                 ${tool.bgColorClass} ${tool.borderClasses}
                                 ${tool.disabled ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer active:translate-y-1 active:border-b group'}
                             `}
                         >
-                            <div className="flex items-center gap-4 flex-1">
+                            {loadingId === tool.id ? (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Loader2 className="w-8 h-8 text-current opacity-70 animate-spin" />
+                                </div>
+                            ) : null}
+                            <div className={`flex items-center gap-4 flex-1 transition-opacity ${loadingId === tool.id ? 'opacity-0' : 'opacity-100'}`}>
                                 <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
                                     {tool.icon}
                                 </div>
@@ -92,7 +100,7 @@ const ToolsHome: React.FC = () => {
                                 </div>
                             </div>
                             {!tool.disabled && (
-                                <ChevronRight className={`w-5 h-5 ${tool.chevronClass} flex-shrink-0 group-hover:translate-x-1 transition-transform`} />
+                                <ChevronRight className={`w-5 h-5 ${tool.chevronClass} flex-shrink-0 group-hover:translate-x-1 transition-transform ${loadingId === tool.id ? 'opacity-0' : 'opacity-100'}`} />
                             )}
                         </div>
                     ))}

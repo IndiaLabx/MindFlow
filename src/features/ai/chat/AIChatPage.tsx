@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2, Search, Download, Zap } from 'lucide-react';
+import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2, Search, Download, Zap, Settings, X } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ChatMessage } from './ChatMessage';
@@ -33,6 +33,7 @@ export const AIChatPage: React.FC = () => {
 
     const [inputValue, setInputValue] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
     const quickStarters = [
@@ -252,77 +253,42 @@ export const AIChatPage: React.FC = () => {
                 <header className="flex h-14 items-center gap-2 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-slate-950/80 px-2 sm:px-4 backdrop-blur-sm shrink-0 overflow-x-auto overflow-y-hidden no-scrollbar">
                     <button
                         onClick={() => navigate(-1)}
-                        className="rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors"
+                        className="rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors shrink-0"
                         aria-label="Go back"
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </button>
                     <button
                          onClick={() => setIsSidebarOpen(true)}
-                         className="md:hidden rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+                         className="md:hidden rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors shrink-0"
                     >
                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
                     </button>
-                    <div className="flex flex-1 items-center justify-between min-w-max gap-4">
-                        <div className="flex items-center gap-2">
-                            <Brain className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                            <select
-                                value={activePersona}
-                                onChange={(e) => setActivePersona(e.target.value as any)}
-                                className="bg-transparent font-semibold text-gray-900 dark:text-white border-0 outline-none focus:ring-0 p-0 text-base"
-                            >
-                                {Object.values(AI_PERSONAS).map(p => (
-    <option key={p.id} value={p.id} className="text-gray-900 dark:text-white bg-white dark:bg-slate-900">
-        {p.name}
-    </option>
-))}
-                            </select>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                            <div className="w-px h-4 bg-gray-300 dark:bg-gray-700 mx-2"></div>
-
-                            <div className="flex items-center gap-2 mr-2">
-                                <Zap className="h-4 w-4 text-amber-500" />
-                                <select
-                                    value={activeModel}
-                                    onChange={(e) => setActiveModel(e.target.value as any)}
-                                    className="bg-transparent font-medium text-xs text-gray-700 dark:text-gray-300 border-0 outline-none focus:ring-0 p-0"
-                                >
-                                    {Object.values(MODEL_CONFIGS).map(m => (
-                                        <option key={m.id} value={m.id} className="text-gray-900 dark:text-white bg-white dark:bg-slate-900">
-                                            {m.displayName}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">App Context</span>
-                            <button
-                                onClick={() => setIncludeAppData(!includeAppData)}
-                                className={cn(
-                                    "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
-                                    includeAppData ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
-                                )}
-                            >
-                                <span className={cn(
-                                    "inline-block h-3 w-3 transform rounded-full bg-white transition-transform",
-                                    includeAppData ? 'translate-x-5' : 'translate-x-1'
-                                )} />
-                            </button>
-
-                            <div className="w-px h-4 bg-gray-300 dark:bg-gray-700 mx-2"></div>
-
-                            <button
-                                onClick={exportToPDF}
-                                disabled={isExporting || messages.length === 0}
-                                className="p-1.5 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors disabled:opacity-50"
-                                title="Download as PDF"
-                            >
-                                {isExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-                            </button>
-                        </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <Brain className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                        <select
+                            value={activePersona}
+                            onChange={(e) => setActivePersona(e.target.value as any)}
+                            className="bg-transparent font-semibold text-gray-900 dark:text-white border-0 outline-none focus:ring-0 p-0 text-base min-w-[120px]"
+                        >
+                            {Object.values(AI_PERSONAS).map(p => (
+                                <option key={p.id} value={p.id} className="text-gray-900 dark:text-white bg-white dark:bg-slate-900">
+                                    {p.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
+
+                    <div className="flex-1"></div>
+
+                    <button
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors shrink-0"
+                        aria-label="Open settings"
+                    >
+                        <Settings className="h-5 w-5" />
+                    </button>
                 </header>
 
                 {/* Messages Scroll Area */}
@@ -400,7 +366,95 @@ export const AIChatPage: React.FC = () => {
                         onStopGenerating={stopGenerating}
                     />
                 </div>
+                </div>
+
+            {/* Settings Right Sidebar */}
+            <div className={cn(
+                "fixed inset-y-0 right-0 z-[60] w-72 transform bg-white dark:bg-slate-900 border-l border-gray-200 dark:border-gray-800 transition-transform duration-300 ease-in-out flex flex-col shadow-xl",
+                isSettingsOpen ? "translate-x-0" : "translate-x-full"
+            )}>
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
+                    <button
+                        onClick={() => setIsSettingsOpen(false)}
+                        className="rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors"
+                        aria-label="Close settings"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                    {/* Model Selector */}
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <Zap className="h-4 w-4 text-amber-500" />
+                            AI Model
+                        </label>
+                        <div className="relative">
+                            <select
+                                value={activeModel}
+                                onChange={(e) => setActiveModel(e.target.value as any)}
+                                className="w-full appearance-none rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800 py-2.5 pl-3 pr-10 text-sm text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            >
+                                {Object.values(MODEL_CONFIGS).map(m => (
+                                    <option key={m.id} value={m.id} className="text-gray-900 dark:text-white bg-white dark:bg-slate-900">
+                                        {m.displayName}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* App Context Toggle */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 block">App Context</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 block mt-1">Include application data in chat</span>
+                        </div>
+                        <button
+                            onClick={() => setIncludeAppData(!includeAppData)}
+                            className={cn(
+                                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 shrink-0",
+                                includeAppData ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                            )}
+                        >
+                            <span className={cn(
+                                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out",
+                                includeAppData ? 'translate-x-6' : 'translate-x-1'
+                            )} />
+                        </button>
+                    </div>
+
+                    <div className="w-full h-px bg-gray-200 dark:bg-gray-800"></div>
+
+                    {/* Export PDF Button */}
+                    <div>
+                        <button
+                            onClick={() => {
+                                setIsSettingsOpen(false);
+                                exportToPDF();
+                            }}
+                            disabled={isExporting || messages.length === 0}
+                            className="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                            Download as PDF
+                        </button>
+                    </div>
+                </div>
             </div>
+
+            {/* Settings Overlay */}
+            {isSettingsOpen && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/50 transition-opacity"
+                    onClick={() => setIsSettingsOpen(false)}
+                />
+            )}
         </div>
     );
 };

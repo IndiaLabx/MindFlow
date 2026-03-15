@@ -477,8 +477,16 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
                 disabled={isStartingQuiz}
                 className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white border-0 shadow-lg px-6 flex items-center justify-center gap-2 font-semibold"
               >
-                <Save className="w-4 h-4" />
-                {isStartingQuiz ? 'Creating...' : `Create Quiz (${filteredMetadata.length})`}
+                {isStartingQuiz ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Create Quiz ({filteredMetadata.length})
+                  </>
+                )}
               </Button>
             </div>
           </div>
