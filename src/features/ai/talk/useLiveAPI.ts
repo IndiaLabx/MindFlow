@@ -194,6 +194,7 @@ export function useLiveAPI() {
             model: 'gemini-2.5-flash-native-audio-preview-09-2025',
             config: {
               responseModalities: [Modality.AUDIO],
+              outputAudioTranscription: {},
               speechConfig: {
                 voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } },
               },
@@ -257,17 +258,6 @@ export function useLiveAPI() {
                 const parts = message.serverContent?.modelTurn?.parts;
                 if (parts) {
                     for (const part of parts) {
-                        if (part.text) {
-                            setCurrentSubtitle(prev => {
-                                const newSub = prev + part.text;
-                                // Automatically save complete turns to transcript (basic heuristics)
-                                if (message.serverContent?.turnComplete) {
-                                    setTranscript(t => [...t, { role: 'model', text: newSub, timestamp: Date.now() }]);
-                                    setTimeout(() => setCurrentSubtitle(''), 3000); // Clear sub after a bit
-                                }
-                                return newSub;
-                            });
-                        }
                         if (part.inlineData?.data) {
                             setAgentState('speaking');
                             playAudioChunk(part.inlineData.data);
@@ -275,10 +265,20 @@ export function useLiveAPI() {
                     }
                 }
 
-                if (message.serverContent?.turnComplete && currentSubtitle) {
-                    // Fallback to push subtitle if missed in loop
-                    setTranscript(t => [...t, { role: 'model', text: currentSubtitle, timestamp: Date.now() }]);
-                    setTimeout(() => setCurrentSubtitle(''), 3000);
+                // Verbatim transcript
+                const outputTranscription = (message.serverContent as any)?.outputTranscription || (message.serverContent as any)?.output_transcription;
+                if (outputTranscription?.text) {
+                    setCurrentSubtitle(prev => prev + outputTranscription.text);
+                }
+
+                if (message.serverContent?.turnComplete) {
+                    setCurrentSubtitle(current => {
+                        if (current) {
+                            setTranscript(t => [...t, { role: 'model', text: current, timestamp: Date.now() }]);
+                            setTimeout(() => setCurrentSubtitle(''), 3000);
+                        }
+                        return current;
+                    });
                 }
               },
               onclose: (e) => {
