@@ -135,28 +135,28 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="font-sans text-text-main antialiased bg-gradient-to-br from-[#F3F1FF] via-[#FEF8F2] to-[#EAFEEF]">
-      <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="font-sans text-text-main antialiased bg-gradient-to-br from-[#F3F1FF] via-[#FEF8F2] to-[#EAFEEF] h-full flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4 relative">
         <button
          onClick={onBack}
-         className="absolute top-8 left-8 z-20 flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition-colors"
+         className="absolute top-4 left-4 md:top-8 md:left-8 z-20 flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition-colors"
        >
          <ArrowLeft className="w-4 h-4" />
          Back to Home
        </button>
        <div className="w-full max-w-md">
-         <div className="bg-white dark:bg-gray-800/70 backdrop-blur-xl rounded-xl shadow-form p-8 md:p-10 border border-white/30">
-           <div className="flex justify-center items-center gap-2 mb-8">
+         <div className="bg-white dark:bg-gray-800/70 backdrop-blur-xl rounded-xl shadow-form p-6 md:p-10 border border-white/30">
+           <div className="flex justify-center items-center gap-2 mb-6 md:mb-8">
              <div className="bg-indigo-600 p-2 rounded-lg">
                <BrainCircuit className="h-6 w-6 text-white" />
              </div>
              <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">MindFlow</span>
            </div>
-           <div className="flex border-b border-border-color mb-8 text-center">
+           <div className="flex border-b border-border-color mb-6 md:mb-8 text-center">
              <button onClick={() => setIsSignUp(false)} className={`w-1/2 pb-3 font-bold ${!isSignUp ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-text-secondary hover:text-text-main transition-colors'}`}>Sign In</button>
              <button onClick={() => setIsSignUp(true)} className={`w-1/2 pb-3 font-semibold ${isSignUp ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-text-secondary hover:text-text-main transition-colors'}`}>Sign Up</button>
            </div>
-           <form onSubmit={handleAuthAction} className="space-y-6">
+           <form onSubmit={handleAuthAction} className="space-y-4 md:space-y-6">
              {isSignUp && (
                <div>
                  <label className="block text-sm font-semibold text-text-main mb-2" htmlFor="fullName">Full Name</label>
@@ -233,7 +233,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                </button>
              </div>
            </form>
-           <div className="relative my-6">
+           <div className="relative my-5 md:my-6">
              <div aria-hidden="true" className="absolute inset-0 flex items-center"><div className="w-full border-t border-border-color"></div></div>
              <div className="relative flex justify-center text-sm"><span className="px-2 bg-white dark:bg-gray-800/0 text-text-secondary">Or</span></div>
            </div>
