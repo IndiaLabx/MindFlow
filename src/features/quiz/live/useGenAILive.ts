@@ -1,130 +1,114 @@
 /**
- * useLiveAPI Hook
+ * src/features/quiz/live/useGenAILive.ts
  *
- * Core integration for the Gemini Multimodal Live API using `@google/genai`.
+ * Modified version of useLiveAPI.ts specifically for the Quiz Master feature.
  */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from "@google/genai";
 import { AudioRecorderWorkletCode, arrayBufferToBase64, floatTo16BitPCM, base64ToUint8Array, playSfx } from '../../ai/talk/audio-helpers';
 import { SavedQuiz } from '../types';
 
-type ConnectionState = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
-type AgentState = 'idle' | 'listening' | 'speaking';
-export type VoicePersonality = 'Aoede' | 'Puck' | 'Fenrir' | 'Kore' | 'Charon';
+export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
+export type AgentState = 'idle' | 'listening' | 'speaking';
+export type VoicePersonality = 'Aoede' | 'Charon' | 'Fenrir' | 'Kore' | 'Puck';
 
-export interface ChatMessage {
+export interface TranscriptMessage {
     role: 'user' | 'model';
     text: string;
     timestamp: number;
 }
 
 interface UseGenAILiveOptions {
-    quiz: SavedQuiz;
-    voice: 'Fenrir' | 'Kore';
-    onStateChange?: (state: 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected') => void;
-    onError?: (error: Error) => void;
+    quiz: SavedQuiz | null;
 }
 
-export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILiveOptions) => {
-    const [connectionState, _setConnectionState] = useState<ConnectionState>('idle');
-    const setConnectionState = (val: any) => {
-        if (typeof val === 'function') {
-            _setConnectionState((prev) => {
-                const n = val(prev);
-                onStateChange?.(n as any);
-                return n;
-            });
-        } else {
-            _setConnectionState(val);
-            onStateChange?.(val);
-        }
-    };
+export function useGenAILive({ quiz }: UseGenAILiveOptions) {
+    const [connectionState, setConnectionState] = useState<ConnectionState>('idle');
     const [agentState, setAgentState] = useState<AgentState>('idle');
-    const [errorMsg, _setErrorMsg] = useState<string | null>(null);
-    const setErrorMsg = (val: string | null) => {
-        _setErrorMsg(val);
-        if (val) onError?.(new Error(val));
-    };
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [isMuted, setIsMuted] = useState(false);
-    const [topic, setTopic] = useState<string>('Casual Conversation');
+    const [voiceName, setVoiceName] = useState<VoicePersonality>('Fenrir');
 
     // Subtitles and Transcript
     const [currentSubtitle, setCurrentSubtitle] = useState<string>('');
-    const [transcript, setTranscript] = useState<ChatMessage[]>([]);
+    const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
 
+    // Audio State Refs
     const audioContextRef = useRef<AudioContext | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null);
-    const workletNodeRef = useRef<AudioWorkletNode | null>(null);
     const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
-    const sessionRef = useRef<any>(null);
+    const workletNodeRef = useRef<AudioWorkletNode | null>(null);
 
-    // Playback state
-    const nextStartTimeRef = useRef<number>(0);
-    const audioQueueRef = useRef<AudioBufferSourceNode[]>([]);
-
-    // Analyzers for visualization
+    // Visualizer Analysers
     const userAnalyserRef = useRef<AnalyserNode | null>(null);
     const aiAnalyserRef = useRef<AnalyserNode | null>(null);
 
+    // Connection/Session Refs
+    const sessionRef = useRef<any>(null);
     const connectionIdRef = useRef<number>(0);
     const isConnectedRef = useRef<boolean>(false);
     const hasErrorRef = useRef<boolean>(false);
 
-    const playAudioChunk = async (base64Audio: string) => {
-        if (!audioContextRef.current || !isConnectedRef.current) return;
+    // Playback Queue Refs
+    const nextStartTimeRef = useRef<number>(0);
+    const audioQueueRef = useRef<AudioBufferSourceNode[]>([]);
+
+    const playAudioChunk = useCallback((base64Data: string) => {
+        if (!audioContextRef.current || audioContextRef.current.state === 'closed') return;
+        const ctx = audioContextRef.current;
 
         try {
-          const audioBytes = base64ToUint8Array(base64Audio);
-          const pcmData = new Int16Array(audioBytes.buffer);
-          const floatData = new Float32Array(pcmData.length);
-          for (let i = 0; i < pcmData.length; i++) {
-            floatData[i] = pcmData[i] / 32768.0;
-          }
-
-          const audioBuffer = audioContextRef.current.createBuffer(1, floatData.length, 24000);
-          audioBuffer.copyToChannel(floatData, 0);
-
-          const source = audioContextRef.current.createBufferSource();
-          source.buffer = audioBuffer;
-
-          if (!aiAnalyserRef.current || aiAnalyserRef.current.context !== audioContextRef.current) {
-            aiAnalyserRef.current = audioContextRef.current.createAnalyser();
-            aiAnalyserRef.current.fftSize = 256;
-            aiAnalyserRef.current.smoothingTimeConstant = 0.8;
-            aiAnalyserRef.current.connect(audioContextRef.current.destination);
-          }
-          source.connect(aiAnalyserRef.current);
-
-          const currentTime = audioContextRef.current.currentTime;
-          const startTime = Math.max(currentTime, nextStartTimeRef.current);
-
-          source.start(startTime);
-          nextStartTimeRef.current = startTime + audioBuffer.duration;
-
-          audioQueueRef.current.push(source);
-          source.onended = () => {
-            audioQueueRef.current = audioQueueRef.current.filter(s => s !== source);
-            if (audioQueueRef.current.length === 0) {
-                setAgentState('listening');
+            const audioBytes = base64ToUint8Array(base64Data);
+            const pcmData = new Int16Array(audioBytes.buffer);
+            const floatData = new Float32Array(pcmData.length);
+            for (let i = 0; i < pcmData.length; i++) {
+                floatData[i] = pcmData[i] / 32768.0;
             }
-          };
+
+            const audioBuffer = ctx.createBuffer(1, floatData.length, 24000);
+            audioBuffer.copyToChannel(floatData, 0);
+
+            const source = ctx.createBufferSource();
+            source.buffer = audioBuffer;
+
+            if (!aiAnalyserRef.current) {
+                aiAnalyserRef.current = ctx.createAnalyser();
+                aiAnalyserRef.current.fftSize = 256;
+                aiAnalyserRef.current.smoothingTimeConstant = 0.8;
+            }
+
+            source.connect(aiAnalyserRef.current);
+            aiAnalyserRef.current.connect(ctx.destination);
+
+            source.onended = () => {
+                const q = audioQueueRef.current;
+                const idx = q.indexOf(source);
+                if (idx > -1) q.splice(idx, 1);
+                if (q.length === 0) {
+                    setAgentState('listening');
+                }
+            };
+
+            const currentTime = ctx.currentTime;
+            const startTime = Math.max(currentTime, nextStartTimeRef.current);
+
+            source.start(startTime);
+            audioQueueRef.current.push(source);
+
+            nextStartTimeRef.current = startTime + audioBuffer.duration;
 
         } catch (e) {
-          console.error("Error playing audio chunk", e);
+            console.error("Audio chunk playback failed:", e);
         }
-    };
+    }, []);
 
     const cleanup = useCallback(() => {
-        connectionIdRef.current++;
         isConnectedRef.current = false;
-        hasErrorRef.current = false;
-        nextStartTimeRef.current = 0;
+        connectionIdRef.current++; // Invalidates pending callbacks
 
         if (sessionRef.current) {
-          try {
-            sessionRef.current.close();
-          } catch (e) {}
-          sessionRef.current = null;
+            try { sessionRef.current.close(); } catch (e) {}
+            sessionRef.current = null;
         }
 
         if (workletNodeRef.current) {
@@ -136,15 +120,12 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
         }
 
         if (sourceNodeRef.current) {
-          try { sourceNodeRef.current.disconnect(); } catch (e) {}
-          sourceNodeRef.current = null;
+             try { sourceNodeRef.current.disconnect(); } catch (e) {}
+             // DO NOT clear sourceNodeRef or userAnalyserRef here so mic stays warm.
         }
 
-        // IMPORTANT: We do NOT stop mediaStream tracks here anymore if we want to keep mic open for pre-connect meter.
-        // We will stop it explicitly when the component unmounts entirely in useEffect.
-        // BUT to stop the active recording loop:
-        if (audioContextRef.current) {
-          try { audioContextRef.current.suspend(); } catch (e) {}
+        if (audioContextRef.current && audioContextRef.current.state === 'running') {
+             try { audioContextRef.current.suspend(); } catch (e) {}
         }
 
         audioQueueRef.current.forEach(node => {
@@ -209,7 +190,11 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
 
           const ai = new GoogleGenAI({ apiKey: apiKey });
 
-          const systemInstruction = `You are a lively Quiz Master running an interactive audio quiz game.\n          The user has created a quiz named "${quiz.name || 'Untitled Quiz'}" about ${quiz.filters.subject}.\n          It consists of ${quiz.questions.length} questions.\n          Keep your responses short, friendly, and energetic. Guide the user through the quiz enthusiastically.`;
+          const systemInstruction = `You are a lively Quiz Master running an interactive audio quiz game.
+          The user has created a quiz named "${quiz?.name || 'Untitled Quiz'}" about ${quiz?.filters?.subject || 'general knowledge'}.
+          It consists of ${quiz?.questions?.length || 0} questions.
+          Keep your responses short, friendly, and energetic. Guide the user through the quiz enthusiastically.
+          Ask them one question at a time and wait for their answer. Speak naturally.`;
 
           const sessionPromise = ai.live.connect({
             model: 'gemini-2.5-flash-native-audio-preview-09-2025',
@@ -217,7 +202,7 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
               responseModalities: [Modality.AUDIO],
               outputAudioTranscription: {},
               speechConfig: {
-                voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } },
+                voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } },
               },
               systemInstruction: systemInstruction,
             },
@@ -341,7 +326,7 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
               cleanup();
           }
         }
-    }, [cleanup, voice, topic, initMic, currentSubtitle]);
+    }, [cleanup, quiz, voiceName, initMic, currentSubtitle]);
 
     const muteRef = useRef(isMuted);
     useEffect(() => {
@@ -365,11 +350,9 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
         setIsMuted(prev => !prev);
     };
 
-
-
-    const changeTopic = (newTopic: string) => {
+    const changeVoice = (newVoice: VoicePersonality) => {
         if (connectionState === 'connected') disconnect();
-        setTopic(newTopic);
+        setVoiceName(newVoice);
     };
 
     // Full Unmount Cleanup
@@ -393,12 +376,12 @@ export const useGenAILive = ({ quiz, voice, onStateChange, onError }: UseGenAILi
         userAnalyser: userAnalyserRef.current,
         aiAnalyser: aiAnalyserRef.current,
         isMuted,
-        voice,
+        voiceName,
         currentSubtitle,
         transcript,
         connect,
         disconnect,
         toggleMute,
-        changeTopic
+        changeVoice
     };
 }
