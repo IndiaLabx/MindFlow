@@ -190,11 +190,27 @@ export function useGenAILive({ quiz }: UseGenAILiveOptions) {
 
           const ai = new GoogleGenAI({ apiKey: apiKey });
 
+                    let formattedQuestions = '';
+          if (quiz && quiz.questions && quiz.questions.length > 0) {
+              formattedQuestions = '\n\nHere are the questions for the quiz:\n';
+              quiz.questions.forEach((q, index) => {
+                  formattedQuestions += `Q${index + 1}: ${q.question}\nOptions: `;
+                  const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+                  q.options.forEach((opt, optIndex) => {
+                      formattedQuestions += `${labels[optIndex] || optIndex}) ${opt} `;
+                  });
+
+                  const correctIndex = q.options.findIndex(opt => opt === q.correct);
+                  const correctLabel = correctIndex >= 0 ? labels[correctIndex] : '?';
+                  formattedQuestions += `\nCorrect Answer: ${correctLabel}) ${q.correct}\n\n`;
+              });
+          }
+
           const systemInstruction = `You are a lively Quiz Master running an interactive audio quiz game.
           The user has created a quiz named "${quiz?.name || 'Untitled Quiz'}" about ${quiz?.filters?.subject || 'general knowledge'}.
           It consists of ${quiz?.questions?.length || 0} questions.
           Keep your responses short, friendly, and energetic. Guide the user through the quiz enthusiastically.
-          Ask them one question at a time and wait for their answer. Speak naturally.`;
+          Ask them one question at a time and wait for their answer. Speak naturally.${formattedQuestions}`;
 
           const sessionPromise = ai.live.connect({
             model: 'gemini-2.5-flash-native-audio-preview-09-2025',
