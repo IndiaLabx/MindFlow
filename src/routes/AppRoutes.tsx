@@ -220,8 +220,6 @@ const AppRoutesContent: React.FC = () => {
 
                     <Route path="/ai/chat" element={<AIChatPage />} />
                     <Route path="/ai/talk" element={<AITalkPage />} />
-
-                    <Route path="/tools/flashcard-maker" element={<FlashcardMaker />} />
                     <Route path="/tools/bilingual-pdf-maker" element={<BilingualPdfMaker />} />
                     <Route path="/tools/quiz-pdf-ppt-generator" element={<QuizPdfPptGenerator />} />
                 </Route>
@@ -327,6 +325,8 @@ const AppRoutesContent: React.FC = () => {
                         onJump={flashcardStore.jumpToCard}
                     />
                 } />
+
+                                <Route path="/tools/flashcard-maker" element={<FlashcardMaker />} />
 
                 {/* Fallback Route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
