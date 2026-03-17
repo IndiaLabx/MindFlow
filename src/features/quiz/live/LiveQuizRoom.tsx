@@ -194,7 +194,7 @@ export const LiveQuizRoom: React.FC = () => {
             </div>
 
             {/* Main Visualizer Avatar Area */}
-            <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md mx-auto relative z-10 my-20">
+            <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md mx-auto relative z-10 mb-10 mt-5">
                 <div className="relative flex items-center justify-center w-64 h-64">
                     {/* HTML5 Canvas Dynamic Blob Visualizer */}
                     <VoiceBlobVisualizer
@@ -236,7 +236,7 @@ export const LiveQuizRoom: React.FC = () => {
             </div>
 
             {/* Subtitles Overlay */}
-            <div className="w-full max-w-lg mx-auto px-6 min-h-[80px] mb-8 flex flex-col items-center justify-end z-20 pointer-events-none">
+            <div className="w-full max-w-lg mx-auto px-6 min-h-[80px] mb-4 flex flex-col items-center justify-end z-20 pointer-events-none">
                  {showSubtitles && currentSubtitle && connectionState === 'connected' && (
                      <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 text-center animate-in fade-in slide-in-from-bottom-2 shadow-2xl w-full max-w-full overflow-hidden flex flex-col justify-end" style={{ maxHeight: '140px' }}>
                          <div
@@ -256,7 +256,7 @@ export const LiveQuizRoom: React.FC = () => {
             </div>
 
             {/* Bottom Controls */}
-            <div className="w-full max-w-md mx-auto pb-12 z-20 flex flex-col items-center gap-6">
+            <div className="w-full max-w-md mx-auto pb-6 z-20 flex flex-col items-center gap-6">
                  {connectionState === 'connected' ? (
                     <div className="flex items-center justify-center gap-6 w-full px-4 animate-in fade-in slide-in-from-bottom-4">
                         {/* CC Toggle */}
