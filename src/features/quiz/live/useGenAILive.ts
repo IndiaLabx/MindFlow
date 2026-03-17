@@ -217,6 +217,7 @@ export function useGenAILive({ quiz }: UseGenAILiveOptions) {
             config: {
               responseModalities: [Modality.AUDIO],
               outputAudioTranscription: {},
+              inputAudioTranscription: {},
               realtimeInputConfig: {
                 automaticActivityDetection: {
                   endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH,
@@ -297,6 +298,25 @@ export function useGenAILive({ quiz }: UseGenAILiveOptions) {
                             playAudioChunk(part.inlineData.data);
                         }
                     }
+                }
+
+
+                // User input transcript
+                const inputTranscription = (message.serverContent as any)?.inputTranscription || (message.serverContent as any)?.input_transcription;
+                if (inputTranscription?.text) {
+                    // Update user transcript
+                    setTranscript(t => {
+                        const newT = [...t];
+                        const lastMsg = newT[newT.length - 1];
+                        if (lastMsg && lastMsg.role === 'user') {
+                            // Append to recent user message
+                            newT[newT.length - 1] = { ...lastMsg, text: lastMsg.text + ' ' + inputTranscription.text, timestamp: Date.now() };
+                        } else {
+                            // New user message
+                            newT.push({ role: 'user', text: inputTranscription.text, timestamp: Date.now() });
+                        }
+                        return newT;
+                    });
                 }
 
                 // Verbatim transcript

@@ -29,9 +29,9 @@ export function useLiveAPI() {
     const [transcript, setTranscript] = useState<ChatMessage[]>([]);
 
     // Web Speech API for transcribing user's voice
-    const recognitionRef = useRef<any>(null);
-    const lastFinalUserTextRef = useRef<string>('');
-    const isRecognitionActiveRef = useRef<boolean>(false);
+
+
+
 
     const audioContextRef = useRef<AudioContext | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -99,10 +99,7 @@ export function useLiveAPI() {
         connectionIdRef.current++;
         isConnectedRef.current = false;
 
-        if (recognitionRef.current) {
-            isRecognitionActiveRef.current = false;
-            try { recognitionRef.current.stop(); } catch (e) {}
-        }
+
         hasErrorRef.current = false;
         nextStartTimeRef.current = 0;
 
@@ -184,88 +181,12 @@ export function useLiveAPI() {
         hasErrorRef.current = false;
         setCurrentSubtitle('');
         setTranscript([]);
-        lastFinalUserTextRef.current = '';
 
         // Setup User Speech Recognition
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (SpeechRecognition && !recognitionRef.current) {
-            recognitionRef.current = new SpeechRecognition();
-            recognitionRef.current.continuous = true;
-            recognitionRef.current.interimResults = true;
-            recognitionRef.current.lang = 'en-US';
 
-            recognitionRef.current.onresult = (event: any) => {
-                let interimTranscript = '';
-                let finalTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-
-                if (finalTranscript.trim()) {
-                    setTranscript(t => {
-                        // Avoid duplicates if fired rapidly
-                        const lastMsg = t[t.length - 1];
-                        if (lastMsg && lastMsg.role === 'user' && Date.now() - lastMsg.timestamp < 2000) {
-                            // Append to recent user message
-                            const newT = [...t];
-                            newT[newT.length - 1] = { ...lastMsg, text: lastMsg.text + ' ' + finalTranscript.trim() };
-                            return newT;
-                        } else {
-                            // New user message
-                            return [...t, { role: 'user', text: finalTranscript.trim(), timestamp: Date.now() }];
-                        }
-                    });
-                }
-            };
-
-            recognitionRef.current.onerror = (event: any) => {
-                console.warn('Speech recognition error', event.error);
-            };
-
-            recognitionRef.current.onend = () => {
-                if (isConnectedRef.current && isRecognitionActiveRef.current) {
-                    try { recognitionRef.current.start(); } catch (e) {}
-                }
-            };
-        }
 
         try {
-                  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (SpeechRecognition && !recognitionRef.current) {
-            recognitionRef.current = new SpeechRecognition();
-            recognitionRef.current.continuous = true;
-            recognitionRef.current.interimResults = true;
-            recognitionRef.current.lang = 'en-US';
 
-            recognitionRef.current.onresult = (event: any) => {
-                let finalTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    }
-                }
-
-                if (finalTranscript.trim()) {
-                    setTranscript(t => {
-                        const newT = [...t];
-                        newT.push({ role: 'user', text: finalTranscript.trim(), timestamp: Date.now() });
-                        return newT;
-                    });
-                }
-            };
-
-            recognitionRef.current.onend = () => {
-                if (isConnectedRef.current && isRecognitionActiveRef.current) {
-                    try { recognitionRef.current.start(); } catch (e) {}
-                }
-            };
-        }
 await initMic();
           if (!audioContextRef.current) throw new Error("Audio Context not initialized");
 
@@ -290,6 +211,7 @@ await initMic();
             config: {
               responseModalities: [Modality.AUDIO],
               outputAudioTranscription: {},
+              inputAudioTranscription: {},
               speechConfig: {
                 voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } },
               },
@@ -305,15 +227,9 @@ await initMic();
                 playSfx(audioContextRef.current, 'connect');
 
                 if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-                if (recognitionRef.current) {
-                    isRecognitionActiveRef.current = true;
-                    try { recognitionRef.current.start(); } catch (e) {}
-                }
 
-                if (recognitionRef.current) {
-                    isRecognitionActiveRef.current = true;
-                    try { recognitionRef.current.start(); } catch (e) {}
-                }
+
+
 
                 try {
                   if (!audioContextRef.current || !mediaStreamRef.current || !sourceNodeRef.current) return;
@@ -369,6 +285,25 @@ await initMic();
                     }
                 }
 
+
+                // User input transcript
+                const inputTranscription = (message.serverContent as any)?.inputTranscription || (message.serverContent as any)?.input_transcription;
+                if (inputTranscription?.text) {
+                    // Update user transcript
+                    setTranscript(t => {
+                        const newT = [...t];
+                        const lastMsg = newT[newT.length - 1];
+                        if (lastMsg && lastMsg.role === 'user') {
+                            // Append to recent user message
+                            newT[newT.length - 1] = { ...lastMsg, text: lastMsg.text + ' ' + inputTranscription.text, timestamp: Date.now() };
+                        } else {
+                            // New user message
+                            newT.push({ role: 'user', text: inputTranscription.text, timestamp: Date.now() });
+                        }
+                        return newT;
+                    });
+                }
+
                 // Verbatim transcript
                 const outputTranscription = (message.serverContent as any)?.outputTranscription || (message.serverContent as any)?.output_transcription;
                 if (outputTranscription?.text) {
@@ -388,14 +323,8 @@ await initMic();
               onclose: (e) => {
                 if (connectionIdRef.current === currentConnectionId) {
                     isConnectedRef.current = false;
-                    if (recognitionRef.current) {
-                        isRecognitionActiveRef.current = false;
-                        try { recognitionRef.current.stop(); } catch (e) {}
-                    }
-                    if (recognitionRef.current) {
-                        isRecognitionActiveRef.current = false;
-                        try { recognitionRef.current.stop(); } catch (e) {}
-                    }
+
+
                     if (!hasErrorRef.current) {
                         setConnectionState('disconnected');
                         setAgentState('idle');
@@ -407,15 +336,9 @@ await initMic();
               onerror: (err) => {
                 if (connectionIdRef.current === currentConnectionId) {
                     isConnectedRef.current = false;
-                    if (recognitionRef.current) {
-                        isRecognitionActiveRef.current = false;
-                        try { recognitionRef.current.stop(); } catch (e) {}
-                    }
+
                     hasErrorRef.current = true;
-                    if (recognitionRef.current) {
-                        isRecognitionActiveRef.current = false;
-                        try { recognitionRef.current.stop(); } catch (e) {}
-                    }
+
                     setConnectionState('error');
                     setErrorMsg("Connection Error with AI Live Service");
                     playSfx(audioContextRef.current, 'disconnect');
