@@ -470,7 +470,7 @@ export const AIChatPage: React.FC = () => {
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="absolute inset-0 z-[55] flex flex-col bg-stone-900 overflow-hidden"
                     >
-                        <header className="flex h-14 items-center justify-between border-b border-stone-800 bg-stone-900/80 px-2 sm:px-4 backdrop-blur-sm shrink-0 relative">
+                        <header className="flex h-14 items-center justify-between border-b border-stone-800 bg-stone-900/80 px-2 sm:px-4 backdrop-blur-sm shrink-0 relative z-50">
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={handleEndLiveTalk}
