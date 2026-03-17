@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['mindflow-icon.svg'],
+          includeAssets: ['mindflow-icon.svg', 'sitemap.xml', 'robots.txt', 'googlef2cc72f43f58845a.html'],
           manifest: {
             name: 'MindFlow Quiz',
             short_name: 'MindFlow',
