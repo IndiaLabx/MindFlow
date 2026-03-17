@@ -220,7 +220,7 @@ export function useGenAILive({ quiz }: UseGenAILiveOptions) {
               realtimeInputConfig: {
                 automaticActivityDetection: {
                   endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH,
-                  silenceDurationMs: 600
+                  silenceDurationMs: 200
                 }
               },
               speechConfig: {
