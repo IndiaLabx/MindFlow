@@ -238,9 +238,9 @@ export const LiveQuizRoom: React.FC = () => {
             {/* Subtitles Overlay */}
             <div className="w-full max-w-lg mx-auto px-6 min-h-[80px] mb-8 flex flex-col items-center justify-end z-20 pointer-events-none">
                  {showSubtitles && currentSubtitle && connectionState === 'connected' && (
-                     <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 text-center animate-in fade-in slide-in-from-bottom-2 shadow-2xl w-full max-w-full overflow-hidden flex flex-col justify-end" style={{ maxHeight: '100px' }}>
+                     <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 text-center animate-in fade-in slide-in-from-bottom-2 shadow-2xl w-full max-w-full overflow-hidden flex flex-col justify-end" style={{ maxHeight: '140px' }}>
                          <div
-                             className="overflow-y-auto pointer-events-auto scrollbar-hide flex flex-col justify-end"
+                             className="overflow-y-auto pointer-events-auto scrollbar-thin scrollbar-thumb-stone-600 scrollbar-track-transparent flex flex-col justify-end pr-2"
                              ref={(el) => {
                                  if (el) {
                                      el.scrollTop = el.scrollHeight;
