@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2, Search, Download, Zap, Settings, X } from 'lucide-react';
+import { ArrowLeft, Brain, Plus, Trash2, MessageSquare, Loader2, Search, Download, Zap, Settings, X, Globe } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ChatMessage } from './ChatMessage';
@@ -28,6 +28,8 @@ export const AIChatPage: React.FC = () => {
         stopGenerating,
         includeAppData,
         setIncludeAppData,
+        groundingState,
+        setGroundingState,
         activeModel,
         setActiveModel,
         quota,
@@ -695,6 +697,28 @@ export const AIChatPage: React.FC = () => {
                                         {m.displayName}
                                     </option>
                                 ))}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Grounding with Google Toggle */}
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <Globe className="h-4 w-4 text-blue-500" />
+                            Grounding with Google (Search)
+                        </label>
+                        <div className="relative">
+                            <select
+                                value={groundingState}
+                                onChange={(e) => setGroundingState(e.target.value as any)}
+                                className="block w-full appearance-none rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+                            >
+                                <option value="auto">Auto (Default)</option>
+                                <option value="always">Always On</option>
+                                <option value="off">Off</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>

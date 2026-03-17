@@ -72,9 +72,12 @@ If they ask about general topics, be an encouraging educational assistant.
 - Use markdown formatting for readability.
 - Maintain context of the conversation to provide the best possible response.`;
 
+export type GroundingState = 'auto' | 'always' | 'off';
+
 export const useAIChat = () => {
     const [messages, setMessages] = useState<AIChatMessage[]>([]);
     const [activeModel, setActiveModel] = useState<ModelId>('gemini-2.5-flash');
+    const [groundingState, setGroundingState] = useState<GroundingState>('auto');
     const quota = useQuota(activeModel);
     const [includeAppData, setIncludeAppData] = useState(false);
     const { stats } = useProfileStats();
@@ -362,6 +365,37 @@ export const useAIChat = () => {
                 parts: userParts
             });
 
+
+            let shouldUseGrounding = false;
+            if (groundingState === 'always') {
+                shouldUseGrounding = true;
+            } else if (groundingState === 'auto') {
+                try {
+                    const preflightResponse = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                systemInstruction: {
+                                    parts: [{ text: "You are a decision engine. Analyze the user query. Does it require information about recent events, news, or knowledge after January 2025 to be answered accurately? Reply exactly with YES or NO." }]
+                                },
+                                contents: [{ role: "user", parts: [{ text: content }] }]
+                            })
+                        }
+                    );
+                    if (preflightResponse.ok) {
+                        const preflightData = await preflightResponse.json();
+                        const answer = preflightData.candidates?.[0]?.content?.parts?.[0]?.text?.trim()?.toUpperCase() || "NO";
+                        if (answer.includes("YES")) {
+                            shouldUseGrounding = true;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Grounding pre-flight check failed:", e);
+                }
+            }
+
             let finalSystemPrompt = SYSTEM_PROMPT;
 
             if (includeAppData && stats) {
@@ -369,7 +403,7 @@ export const useAIChat = () => {
                 finalSystemPrompt += contextStr;
             }
 
-            const requestBody = {
+                        const requestBody: any = {
                 systemInstruction: {
                     parts: [{ text: finalSystemPrompt }]
                 },
@@ -378,6 +412,10 @@ export const useAIChat = () => {
                     temperature: 0.7,
                 }
             };
+
+            if (shouldUseGrounding) {
+                requestBody.tools = [{ googleSearch: {} }];
+            }
 
             const response = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/${String(activeModel).startsWith('gemini') ? activeModel : 'gemini-2.5-flash'}:streamGenerateContent?key=${apiKey}&alt=sse`,
@@ -452,7 +490,7 @@ export const useAIChat = () => {
             abortControllerRef.current = null;
         }
 
-    }, [messages, currentConversationId, conversations, activeModel, includeAppData, stats, quota]);
+    }, [messages, currentConversationId, conversations, activeModel, includeAppData, stats, quota, groundingState]);
 
     return {
         messages,
@@ -466,6 +504,8 @@ export const useAIChat = () => {
         stopGenerating,
         includeAppData,
         setIncludeAppData,
+        groundingState,
+        setGroundingState,
         activeModel,
         setActiveModel,
         quota,
