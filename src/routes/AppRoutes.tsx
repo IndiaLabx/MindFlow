@@ -65,7 +65,6 @@ const SupportPage = lazy(() => import('../features/auth/components/SupportPage')
  * Maps URL paths to components and connects navigation actions from the `useQuizContext` hook.
  */
 const AppRoutesContent: React.FC = () => {
-    const { targetAudience } = useTargetAudience() as { targetAudience: 'competitive' | 'school' | null };
     // Destructure all necessary state and actions from the global store
     const {
         state,
@@ -95,26 +94,8 @@ const AppRoutesContent: React.FC = () => {
                 : <div className="min-h-screen flex items-center justify-center"><SynapticLoader size="xl" /></div>
         }>
             <Routes>
-                {/* --- School Module Routes --- */}
-                {targetAudience === 'school' ? (
-                    <Route path="/school" element={<SchoolLayout />}>
-                        <Route path="dashboard" element={
-                            <Suspense fallback={<SynapticLoader />}>
-                                <SchoolDashboard />
-                            </Suspense>
-                        } />
-                        <Route path="class/:classId" element={
-                            <Suspense fallback={<SynapticLoader />}>
-                                <ClassModulePlaceholder />
-                            </Suspense>
-                        } />
-                        {/* Redirect anything else in school back to dashboard */}
-                        <Route path="*" element={<Navigate to="/school/dashboard" replace />} />
-                    </Route>
-                ) : null}
-
                 {/* --- Public / Landing Route --- */}
-                <Route path="/" element={targetAudience === 'school' ? <Navigate to="/school/dashboard" replace /> :
+                <Route path="/" element={
                     <LandingPage
                         onGetStarted={() => { enterHome(); navTo('/dashboard'); }}
                         onLoginClick={() => { enterLogin(); navTo('/login'); }}

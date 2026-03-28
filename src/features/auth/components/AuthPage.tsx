@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTargetAudience } from '../hooks/useTargetAudience';
 import { supabase } from '../../../lib/supabase';
 import { BrainCircuit, ArrowLeft } from 'lucide-react';
 
@@ -26,7 +25,6 @@ interface AuthPageProps {
  * @returns {JSX.Element} The rendered authentication page.
  */
 const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
-  const { targetAudience } = useTargetAudience();
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,7 +39,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
 
   useEffect(() => {
     if (user) {
-      navigate(targetAudience === 'school' ? '/school/dashboard' : '/dashboard', { replace: true });
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
 
