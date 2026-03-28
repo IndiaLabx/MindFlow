@@ -60,11 +60,9 @@ export const SchoolOnboarding: React.FC<{ onComplete: () => void }> = ({ onCompl
       setSchoolClass(selectedClass);
       setSchoolOnboardingSeen(true);
       if (user) {
-         try {
-           await supabase.auth.updateUser({ data: { school_board: selectedBoard, school_class: selectedClass } });
-         } catch (error) {
-           console.error("Failed to update user profile:", error);
-         }
+         // Fire and forget, don't block UI on this
+         supabase.auth.updateUser({ data: { school_board: selectedBoard, school_class: selectedClass } })
+            .catch(error => console.error("Failed to update user profile:", error));
       }
       setIsLoading(false);
       onComplete();
