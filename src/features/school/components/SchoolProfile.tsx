@@ -140,39 +140,32 @@ export const SchoolProfile: React.FC = () => {
 
       <div className="space-y-6">
         {menuGroups.map((group, gIndex) => (
-          <div key={gIndex} className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800">
-            <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 rounded-t-3xl">
+          <div key={gIndex} className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
               <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 {group.title}
               </h2>
             </div>
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {group.items.map((item, iIndex) => {
-                // If it's a structural/interactive component like switch_mode, we use a div instead of a button
-                // so we don't nest interactables which breaks dropdowns.
-                const isInteractiveChild = item.id === 'switch_mode' || item.id === 'theme';
-                const Wrapper = isInteractiveChild ? 'div' : 'button';
-
-                return (
-                <Wrapper
+              {group.items.map((item, iIndex) => (
+                <button
                   key={item.id}
-                  onClick={!isInteractiveChild ? item.action : undefined}
-                  className={`w-full flex items-center justify-between p-4 transition-colors group text-left ${!isInteractiveChild ? 'hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 cursor-pointer' : ''} ${iIndex === group.items.length - 1 ? 'rounded-b-3xl' : ''}`}
+                  onClick={item.action}
+                  className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:bg-slate-100 dark:active:bg-slate-800 group text-left"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors ${!isInteractiveChild ? 'group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/30 group-hover:text-emerald-500' : ''}`}>
+                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/30 group-hover:text-emerald-500 transition-colors">
                       {item.icon}
                     </div>
-                    <span className={`font-semibold text-slate-700 dark:text-slate-300 transition-colors ${!isInteractiveChild ? 'group-hover:text-slate-900 dark:group-hover:text-white' : ''}`}>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                       {item.label}
                     </span>
                   </div>
-                  <div className="flex-shrink-0" onClick={isInteractiveChild ? item.action : undefined}>
+                  <div className="flex-shrink-0" onClick={e => item.id === 'theme' ? e.stopPropagation() : null}>
                     {item.rightElement}
                   </div>
-                </Wrapper>
-              )
-            })}
+                </button>
+              ))}
             </div>
           </div>
         ))}

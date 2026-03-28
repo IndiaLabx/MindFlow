@@ -48,17 +48,16 @@ export const ModeSelector: React.FC = () => {
       }
     }
 
-    // Update local state first so AppRoutes will render the correct components
-    setTargetAudience(modeToSwitchTo);
+    // First navigate, then change state to allow smooth routing unmount/mount
+    if (modeToSwitchTo === 'school') {
+      navigate('/school/dashboard', { replace: true });
+    } else {
+      navigate('/dashboard', { replace: true });
+    }
 
-    // Give state a tick to update before navigating
     setTimeout(() => {
-        if (modeToSwitchTo === 'school') {
-            navigate('/school/dashboard', { replace: true });
-        } else {
-            navigate('/dashboard', { replace: true });
-        }
-    }, 0);
+        setTargetAudience(modeToSwitchTo);
+    }, 50); // tiny delay lets the router start pushing before state snaps out the tree
   };
 
   return (
