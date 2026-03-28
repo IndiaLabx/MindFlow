@@ -3,7 +3,7 @@ import Cropper from 'react-easy-crop';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import {
-    LogOut, Settings, ChevronRight, Award, CheckCircle, BarChart,
+    LogOut, Settings, ChevronRight, Award, CheckCircle, BarChart, Megaphone,
     Pencil, AlertTriangle, Loader2, X, Clock, Target,
     FileText, Bookmark, Grid, CreditCard, Shield, HelpCircle
 } from 'lucide-react';
@@ -368,6 +368,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
                       </div>
                       <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 dark:text-slate-400 transition-colors" />
                   </button>
+
+                  {user?.email === 'admin@mindflow.com' && (
+                    <button onClick={() => navigate('/admin/notifications')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors group mt-2 border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-900/10">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-indigo-100 dark:bg-indigo-800 rounded-lg text-indigo-600 dark:text-indigo-400">
+                          <Megaphone className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                          <span className="font-bold text-indigo-700 dark:text-indigo-300 block">Broadcast Notifications</span>
+                          <span className="text-xs text-indigo-500 dark:text-indigo-400 block font-medium">Admin Access Only</span>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-indigo-400 group-hover:text-indigo-600 dark:text-indigo-500 dark:group-hover:text-indigo-300 transition-colors" />
+                    </button>
+                  )}
                   <button onClick={() => navigate('/profile/support')} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                       <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-sky-50 dark:bg-sky-900/20 rounded-lg flex items-center justify-center text-sky-500 dark:text-sky-400"><HelpCircle className="w-4 h-4" /></div>
