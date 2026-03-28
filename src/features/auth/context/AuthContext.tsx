@@ -111,7 +111,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
            window.dispatchEvent(new CustomEvent('mindflow-target-audience-update', { detail: audienceIntent }));
         }
 
-
+        // Handle OAuth Redirect Path
+        const redirectPath = localStorage.getItem('mindflow_auth_redirect');
+        if (redirectPath) {
+            localStorage.removeItem('mindflow_auth_redirect');
+            // We use window.location.hash for HashRouter
+            if (window.location.hash !== `#${redirectPath}`) {
+                window.location.hash = redirectPath;
+            }
+        }
       } else {
         setUser(null);
       }

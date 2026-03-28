@@ -4,8 +4,6 @@ import { AppProvider } from './providers/AppProvider';
 import { AppRoutes } from './routes/AppRoutes';
 import { supabase } from './lib/supabase';
 import { SynapticLoader } from './components/ui/SynapticLoader';
-import { useSettingsStore } from './stores/useSettingsStore';
-
 
 /**
  * Root Application Component.
@@ -23,27 +21,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // 1. Check for active session on app mount (Before Router mounts completely)
-
     const initAuth = async () => {
       // getSession() parses the URL hash for tokens if present (OAuth redirect)
-      const { data: { session } } = await supabase.auth.getSession();
-
-      // --- BOOT-TIME OAUTH REDIRECT INTERCEPTION ---
-      const redirectPath = localStorage.getItem('mindflow_auth_redirect');
-      const audienceIntent = localStorage.getItem('mindflow_target_audience_intent');
-
-      // 1. Force synchronous target audience state before Router mounts
-      if (audienceIntent) {
-         useSettingsStore.getState().setTargetAudience(audienceIntent as any);
-         // Keep the intent flag in localStorage so AuthContext can still update Supabase metadata later
-      }
-
-      // 2. Force the correct Hash URL immediately
-      if (redirectPath) {
-         localStorage.removeItem('mindflow_auth_redirect');
-         // We use window.location.hash for HashRouter. If it's a redirect back to /, it might be empty
-         window.location.hash = redirectPath;
-      }
+      await supabase.auth.getSession();
       
       // Set ready state to render the router
       setIsReady(true);
