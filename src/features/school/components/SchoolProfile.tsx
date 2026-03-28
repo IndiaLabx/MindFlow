@@ -5,6 +5,7 @@ import { User, Settings, GraduationCap, ChevronRight, LogOut, Moon, Sun, Monitor
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { ClaymorphismSwitch } from '../../quiz/components/ui/ClaymorphismSwitch';
+import { ModeSelector } from '../../../components/ModeSelector';
 
 export const SchoolProfile: React.FC = () => {
   const {
@@ -78,10 +79,10 @@ export const SchoolProfile: React.FC = () => {
         },
         {
           id: 'switch_mode',
-          label: 'Switch to Competitive Mode',
+          label: 'App Mode',
           icon: <Monitor className="w-5 h-5" />,
-          action: handleSwitchToCompetitive,
-          rightElement: <ChevronRight className="w-5 h-5 text-slate-400" />
+          action: () => {},
+          rightElement: <ModeSelector />
         }
       ]
     },
