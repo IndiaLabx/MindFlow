@@ -10,21 +10,16 @@ export interface SettingsState {
   toggleHaptics: () => void;
   areBgAnimationsEnabled: boolean;
   toggleBgAnimations: () => void;
-
-  // Target Audience Setting (Competitive vs School)
-  targetAudience: 'competitive' | 'school' | null;
-  setTargetAudience: (audience: 'competitive' | 'school') => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
-      // Default values
+      // Default values (aligning with previous useLocalStorageState defaults)
       isDarkMode: false,
       isSoundEnabled: true,
       isHapticEnabled: true,
       areBgAnimationsEnabled: true,
-      targetAudience: null,
 
       toggleDarkMode: (event?: any) => {
         const { isDarkMode } = get();
@@ -32,6 +27,7 @@ export const useSettingsStore = create<SettingsState>()(
 
         const willBeDark = !isDarkMode;
 
+        // Fallback for browsers without View Transitions or users who prefer reduced motion
         if (!document.startViewTransition || prefersReducedMotion || !event) {
           if (willBeDark) {
             document.documentElement.classList.add('dark');
@@ -42,6 +38,7 @@ export const useSettingsStore = create<SettingsState>()(
           return;
         }
 
+        // Get click coordinates
         let x = 0;
         let y = 0;
         if (event.clientX !== undefined && event.clientY !== undefined) {
@@ -111,18 +108,11 @@ export const useSettingsStore = create<SettingsState>()(
         }
         set({ areBgAnimationsEnabled: willBeEnabled });
       },
-
-      setTargetAudience: (audience) => {
-        set({ targetAudience: audience });
-
-        // When setting audience, we also want to optionally sync to DB if user is logged in
-        // However, Zustand should mostly handle client-side. We will trigger the DB sync
-        // from the component/hook that calls this to avoid cyclic dependencies with Supabase.
-      }
     }),
     {
-      name: 'mindflow-settings',
+      name: 'mindflow-settings', // Unique name for localStorage
       storage: createJSONStorage(() => localStorage),
+      // We need to sync the initial state with DOM classes (dark mode, animations)
       onRehydrateStorage: () => (state) => {
         if (state) {
           if (state.isDarkMode) {
@@ -137,12 +127,21 @@ export const useSettingsStore = create<SettingsState>()(
           }
         }
       },
-      version: 2,
+      // Migrate old localStorage keys to Zustand persist state if they exist
+      version: 1,
       migrate: (persistedState: any, version: number) => {
-        if (version === 0 || version === 1) {
+        if (version === 0) {
+          // If no Zustand state exists, try to pull from old keys
+          const oldDarkMode = localStorage.getItem('mindflow_settings_v1_darkMode');
+          const oldSound = localStorage.getItem('soundEnabled');
+          const oldHaptics = localStorage.getItem('hapticsEnabled');
+          const oldAnimations = localStorage.getItem('bgAnimationsEnabled');
+
           return {
-            ...persistedState,
-            targetAudience: persistedState.targetAudience || null,
+            isDarkMode: oldDarkMode ? JSON.parse(oldDarkMode) : false,
+            isSoundEnabled: oldSound ? JSON.parse(oldSound) : true,
+            isHapticEnabled: oldHaptics ? JSON.parse(oldHaptics) : true,
+            areBgAnimationsEnabled: oldAnimations ? JSON.parse(oldAnimations) : true,
           } as SettingsState;
         }
         return persistedState;
