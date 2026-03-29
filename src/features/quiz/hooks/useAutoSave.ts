@@ -3,7 +3,7 @@ import { db } from '../../../lib/db';
 
 interface UseAutoSaveProps {
   sessionId: string;
-  state: any; // Can be more strictly typed based on quizReducer state
+  state: any; // Can be more strictly typed based on QuizState
   intervalMs?: number;
 }
 

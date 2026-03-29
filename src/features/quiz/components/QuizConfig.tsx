@@ -22,7 +22,7 @@ import { cn } from '../../../utils/cn';
 import { useDependentFilters } from '../../../hooks/useDependentFilters';
 import { db } from '../../../lib/db';
 import { APP_CONFIG } from '../../../constants/config';
-import { initialState } from '../stores/quizReducer';
+import { initialState } from '../stores/useQuizSessionStore';
 
 // UI Components
 import { CookingLoader } from './CookingLoader';
