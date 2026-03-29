@@ -259,7 +259,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                      </div>
                      <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">
                        I agree to the{" "}
-                       <a href="/#/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
+                       <a href="#/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
                          Privacy Policy
                        </a>.
                      </span>
