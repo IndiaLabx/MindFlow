@@ -71,7 +71,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
 
 
     return (
-        <div className="flex flex-col min-h-screen -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 transition-colors duration-700 relative overflow-hidden">
+        <div className="flex flex-col min-h-screen -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 animate-flow transition-colors duration-700 relative overflow-hidden">
             <div className="flex-1 flex flex-col space-y-6 py-4 relative z-10 animate-fade-in w-full">
                 {/* Hero Section */}
                 <div className="relative text-left w-full mt-2">

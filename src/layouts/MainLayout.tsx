@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BrainCircuit, Home, Compass, PlusCircle, User, Settings, LogIn, Sun, Moon, Brain } from 'lucide-react';
 import { cn } from '../utils/cn';
@@ -60,16 +60,46 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (!document.getElementById('mesh-keyframes')) {
+        const style = document.createElement('style');
+        style.id = 'mesh-keyframes';
+        style.innerHTML = `
+            @keyframes flow {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            .animate-flow {
+                background-size: 200% 200%;
+                animation: flow 15s ease infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+  }, []);
+
   return (
     <div className={cn(
-        "flex flex-col bg-gray-50 dark:bg-gray-900/50 dark:bg-slate-950 transition-colors duration-300 relative",
+        "flex flex-col transition-colors duration-700 relative bg-gradient-to-br from-indigo-50 via-purple-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 animate-flow",
         isAIFullScreen ? "h-[100dvh] w-screen overflow-hidden fixed inset-0" : "min-h-screen"
     )}>
       
       {/* --- Sticky Top Header --- */}
       {!isReviewMode && !isAIFullScreen && (
-      <header className="sticky top-0 z-40 w-full bg-white dark:bg-gray-800/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700/50 dark:border-slate-800 transition-all duration-300">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full transition-all duration-300 relative group overflow-hidden">
+        {/* Glow Background Layer */}
+        <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+
+        {/* Interactive Inner Shadow / Border */}
+        <div className="absolute inset-0 border-b border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 border-b-[4px] border-b-indigo-200/50 dark:border-b-indigo-700/50"></div>
+
+        {/* Centered Subtle Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-20 transition-opacity duration-500 z-0 bg-indigo-500"></div>
+
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between relative z-20">
+
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => onTabChange('home')}>
             <div className="bg-indigo-600 p-1.5 rounded-lg">
               <BrainCircuit className="h-5 w-5 text-white" />
@@ -116,8 +146,20 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       </main>
 
       {/* --- Sticky Bottom Tab Bar --- */}
-      <nav className={cn("fixed bottom-0 left-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 transition-colors duration-300 pb-[env(safe-area-inset-bottom)]", isReviewMode || isAIFullScreen ? "hidden" : "block")}>
-        <div className="max-w-3xl mx-auto px-2 h-16 flex items-center justify-around">
+      <nav className={cn(
+        "fixed bottom-0 left-0 w-full z-50 transition-colors duration-300 pb-[env(safe-area-inset-bottom)] relative group overflow-visible",
+        isReviewMode || isAIFullScreen ? "hidden" : "block"
+      )}>
+        {/* Glow Background Layer */}
+        <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+
+        {/* Interactive Inner Shadow / Border */}
+        <div className="absolute inset-0 border-t border-white/60 dark:border-white/10 shadow-[0_-8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_-8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 border-t-[4px] border-t-indigo-200/50 dark:border-t-indigo-700/50"></div>
+
+        {/* Centered Subtle Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-20 transition-opacity duration-500 z-0 bg-indigo-500"></div>
+        <div className="max-w-3xl mx-auto px-2 h-16 flex items-center justify-around relative z-20">
           
           <NavTab 
             id="home" 
@@ -140,11 +182,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             className="relative -top-5 group"
           >
             <div className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-gray-50 dark:border-slate-950 transition-colors",
+              "relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-white dark:border-slate-900",
               activeTab === 'ai'
-                ? "bg-indigo-600 text-white shadow-indigo-200 translate-y-1" 
-                : "bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105"
+                ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/50 translate-y-1"
+                : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white hover:from-indigo-500 hover:to-indigo-600 hover:scale-105 shadow-indigo-600/30"
             )}>
+              {/* Inner glow for glass feel */}
+              <div className="absolute inset-0 rounded-full border border-white/20"></div>
+              {/* Active glow */}
+              {activeTab === 'ai' && (
+                <div className="absolute inset-0 rounded-full blur-md bg-indigo-500/30 -z-10"></div>
+              )}
               <Brain className="w-7 h-7" />
             </div>
             <span className={cn(
@@ -183,13 +231,28 @@ const NavTab = ({ id, label, icon, isActive, onClick }: { id: string, label: str
   <button 
     onClick={onClick}
     className={cn(
-      "flex flex-col items-center justify-center w-16 py-1 transition-all duration-200 active:scale-95",
-      isActive ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-slate-300"
+      "relative flex flex-col items-center justify-center w-16 py-1 transition-all duration-300 active:scale-95 group",
+      isActive ? "" : "text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-slate-300"
     )}
   >
-    <div className={cn("transition-transform duration-200", isActive && "-translate-y-0.5")}>
+    {/* Active background glow */}
+    {isActive && (
+       <div className="absolute inset-0 bg-indigo-500/10 dark:bg-indigo-400/10 rounded-xl blur-md transition-opacity duration-300" />
+    )}
+
+    <div className={cn(
+      "relative transition-all duration-300 z-10 p-1.5 rounded-xl",
+      isActive
+         ? "bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/30 -translate-y-1"
+         : "bg-transparent group-hover:bg-gray-100/50 dark:group-hover:bg-gray-800/50"
+    )}>
       {icon}
     </div>
-    <span className="text-[10px] font-bold mt-0.5">{label}</span>
+    <span className={cn(
+      "text-[10px] font-bold mt-1 transition-all duration-300 z-10",
+      isActive
+         ? "bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-800 dark:from-indigo-300 dark:to-indigo-100 font-black tracking-wide"
+         : "font-semibold"
+    )}>{label}</span>
   </button>
 );
