@@ -45,6 +45,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
   const [showMainContent, setShowMainContent] = useState(false);
   const [showMobileOnboarding, setShowMobileOnboarding] = useState(false);
 
+  const handleReveal = React.useCallback(() => {
+    setShowMainContent(true);
+  }, []);
+
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('mindflow_onboarding_seen');
     const isMobile = window.innerWidth < 768; // Standard md breakpoint in Tailwind
@@ -88,7 +92,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
   return (
     <>
       {/* Intro Animation Layer */}
-      <CinematicIntro onReveal={() => setShowMainContent(true)} />
+      <CinematicIntro onReveal={handleReveal} />
 
       {/* Main Content Layer - mount/render when intro allows it */}
       {showMainContent && (

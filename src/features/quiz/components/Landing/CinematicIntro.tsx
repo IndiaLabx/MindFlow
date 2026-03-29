@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './CinematicIntro.css';
 
 interface CinematicIntroProps {
@@ -7,15 +7,18 @@ interface CinematicIntroProps {
 
 export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onReveal }) => {
   const [phase, setPhase] = useState<'initial' | 'pre-zoom' | 'expanding' | 'vanishing' | 'done'>('initial');
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
-    // Check if intro was already played this session
-    const hasSeenOnboarding = localStorage.getItem('mindflow_onboarding_seen');
-    const isMobile = window.innerWidth < 768;
-    const needsOnboarding = isMobile && !hasSeenOnboarding;
+    // Prevent the animation from running multiple times due to re-renders or StrictMode
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
 
-    // If they need onboarding, we MUST show the intro first to keep the flow smooth.
-    if (sessionStorage.getItem('mindflow_intro_seen') && !needsOnboarding) {
+    // Check if intro was already played this session
+    const hasSeenIntro = sessionStorage.getItem('mindflow_intro_seen');
+
+    // If they already saw the intro, jump straight to the content
+    if (hasSeenIntro) {
       onReveal();
       setPhase('done');
       return;
@@ -55,7 +58,9 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onReveal }) => {
       return () => clearTimeout(revealTimer);
     }, 2000); // initial logo display time
 
-    return () => clearTimeout(preZoomTimer);
+    return () => {
+      clearTimeout(preZoomTimer);
+    };
   }, [onReveal]);
 
   if (phase === 'done') return null;
