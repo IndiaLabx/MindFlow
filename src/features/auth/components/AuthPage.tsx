@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
-import { BrainCircuit, ArrowLeft } from 'lucide-react';
+import { BrainCircuit, ArrowLeft, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 /**
  * Props for the AuthPage component.
@@ -141,8 +142,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="font-sans text-text-main antialiased bg-gradient-to-br from-[#F3F1FF] via-[#FEF8F2] to-[#EAFEEF] h-full flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-4 relative">
+    <div className="font-sans text-text-main antialiased bg-slate-50 dark:bg-[#020617] relative overflow-hidden h-full flex flex-col">
+
+      {/* Animated Background Blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-400/30 dark:bg-indigo-600/20 blur-[100px] animate-[pulse_8s_ease-in-out_infinite] z-0 pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-emerald-400/30 dark:bg-emerald-600/20 blur-[100px] animate-[pulse_10s_ease-in-out_infinite_alternate-reverse] z-0 pointer-events-none" />
+      <div className="absolute top-[20%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-purple-400/20 dark:bg-purple-600/20 blur-[80px] animate-[pulse_12s_ease-in-out_infinite_alternate] z-0 pointer-events-none" />
+
+      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
         <button
          onClick={onBack}
          className="absolute top-4 left-4 md:top-8 md:left-8 z-20 flex items-center justify-center p-2 rounded-full bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-700/80 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition-all shadow-sm backdrop-blur-sm border border-white/20 dark:border-gray-700/30"
@@ -151,7 +158,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
          <ArrowLeft className="w-5 h-5" />
        </button>
        <div className="w-full max-w-md">
-         <div className="bg-white dark:bg-gray-800/70 backdrop-blur-xl rounded-xl shadow-form p-6 md:p-10 border border-white/30">
+         <div className="relative group rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden">
+           {/* Glow Background Layer */}
+           <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+           <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+
+           {/* Interactive Inner Shadow / Border */}
+           <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300"></div>
+
+           <div className="relative z-20 bg-transparent p-6 md:p-10">
            <div className="flex justify-center items-center gap-2 mb-6 md:mb-8">
              <div className="bg-indigo-600 p-2 rounded-lg">
                <BrainCircuit className="h-6 w-6 text-white" />
@@ -273,9 +288,27 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                <button
                  type="submit"
                  disabled={loading}
-                 className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white transition-all duration-300 shadow-button disabled:opacity-50"
+                 className="w-full group relative flex justify-center items-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-bold py-3 px-4 rounded-xl hover:from-indigo-700 hover:to-indigo-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white transition-all duration-300 shadow-lg disabled:opacity-50 overflow-hidden"
                >
-                 {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+                 <div className="absolute inset-0 bg-white/20 group-hover:bg-transparent transition-colors duration-300 z-0 pointer-events-none"></div>
+                 {loading ? (
+                   <Loader2 className="w-5 h-5 animate-spin relative z-10" />
+                 ) : (
+                   <>
+                     <span className="relative z-10">{isSignUp ? 'Sign Up' : 'Sign In'}</span>
+                     <motion.svg
+                       className="w-5 h-5 relative z-10"
+                       fill="none"
+                       stroke="currentColor"
+                       viewBox="0 0 24 24"
+                       initial={{ x: 0 }}
+                       animate={{ x: [0, 4, 0] }}
+                       transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                     >
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                     </motion.svg>
+                   </>
+                 )}
                </button>
              </div>
            </form>
@@ -288,14 +321,21 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                type="button"
                onClick={handleGoogleSignIn}
                disabled={loading}
-               className="w-full flex justify-center items-center gap-3 bg-white dark:bg-gray-800 text-text-main font-semibold py-3 px-4 rounded-lg border border-border-color hover:bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white transition-all duration-300 disabled:opacity-50"
+               className="w-full group relative flex justify-center items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white font-semibold py-3 px-4 rounded-xl border border-white/40 dark:border-gray-700/50 hover:bg-white/80 dark:hover:bg-gray-700/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white transition-all duration-300 shadow-sm disabled:opacity-50 overflow-hidden"
              >
                {loading ? (
-                 'Signing in...'
+                 <Loader2 className="w-5 h-5 animate-spin relative z-10" />
                ) : (
                  <>
-                   <svg className="g-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"><path d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" fill="#FFC107"></path><path d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" fill="#FF3D00"></path><path d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.657-3.356-11.303-7.962l-6.571,4.819C9.656,39.663,16.318,44,24,44z" fill="#4CAF50"></path><path d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C41.38,34.464,44,29.561,44,24C44,22.659,43.862,21.35,43.611,20.083z" fill="#1976D2"></path></svg>
-                   Sign in with Google
+                   <motion.div
+                     initial={{ rotate: 0 }}
+                     whileHover={{ rotate: 10, scale: 1.1 }}
+                     transition={{ type: "spring", stiffness: 300 }}
+                     className="relative z-10 flex items-center justify-center bg-white p-1 rounded-full shadow-sm"
+                   >
+                     <svg className="w-5 h-5" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" fill="#FFC107"></path><path d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" fill="#FF3D00"></path><path d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.657-3.356-11.303-7.962l-6.571,4.819C9.656,39.663,16.318,44,24,44z" fill="#4CAF50"></path><path d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C41.38,34.464,44,29.561,44,24C44,22.659,43.862,21.35,43.611,20.083z" fill="#1976D2"></path></svg>
+                   </motion.div>
+                   <span className="relative z-10 font-bold">Continue with Google</span>
                  </>
                )}
              </button>
@@ -313,6 +353,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                Click here
              </button>
            </div>
+         </div>
          </div>
        </div>
      </div>
