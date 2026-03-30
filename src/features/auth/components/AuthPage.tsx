@@ -353,6 +353,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                Click here
              </button>
            </div>
+           <div className="mt-2 text-center text-sm text-text-secondary">
+             Are you guest user?{" "}
+             <button
+               type="button"
+               onClick={() => {
+                 setEmail("mindflow@user.com");
+                 setPassword("Test@1234");
+               }}
+               className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
+             >
+               Click here
+             </button>
+           </div>
          </div>
          </div>
        </div>
