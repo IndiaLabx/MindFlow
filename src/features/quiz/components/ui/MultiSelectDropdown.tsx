@@ -1,3 +1,4 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import React, { useState, useRef, useEffect, useMemo, KeyboardEvent } from 'react';
 import { ChevronDown, Check, X, Search, Info } from 'lucide-react';
 import { cn } from '../../../../utils/cn';
@@ -5,6 +6,19 @@ import { cn } from '../../../../utils/cn';
 /**
  * A custom multi-select dropdown component with search, filtering, and count display.
  */
+
+// Simple debounce hook for search
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
 export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
   label,
   options, 
@@ -26,11 +40,13 @@ export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -67,19 +83,48 @@ export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
     };
   }, [isOpen]);
 
+
   const filteredOptions = useMemo(() => {
       let result = options;
-      if (searchTerm) {
-          result = options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase()));
+      if (debouncedSearchTerm) {
+          result = options.filter(opt => opt.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
       }
-      return [...result].sort((a, b) => {
+
+      const sorted = [...result].sort((a, b) => {
+          // Always bring selected items to the top
+          const isSelectedA = selectedOptions.includes(a);
+          const isSelectedB = selectedOptions.includes(b);
+          if (isSelectedA && !isSelectedB) return -1;
+          if (!isSelectedA && isSelectedB) return 1;
+
           const countA = counts?.[a] || 0;
           const countB = counts?.[b] || 0;
+
           if (countA > 0 && countB === 0) return -1;
           if (countA === 0 && countB > 0) return 1;
           return a.localeCompare(b);
       });
-  }, [options, searchTerm, counts]);
+
+      // Limit unselected displayed tags to avoid DOM/array manipulation bloat
+      // when virtualizing, we still don't want an array of 30,000 strings if not needed
+      // But we MUST show all selected options
+      const maxResults = 300;
+      if (sorted.length > maxResults) {
+         // Keep all selected, plus up to maxResults total
+         const unselected = sorted.filter(opt => !selectedOptions.includes(opt));
+         const limitedUnselected = unselected.slice(0, Math.max(0, maxResults - selectedOptions.length));
+         return [...sorted.filter(opt => selectedOptions.includes(opt)), ...limitedUnselected];
+      }
+      return sorted;
+  }, [options, debouncedSearchTerm, counts, selectedOptions]);
+
+  const virtualizer = useVirtualizer({
+    count: filteredOptions.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 40, // Height of each row in px roughly
+    overscan: 5,
+  });
+
 
   const handleOptionToggle = (option: string) => {
     const newSelection = selectedOptions.includes(option)
@@ -117,15 +162,12 @@ export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
     }
   };
 
-  // Scroll focused item into view
+  // Scroll focused item into view via virtualizer
   useEffect(() => {
-    if (focusedIndex >= 0 && listRef.current) {
-      const liElement = listRef.current.children[focusedIndex] as HTMLElement;
-      if (liElement) {
-        liElement.scrollIntoView({ block: 'nearest' });
-      }
+    if (focusedIndex >= 0) {
+      virtualizer.scrollToIndex(focusedIndex, { align: 'auto' });
     }
-  }, [focusedIndex]);
+  }, [focusedIndex, virtualizer]);
 
 
   return (
@@ -202,51 +244,79 @@ export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
           </div>
 
           {/* Options List */}
-          <div className="overflow-y-auto flex-1 p-1">
+          <div className="flex-1 p-1">
               {filteredOptions.length === 0 ? (
                  <div className="p-4 text-sm text-gray-400 text-center italic">
                     {options.length === 0 ? "No options available" : "No matches found"}
                  </div>
               ) : (
-                <ul ref={listRef} role="listbox" aria-multiselectable="true">
-                    {filteredOptions.map((option, index) => {
-                    const count = counts?.[option] || 0;
-                    const isSelected = selectedOptions.includes(option);
-                    const isOptionDisabled = !isSelected && count === 0;
-                    const isFocused = index === focusedIndex;
 
-                    return (
-                        <li key={option} role="option" aria-selected={isSelected}>
-                        <button 
-                            type="button"
-                            onClick={() => !isOptionDisabled && handleOptionToggle(option)} 
-                            disabled={isOptionDisabled}
-                            className={cn(
-                                "w-full flex items-center justify-between px-3 py-2.5 text-sm text-left transition-colors rounded-md",
-                                isSelected ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700",
-                                isFocused && !isSelected && "bg-gray-100 dark:bg-gray-700",
-                                isFocused && isSelected && "ring-2 ring-indigo-500 inset-0",
-                                isOptionDisabled && "opacity-50 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
-                            )}
-                        >
-                            <div className="flex items-center gap-3 overflow-hidden">
-                                <div className={cn(
-                                    "w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all",
-                                    isSelected ? "bg-indigo-600 border-indigo-600" : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800",
-                                    isOptionDisabled && "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                                )}>
-                                    {isSelected && <Check className="w-3 h-3 text-white" />}
-                                </div>
-                                <span className="truncate">{option}</span>
-                            </div>
-                            <span className={cn("text-xs ml-2 flex-shrink-0", isSelected ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400")}>
-                                ({count})
-                            </span>
-                        </button>
-                        </li>
-                    );
-                    })}
-                </ul>
+                <div
+                    ref={parentRef}
+                    className="w-full overflow-y-auto"
+                    style={{ height: '280px' }} // max-h is usually 80 (320px) minus search bar height
+                >
+                  <ul
+                      ref={listRef}
+                      role="listbox"
+                      aria-multiselectable="true"
+                      style={{ height: `${virtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}
+                  >
+                      {virtualizer.getVirtualItems().map((virtualItem) => {
+                      const index = virtualItem.index;
+                      const option = filteredOptions[index];
+                      const count = counts?.[option] || 0;
+                      const isSelected = selectedOptions.includes(option);
+                      const isOptionDisabled = !isSelected && count === 0;
+                      const isFocused = index === focusedIndex;
+
+                      return (
+                          <li
+                              key={virtualItem.key}
+                              role="option"
+                              aria-selected={isSelected}
+                              data-index={index}
+                              ref={virtualizer.measureElement}
+                              style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  transform: `translateY(${virtualItem.start}px)`
+                              }}
+                          >
+                          <button
+                              type="button"
+                              onClick={() => !isOptionDisabled && handleOptionToggle(option)}
+                              disabled={isOptionDisabled}
+                              className={cn(
+                                  "w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors",
+                                  isSelected ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700",
+                                  isFocused && !isSelected && "bg-gray-100 dark:bg-gray-700",
+                                  isFocused && isSelected && "ring-2 ring-indigo-500 inset-0 z-10",
+                                  isOptionDisabled && "opacity-50 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                              )}
+                          >
+                              <div className="flex items-center gap-3 overflow-hidden">
+                                  <div className={cn(
+                                      "w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all",
+                                      isSelected ? "bg-indigo-600 border-indigo-600" : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800",
+                                      isOptionDisabled && "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                                  )}>
+                                      {isSelected && <Check className="w-3 h-3 text-white" />}
+                                  </div>
+                                  <span className="truncate">{option}</span>
+                              </div>
+                              <span className={cn("text-xs ml-2 flex-shrink-0", isSelected ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400")}>
+                                  ({count})
+                              </span>
+                          </button>
+                          </li>
+                      );
+                      })}
+                  </ul>
+                </div>
+
               )}
           </div>
         </div>
