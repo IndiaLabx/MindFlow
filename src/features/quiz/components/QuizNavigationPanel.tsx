@@ -252,13 +252,10 @@ export function QuizNavigationPanel({
         {/* Footer: Submit Action / Close */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <button 
-                onClick={() => {
-                    onClose();
-                    onSubmitAndReview();
-                }}
+                onClick={onClose}
                 className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-200 hover:shadow-indigo-300 active:scale-95"
             >
-                <CheckCircle className="w-5 h-5" /> {mode === 'mock' ? 'Submit Quiz' : 'Close Map'}
+                <CheckCircle className="w-5 h-5" /> Close Map
             </button>
         </div>
       </div>
