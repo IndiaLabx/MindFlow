@@ -1,10 +1,21 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNavSpinner } from '../../hooks/useNavSpinner';
 import { Loader2 } from 'lucide-react';
 import { SynonymWord } from '../quiz/types';
 import { quizEngine } from '../quiz/engine';
 import { SynapticLoader } from './SynapticLoader';
+import { motion } from 'framer-motion';
+import {
+    DailyChallengeSVG,
+    GuidedExplorationSVG,
+    SmartFlashcardsSVG,
+    WordFamiliesSVG,
+    ImposterTrapSVG,
+    TapConnectSVG,
+    LightningReviewSVG
+} from './components/SynonymsSVGs';
+
 interface SynonymsConfigProps {
     onBack: () => void;
     onStart: (data: SynonymWord[], filters: any) => void;
@@ -39,6 +50,26 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
         onStart(sortedData, { mode: 'learning' });
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: { type: 'spring' as const, stiffness: 300, damping: 24 }
+        }
+    };
+
+
     if (isDataLoading) {
         return <SynapticLoader />;
     }
@@ -62,7 +93,7 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
     if (!isDataLoading && sortedData.length === 0) {
         return (
              <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 p-4 md:p-8 items-center justify-center">
-                 <div className="text-6xl mb-4" role="img" aria-hidden="true">s📭</div>
+                 <div className="text-6xl mb-4" role="img" aria-hidden="true">📭</div>
                  <h2 className="text-xl font-bold mb-2 text-slate-800 dark:text-slate-200">No Vocabulary Available</h2>
                  <p className="text-slate-600 dark:text-slate-400 mb-6 text-center max-w-md">We couldn't find any words for you to learn at the moment. Please try again later.</p>
                  <button
@@ -77,179 +108,268 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
 
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-10">
-                <button
-                    onClick={onBack}
-                    aria-label="Go back"
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                    ← Back
-                </button>
-                <h1 className="text-xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-                    Synonyms Master
-                </h1>
-                <div className="w-10" />
-            </div>
+        <div className="flex flex-col min-h-screen -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 transition-colors duration-700 relative overflow-hidden bg-slate-50 dark:bg-slate-900">
+            <div className="flex-1 flex flex-col space-y-6 py-4 relative z-10 animate-fade-in w-full">
 
-            <div className="flex-1 overflow-y-auto w-full">
-                <div className="max-w-5xl mx-auto p-4 md:p-8">
-
-                    {/* Daily Challenge */}
+                {/* Header / Hero Section */}
+                <div className="relative text-left w-full mt-2 flex items-center gap-4">
                     <button
-                        onClick={() => handleNavigation('daily-challenge', () => navigate('/synonyms/quiz?mode=speed'))}
-                        className="w-full text-left bg-sky-50 dark:bg-sky-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-sky-100 dark:border-sky-900/40 border-b-4 border-b-sky-200 dark:border-b-sky-700 hover:border-sky-300 dark:hover:border-sky-500 mb-8 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-900"
+                        onClick={onBack}
+                        aria-label="Go back"
+                        className="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0"
                     >
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0 text-2xl" role="img" aria-hidden="true">
-                                🎯
-                            </div>
-                            <div className="flex-1 pr-2 min-w-0">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Daily 20 Words Challenge</h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-xs font-medium mb-2">Master 20 important words every day.</p>
-                                <div className="flex items-center gap-3">
-                                    <div className="flex-1 h-2 bg-sky-200 dark:bg-sky-900/50 rounded-full overflow-hidden">
-                                        <div className="h-full bg-sky-500 w-[0%]" />
-                                    </div>
-                                    <span className="text-xs font-bold text-sky-600 dark:text-sky-400 whitespace-nowrap">0 / 20</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="px-4 py-2 bg-sky-600 text-white font-bold rounded-xl shadow-sm flex-shrink-0 group-hover:bg-sky-700 transition-colors hidden sm:block">
-                            Start
-                        </div>
+                        ←
                     </button>
+                    <div>
+                        <h1 className="text-3xl sm:text-5xl font-black text-gray-900 dark:text-white leading-tight mb-1 drop-shadow-sm">
+                            Synonyms Master
+                        </h1>
+                        <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mb-2 leading-relaxed font-medium">
+                            Expand your vocabulary with guided learning, flashcards, and games.
+                        </p>
+                    </div>
+                </div>
 
-                    <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-200">Phase 1: Foundation</h3>
-                    <div className="grid grid-cols-1 gap-4 mb-8">
-                        {/* Phase 1: Guided Learning */}
-                        <button
-                            onClick={() => handleNavigation('guided-learning', () => navigate('/synonyms/phase1'))}
-                            className="w-full text-left bg-amber-50 dark:bg-amber-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-amber-100 dark:border-amber-900/40 border-b-4 border-b-amber-200 dark:border-b-amber-700 hover:border-amber-300 dark:hover:border-amber-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 dark:focus:ring-offset-slate-900"
-                        >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0 text-3xl" role="img" aria-hidden="true">
-                                    📖
+                {/* Sections Grid Wrapper */}
+                <div className="w-full max-w-7xl mx-auto z-20 overflow-y-auto pb-24">
+
+                    {/* --- Daily Challenge --- */}
+                    <div className="mb-10">
+                         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+
+                            <motion.div
+                                variants={itemVariants}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('daily-challenge', () => navigate('/synonyms/quiz?mode=speed'))}
+                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden col-span-2 lg:col-span-1"
+                            >
+                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                                <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-sky-200/50 dark:border-b-sky-700/50 group-hover:border-sky-300 dark:group-hover:border-sky-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-sky-500"></div>
+
+                                {loadingId === 'daily-challenge' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-[32px] sm:rounded-[40px]">
+                                        <Loader2 className="w-8 h-8 text-sky-500 animate-spin drop-shadow-md" />
+                                    </div>
+                                )}
+
+                                <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'daily-challenge' ? 'opacity-0' : 'opacity-100'}`}>
+                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                        <DailyChallengeSVG />
+                                    </motion.div>
+                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-sky-900 dark:from-sky-300 dark:to-sky-100 mb-1 sm:mb-2">Daily Challenge</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Master 20 important words every day.</p>
+                                    </div>
                                 </div>
-                                <div className="flex-1 pr-2 min-w-0">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Guided Word Exploration</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                                        Discover words with deep meanings, Hindi translations, and audio pronunciation. Perfect for building a strong foundation.
-                                    </p>
-                                </div>
-                            </div>
-                        </button>
+                            </motion.div>
+                        </motion.div>
                     </div>
 
-                    <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-200">Phase 2: Learn & Master</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    {/* --- Phase 1: Foundation --- */}
+                    <div className="mb-10">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-4 text-slate-800 dark:text-slate-200 pl-2">Phase 1: Foundation</h3>
+                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
 
-                        {/* Mode 1: Swipe Flashcards */}
-                        <button
-                            onClick={handleStartLearning}
-                            className="w-full text-left bg-blue-50 dark:bg-blue-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-blue-100 dark:border-blue-900/40 border-b-4 border-b-blue-200 dark:border-b-blue-700 hover:border-blue-300 dark:hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
-                        >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0 text-3xl" role="img" aria-hidden="true">
-                                    🃏
-                                </div>
-                                <div className="flex-1 pr-2 min-w-0">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Smart Flashcards</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                                        Swipe through High-Frequency words first. Tap to reveal meanings and Mark as Mastered.
-                                    </p>
-                                </div>
-                            </div>
-                        </button>
+                            <motion.div
+                                variants={itemVariants}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('guided-learning', () => navigate('/synonyms/phase1'))}
+                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                                <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-amber-200/50 dark:border-b-amber-700/50 group-hover:border-amber-300 dark:group-hover:border-amber-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-amber-500"></div>
 
-                        {/* Mode 2: Cluster List */}
-                        <button
-                            onClick={() => handleNavigation('master-list', () => {
-                                onStart(sortedData, { mode: 'list' });
-                                navigate('/synonyms/list');
-                            })}
-                            className="w-full text-left bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-emerald-100 dark:border-emerald-900/40 border-b-4 border-b-emerald-200 dark:border-b-emerald-700 hover:border-emerald-300 dark:hover:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900"
-                        >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0 text-3xl" role="img" aria-hidden="true">
-                                    📋
+                                {loadingId === 'guided-learning' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-[32px] sm:rounded-[40px]">
+                                        <Loader2 className="w-8 h-8 text-amber-500 animate-spin drop-shadow-md" />
+                                    </div>
+                                )}
+
+                                <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'guided-learning' ? 'opacity-0' : 'opacity-100'}`}>
+                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                        <GuidedExplorationSVG />
+                                    </motion.div>
+                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-900 dark:from-amber-300 dark:to-amber-100 mb-1 sm:mb-2">Guided Exploration</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Discover meanings, translations, & audio.</p>
+                                    </div>
                                 </div>
-                                <div className="flex-1 pr-2 min-w-0">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Word Families (List)</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                                        View words grouped by meaning. See which words are hot (🔥) and review your Mastery spectrum.
-                                    </p>
-                                </div>
-                            </div>
-                        </button>
+                            </motion.div>
+
+                        </motion.div>
                     </div>
 
-                    {/* Phase 3 Placeholder */}
-                    <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-200 mt-8">Phase 3: Gamified Practice</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* --- Phase 2: Learn & Master --- */}
+                    <div className="mb-10">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-4 text-slate-800 dark:text-slate-200 pl-2">Phase 2: Learn & Master</h3>
+                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
 
-                        {/* Game 1: The Imposter Trap */}
-                        <button
-                            onClick={() => handleNavigation('game-1', () => navigate('/synonyms/quiz?mode=imposter'))}
-                            className="w-full text-left bg-violet-50 dark:bg-violet-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-violet-100 dark:border-violet-900/40 border-b-4 border-b-violet-200 dark:border-b-violet-700 hover:border-violet-300 dark:hover:border-violet-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 dark:focus:ring-offset-slate-900"
-                        >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0 text-3xl" role="img" aria-hidden="true">
-                                    🕵️‍♂️
-                                </div>
-                                <div className="flex-1 pr-2 min-w-0">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">The Imposter Trap</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                                        Spot the Antonym hiding among Synonyms before the 10-second timer runs out.
-                                    </p>
-                                </div>
-                            </div>
-                        </button>
+                            {/* Smart Flashcards */}
+                            <motion.div
+                                variants={itemVariants}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={handleStartLearning}
+                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                                <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-blue-200/50 dark:border-b-blue-700/50 group-hover:border-blue-300 dark:group-hover:border-blue-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-blue-500"></div>
 
-                        {/* Game 2: Tap & Connect */}
-                        <button
-                            onClick={() => handleNavigation('game-2', () => navigate('/synonyms/quiz?mode=connect'))}
-                            className="w-full text-left bg-rose-50 dark:bg-rose-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-rose-100 dark:border-rose-900/40 border-b-4 border-b-rose-200 dark:border-b-rose-700 hover:border-rose-300 dark:hover:border-rose-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 dark:focus:ring-offset-slate-900"
-                        >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0 text-3xl" role="img" aria-hidden="true">
-                                    🔗
-                                </div>
-                                <div className="flex-1 pr-2 min-w-0">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Tap & Connect</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                                        Match the main word with its synonym in a fast-paced dual-column challenge.
-                                    </p>
-                                </div>
-                            </div>
-                        </button>
+                                {/* No loading ID check here originally since it directly starts, but we could add one if it takes time. Using a dummy for consistency if needed, but omitted to keep immediate feedback if possible, or we wrap it in a small timeout if we want the spinner. */}
 
+                                <div className="relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 opacity-100">
+                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                        <SmartFlashcardsSVG />
+                                    </motion.div>
+                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-900 dark:from-blue-300 dark:to-blue-100 mb-1 sm:mb-2">Smart Flashcards</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Swipe through words and Master them.</p>
+                                    </div>
+                                </div>
+                            </motion.div>
 
-                        {/* Game 3: Speed Mode */}
-                        <button
-                            onClick={() => handleNavigation('game-3', () => navigate('/synonyms/quiz?mode=speed'))}
-                            className="w-full text-left bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-2xl cursor-pointer group relative z-20 transition-all duration-200 shadow-sm active:translate-y-1 active:border-b flex items-center justify-between border border-indigo-100 dark:border-indigo-900/40 border-b-4 border-b-indigo-200 dark:border-b-indigo-700 hover:border-indigo-300 dark:hover:border-indigo-500 md:col-span-2 lg:col-span-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900"
-                        >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <div className="w-12 h-12 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform flex-shrink-0 text-3xl relative" role="img" aria-hidden="true">
-                                    ⚡
-                                    <span className="absolute -top-2 -right-2 flex h-3 w-3">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
-                                    </span>
+                            {/* Word Families */}
+                            <motion.div
+                                variants={itemVariants}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('master-list', () => {
+                                    onStart(sortedData, { mode: 'list' });
+                                    navigate('/synonyms/list');
+                                })}
+                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                                <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-emerald-200/50 dark:border-b-emerald-700/50 group-hover:border-emerald-300 dark:group-hover:border-emerald-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-emerald-500"></div>
+
+                                {loadingId === 'master-list' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-[32px] sm:rounded-[40px]">
+                                        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin drop-shadow-md" />
+                                    </div>
+                                )}
+
+                                <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'master-list' ? 'opacity-0' : 'opacity-100'}`}>
+                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                        <WordFamiliesSVG />
+                                    </motion.div>
+                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-emerald-900 dark:from-emerald-300 dark:to-emerald-100 mb-1 sm:mb-2">Word Families</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Words grouped by meaning spectrum.</p>
+                                    </div>
                                 </div>
-                                <div className="flex-1 pr-2 min-w-0">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-                                        Lightning Review
-                                        <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full border border-indigo-200 dark:border-indigo-700">Quick</span>
-                                    </h3>
-                                    <p className="text-gray-600 dark:text-gray-400 text-xs font-medium">
-                                        Swipe through words with a 5-second timer. Perfect for rapid revision.
-                                    </p>
+                            </motion.div>
+
+                        </motion.div>
+                    </div>
+
+                    {/* --- Phase 3: Gamified Practice --- */}
+                    <div className="mb-10">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-4 text-slate-800 dark:text-slate-200 pl-2">Phase 3: Gamified Practice</h3>
+                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+
+                            {/* Imposter Trap */}
+                            <motion.div
+                                variants={itemVariants}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('game-1', () => navigate('/synonyms/quiz?mode=imposter'))}
+                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                                <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-violet-200/50 dark:border-b-violet-700/50 group-hover:border-violet-300 dark:group-hover:border-violet-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-violet-500"></div>
+
+                                {loadingId === 'game-1' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-[32px] sm:rounded-[40px]">
+                                        <Loader2 className="w-8 h-8 text-violet-500 animate-spin drop-shadow-md" />
+                                    </div>
+                                )}
+
+                                <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'game-1' ? 'opacity-0' : 'opacity-100'}`}>
+                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                        <ImposterTrapSVG />
+                                    </motion.div>
+                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-violet-900 dark:from-violet-300 dark:to-violet-100 mb-1 sm:mb-2">The Imposter Trap</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Spot the Antonym hiding among Synonyms.</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </button>
+                            </motion.div>
+
+                            {/* Tap & Connect */}
+                            <motion.div
+                                variants={itemVariants}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('game-2', () => navigate('/synonyms/quiz?mode=connect'))}
+                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                                <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-rose-200/50 dark:border-b-rose-700/50 group-hover:border-rose-300 dark:group-hover:border-rose-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-rose-500"></div>
+
+                                {loadingId === 'game-2' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-[32px] sm:rounded-[40px]">
+                                        <Loader2 className="w-8 h-8 text-rose-500 animate-spin drop-shadow-md" />
+                                    </div>
+                                )}
+
+                                <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'game-2' ? 'opacity-0' : 'opacity-100'}`}>
+                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                        <TapConnectSVG />
+                                    </motion.div>
+                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-rose-600 to-rose-900 dark:from-rose-300 dark:to-rose-100 mb-1 sm:mb-2">Tap & Connect</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Match main word with its synonym.</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Lightning Review */}
+                            <motion.div
+                                variants={itemVariants}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleNavigation('game-3', () => navigate('/synonyms/quiz?mode=speed'))}
+                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                                <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-indigo-200/50 dark:border-b-indigo-700/50 group-hover:border-indigo-300 dark:group-hover:border-indigo-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-indigo-500"></div>
+
+                                {loadingId === 'game-3' && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-[32px] sm:rounded-[40px]">
+                                        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin drop-shadow-md" />
+                                    </div>
+                                )}
+
+                                <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'game-3' ? 'opacity-0' : 'opacity-100'}`}>
+                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                        <LightningReviewSVG />
+                                    </motion.div>
+                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-900 dark:from-indigo-300 dark:to-indigo-100 mb-1 sm:mb-2 flex items-center gap-1 justify-center">
+                                            Lightning Review
+                                        </h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Swipe through words with a 5s timer.</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                        </motion.div>
                     </div>
 
                 </div>
