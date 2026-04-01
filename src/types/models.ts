@@ -59,6 +59,8 @@ export interface Explanation {
 export interface Question {
   /** Unique identifier for the question. */
   id: string;
+  /** The legacy or human-readable ID of the question. */
+  v1_id?: string;
   /** Source metadata for the question. */
   sourceInfo: SourceInfo;
   /** Subject classification metadata. */
@@ -109,6 +111,7 @@ export interface IdiomContent {
 export interface Idiom {
   /** Unique identifier for the idiom. */
   id: string;
+
   /** Source metadata for the idiom. */
   sourceInfo: {
     pdfName: string;
@@ -153,6 +156,7 @@ export interface OWSContent {
 export interface OneWord {
   /** Unique identifier for the OWS. */
   id: string;
+
   /** Source metadata for the OWS. */
   sourceInfo: {
     pdfName: string;
@@ -191,6 +195,7 @@ export interface InitialFilters {
 export interface User {
   /** Unique user ID. */
   id: string;
+
   /** User's email address. */
   email: string;
   /** User's display name. */
@@ -205,6 +210,7 @@ export interface User {
 export interface QuizAttempt {
   /** Unique ID for the attempt. */
   id: string;
+
   /** ID of the user who took the quiz. */
   userId: string;
   /** Date of the attempt (ISO string). */

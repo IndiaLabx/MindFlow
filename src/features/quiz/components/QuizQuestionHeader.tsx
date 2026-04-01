@@ -73,7 +73,7 @@ export function QuizQuestionHeader({
         </button>
 
         <span className="text-xs text-gray-300 font-mono hidden sm:flex items-center gap-1">
-            <Hash className="w-3 h-3" /> {question.id}
+            <Hash className="w-3 h-3" /> {question.v1_id || question.id}
         </span>
       </div>
 

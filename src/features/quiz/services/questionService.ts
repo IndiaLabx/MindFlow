@@ -104,6 +104,7 @@ export const fetchQuestionMetadata = async (
   // Note: Content fields like 'question' and 'options' are left empty/default.
   return allRows.map((row) => ({
     id: row.id!,
+    v1_id: row.v1_id || '',
     sourceInfo: {
       examName: row.examName || '',
       examYear: row.examYear || 0,
@@ -170,6 +171,7 @@ export const fetchQuestionsByIds = async (ids: string[]): Promise<Question[]> =>
   // Map the DB rows to the full Question model
   return (allData as QuestionDBRow[]).map((row) => ({
     id: row.id,
+    v1_id: row.v1_id,
     sourceInfo: {
       examName: row.examName,
       examYear: row.examYear,
