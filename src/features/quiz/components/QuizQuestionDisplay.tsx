@@ -96,7 +96,7 @@ export function QuizQuestionDisplay({
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-gray-100 dark:border-gray-800 text-[0.75rem] text-gray-400 dark:text-slate-500 font-medium select-none">
                 <div className="flex items-center gap-2 flex-wrap">
                     <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400">
-                         <Hash className="w-3 h-3" /> {question.id}
+                         <Hash className="w-3 h-3" /> {question.v1_id || question.id}
                     </span>
                     {question.sourceInfo?.examName && (
                         <span className="flex items-center gap-1 text-indigo-400">
