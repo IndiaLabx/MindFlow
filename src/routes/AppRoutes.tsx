@@ -31,6 +31,8 @@ const SynonymPhase1Session = lazy(() => import('../features/synonyms/components/
 const QuizResult = lazy(() => import('../features/quiz/components/QuizResult').then(m => ({ default: m.QuizResult })));
 const FlashcardSummary = lazy(() => import('../features/flashcards/components/FlashcardSummary').then(m => ({ default: m.FlashcardSummary })));
 const AboutUs = lazy(() => import('../features/about/components/AboutUs').then(m => ({ default: m.AboutUs })));
+const DeveloperProfile = lazy(() => import('../features/about/components/DeveloperProfile').then(m => ({ default: m.DeveloperProfile })));
+const TermsOfUse = lazy(() => import('../pages/TermsOfUse').then(m => ({ default: m.TermsOfUse })));
 const PrivacyPolicy = lazy(() => import('../pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 const ToolsHome = lazy(() => import('../features/tools/ToolsHome'));
 const AIHome = lazy(() => import('../features/ai/AIHome').then(m => ({ default: m.AIHome })));
@@ -110,6 +112,16 @@ const AppRoutesContent: React.FC = () => {
                             onBackToIntro={() => { goToIntro(); navTo('/'); }}
                             onSavedQuizzes={() => navTo('/quiz/saved')}
                         />
+                    } />
+                    <Route path="/about/developer-profile" element={
+                        <Suspense fallback={<SynapticLoader />}>
+                            <DeveloperProfile />
+                        </Suspense>
+                    } />
+                    <Route path="/about/terms-of-use" element={
+                        <Suspense fallback={<SynapticLoader />}>
+                            <TermsOfUse />
+                        </Suspense>
                     } />
                     <Route path="/about" element={
                         <Suspense fallback={<SynapticLoader />}>

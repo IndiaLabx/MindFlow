@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import fs from 'fs';
+const file = 'src/features/about/components/AboutUs.tsx';
+
+// Fully rewrite AboutUs.tsx to make sure it's clean and syntactically correct
+const correctContent = `import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Loader2 } from 'lucide-react';
@@ -64,7 +68,7 @@ export const AboutUs: React.FC = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleNavigation('dev-profile', '/about/developer-profile')}
-                        className="relative group cursor-pointer aspect-square sm:aspect-square min-h-[160px] rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                        className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
                         <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
@@ -77,18 +81,18 @@ export const AboutUs: React.FC = () => {
                             </div>
                         ) : null}
 
-                        <div className={`relative z-20 flex flex-col items-center justify-center gap-1 sm:gap-3 h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'dev-profile' ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className={\`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 \${loadingId === 'dev-profile' ? 'opacity-0' : 'opacity-100'}\`}>
                             <motion.div
-                                className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 mb-2 relative drop-shadow-xl"
+                                className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl"
                                 initial={{ scale: 0.9, opacity: 0.8 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             >
                                 <DeveloperProfileSVG />
                             </motion.div>
-                            <div className="flex flex-col items-center justify-center w-full text-center">
+                            <div className="flex flex-col items-center justify-end w-full text-center pb-2">
                                 <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-900 dark:from-indigo-300 dark:to-indigo-100 mb-1 sm:mb-2">Developer Profile</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 sm:line-clamp-none max-w-[90%]">
+                                <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">
                                     Meet the team behind MindFlow.
                                 </p>
                             </div>
@@ -101,7 +105,7 @@ export const AboutUs: React.FC = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleNavigation('privacy', '/privacy-policy')}
-                        className="relative group cursor-pointer aspect-square sm:aspect-square min-h-[160px] rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                        className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
                         <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
@@ -114,18 +118,18 @@ export const AboutUs: React.FC = () => {
                             </div>
                         ) : null}
 
-                        <div className={`relative z-20 flex flex-col items-center justify-center gap-1 sm:gap-3 h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'privacy' ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className={\`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 \${loadingId === 'privacy' ? 'opacity-0' : 'opacity-100'}\`}>
                             <motion.div
-                                className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 mb-2 relative drop-shadow-xl"
+                                className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl"
                                 initial={{ scale: 0.9, opacity: 0.8 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             >
                                 <PrivacyPolicySVG />
                             </motion.div>
-                            <div className="flex flex-col items-center justify-center w-full text-center">
+                            <div className="flex flex-col items-center justify-end w-full text-center pb-2">
                                 <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-emerald-900 dark:from-emerald-300 dark:to-emerald-100 mb-1 sm:mb-2">Privacy Policy</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 sm:line-clamp-none max-w-[90%]">
+                                <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">
                                     How we protect your data.
                                 </p>
                             </div>
@@ -138,7 +142,7 @@ export const AboutUs: React.FC = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleNavigation('terms', '/about/terms-of-use')}
-                        className="relative group cursor-pointer aspect-square sm:aspect-square min-h-[160px] rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                        className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
                         <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
@@ -151,18 +155,18 @@ export const AboutUs: React.FC = () => {
                             </div>
                         ) : null}
 
-                        <div className={`relative z-20 flex flex-col items-center justify-center gap-1 sm:gap-3 h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'terms' ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className={\`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 \${loadingId === 'terms' ? 'opacity-0' : 'opacity-100'}\`}>
                             <motion.div
-                                className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0 mb-2 relative drop-shadow-xl"
+                                className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl"
                                 initial={{ scale: 0.9, opacity: 0.8 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             >
                                 <TermsOfUseSVG />
                             </motion.div>
-                            <div className="flex flex-col items-center justify-center w-full text-center">
+                            <div className="flex flex-col items-center justify-end w-full text-center pb-2">
                                 <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-900 dark:from-amber-300 dark:to-amber-100 mb-1 sm:mb-2">Terms of Use</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 sm:line-clamp-none max-w-[90%]">
+                                <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">
                                     Guidelines for using MindFlow.
                                 </p>
                             </div>
@@ -174,3 +178,5 @@ export const AboutUs: React.FC = () => {
         </div>
     );
 };
+`;
+fs.writeFileSync(file, correctContent);
