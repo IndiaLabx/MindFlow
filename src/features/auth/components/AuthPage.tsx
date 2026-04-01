@@ -142,14 +142,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="font-sans text-text-main antialiased bg-slate-50 dark:bg-[#020617] relative overflow-hidden h-full flex flex-col">
+    <div className="font-sans text-text-main antialiased relative w-full flex flex-col animate-fade-in py-4 flex-1">
 
-      {/* Animated Background Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-400/30 dark:bg-indigo-600/20 blur-[100px] animate-[pulse_8s_ease-in-out_infinite] z-0 pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-emerald-400/30 dark:bg-emerald-600/20 blur-[100px] animate-[pulse_10s_ease-in-out_infinite_alternate-reverse] z-0 pointer-events-none" />
-      <div className="absolute top-[20%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-purple-400/20 dark:bg-purple-600/20 blur-[80px] animate-[pulse_12s_ease-in-out_infinite_alternate] z-0 pointer-events-none" />
-
-      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 w-full">
         <button
          onClick={onBack}
          className="absolute top-4 left-4 md:top-8 md:left-8 z-20 flex items-center justify-center p-2 rounded-full bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-700/80 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition-all shadow-sm backdrop-blur-sm border border-white/20 dark:border-gray-700/30"
