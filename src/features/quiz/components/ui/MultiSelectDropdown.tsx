@@ -244,7 +244,7 @@ export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
           </div>
 
           {/* Options List */}
-          <div className="flex-1 p-1">
+          <div className="flex-1 p-1 flex flex-col min-h-0">
               {filteredOptions.length === 0 ? (
                  <div className="p-4 text-sm text-gray-400 text-center italic">
                     {options.length === 0 ? "No options available" : "No matches found"}
@@ -253,8 +253,7 @@ export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
 
                 <div
                     ref={parentRef}
-                    className="w-full overflow-y-auto"
-                    style={{ height: '280px' }} // max-h is usually 80 (320px) minus search bar height
+                    className="w-full flex-1 min-h-0 overflow-y-auto"
                 >
                   <ul
                       ref={listRef}
