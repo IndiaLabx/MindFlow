@@ -2,8 +2,9 @@ import React, { useMemo, useEffect } from 'react';
 import { Question } from '../types';
 import { QuizOption } from './QuizOption';
 import { AiExplanationButton } from './AiExplanationButton';
-import { Clock, Hash, Calendar, FileText, Volume2, Square, Loader2 } from 'lucide-react';
+import { Clock, Hash, Calendar, FileText, Volume2, Square, Loader2, Copy, Check } from 'lucide-react';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
+import { useNotification } from '../../../hooks/useNotification';
 import { SynapticLoader } from '../../../components/ui/SynapticLoader';
 
 // --- Client-Side Sanitizer ---
@@ -74,8 +75,59 @@ export function QuizQuestionDisplay({
     isMockMode?: boolean;
     userTime?: number;
 }) {
+
     const isAnswered = !!selectedAnswer;
     const { speak, stop, isPlaying, isLoading } = useTextToSpeech();
+    const { showToast } = useNotification();
+    const [isCopied, setIsCopied] = React.useState(false);
+
+    const stripHtmlRegex = React.useCallback((html?: string) => {
+        if (!html) return "";
+        return html.replace(/<[^>]*>?/gm, '');
+    }, []);
+
+    const formatCopyText = React.useCallback((questionToCopy: Question) => {
+        let text = `${stripHtmlRegex(questionToCopy.question)}\n`;
+        if (questionToCopy.question_hi) {
+            text += `${stripHtmlRegex(questionToCopy.question_hi)}\n`;
+        }
+
+        text += "\n";
+
+        questionToCopy.options.forEach((opt, idx) => {
+            text += `${idx + 1}. ${stripHtmlRegex(opt)}\n`;
+            if (questionToCopy.options_hi && questionToCopy.options_hi[idx]) {
+                text += `   ${stripHtmlRegex(questionToCopy.options_hi[idx])}\n`;
+            }
+        });
+
+        return text.trim();
+    }, [stripHtmlRegex]);
+
+    const handleCopy = React.useCallback(async () => {
+        try {
+            const textToCopy = formatCopyText(question);
+            await navigator.clipboard.writeText(textToCopy);
+            setIsCopied(true);
+            showToast({
+                variant: 'success',
+                message: 'Copied successfully',
+                duration: 1000
+            });
+            setTimeout(() => {
+                setIsCopied(false);
+            }, 2000);
+        } catch (err) {
+            console.error("Failed to copy text: ", err);
+            showToast({
+                variant: 'error',
+                message: 'Failed to copy',
+                duration: 2000
+            });
+        }
+    }, [question, formatCopyText, showToast]);
+
+
 
     // Stop any playing audio when the question changes to prevent bleed-over
     useEffect(() => {
@@ -134,12 +186,21 @@ export function QuizQuestionDisplay({
                     )}
                 </div>
 
-                {/* AI Explanation Button - Conditionally rendered for Learning Mode */}
+
+                {/* AI Explanation Button & Copy Button - Conditionally rendered for Learning Mode */}
                 {isAnswered && !isMockMode && (
-                   <div className="flex justify-end -mt-2 mb-2">
+                   <div className="flex justify-end items-center gap-2 -mt-2 mb-2">
+                       <button
+                           onClick={handleCopy}
+                           className="flex items-center justify-center mt-3 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm"
+                           title="Copy Question & Options"
+                       >
+                           {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                       </button>
                        <AiExplanationButton question={question} selectedAnswer={selectedAnswer} />
                    </div>
                 )}
+
 
                 {/* Hindi Translation & TTS Control */}
                 {question.question_hi && (
