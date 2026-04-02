@@ -142,21 +142,36 @@ export const useAIChat = () => {
 
 
         // Always use the model with the highest quota for background title generation to save active model quota
-        const titleModel = 'gemini-3.1-flash-lite-preview';
+        const modelsToTry = [
+            'gemini-3.1-flash-lite-preview',
+            'gemini-2.5-flash-lite',
+            'gemini-2.5-flash'
+        ];
 
         try {
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/${titleModel}:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ role: 'user', parts: [{ text: `Generate a short 3-5 word title for a conversation that starts with: "${firstMessage}". Do not use quotes in the response.` }] }],
-                        generationConfig: { temperature: 0.3, maxOutputTokens: 20 }
-                    })
+            let response;
+            for (const model of modelsToTry) {
+                try {
+                    response = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ role: 'user', parts: [{ text: `Generate a short 3-5 word title for a conversation that starts with: "${firstMessage}". Do not use quotes in the response.` }] }],
+                                generationConfig: { temperature: 0.3, maxOutputTokens: 20 }
+                            })
+                        }
+                    );
+                    if (response.ok) {
+                        break;
+                    }
+                } catch(e) {
+                     console.warn(`Model ${model} failed for title generation:`, e);
                 }
-            );
-            if (response.ok) {
+            }
+
+            if (response && response.ok) {
                 const data = await response.json();
                 let title = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
                 title = title.replace(/^["']|["']$/g, ''); // remove surrounding quotes
