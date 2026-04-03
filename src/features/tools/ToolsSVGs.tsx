@@ -139,3 +139,65 @@ export const PptGeneratorSVG = () => (
       transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }} />
   </svg>
 );
+
+// 4. Text Exporter (Rose)
+export const TextExporterSVG = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg" style={{ perspective: '800px' }}>
+    <defs>
+      <linearGradient id="textExporterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FB7185" />
+        <stop offset="100%" stopColor="#E11D48" />
+      </linearGradient>
+      <linearGradient id="textDocGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FECDD3" />
+        <stop offset="100%" stopColor="#FDA4AF" />
+      </linearGradient>
+    </defs>
+
+    {/* Background Document */}
+    <motion.rect
+      x="30" y="15" width="50" height="65" rx="4"
+      fill="url(#textExporterGrad)" opacity="0.4"
+      animate={{ y: [0, -2, 0], rotateZ: [2, 0, 2] }}
+      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+    />
+
+    {/* Foreground Document */}
+    <motion.rect
+      x="20" y="20" width="50" height="65" rx="4"
+      fill="url(#textExporterGrad)" opacity="0.9"
+      animate={{ y: [0, 2, 0], rotateZ: [-2, 0, -2] }}
+      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+    />
+
+    {/* Code Brackets & Markdown Syntax */}
+    <motion.path
+      d="M30 40 L25 45 L30 50"
+      fill="none" stroke="url(#textDocGrad)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+      animate={{ x: [0, -1, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    />
+    <motion.path
+      d="M60 40 L65 45 L60 50"
+      fill="none" stroke="url(#textDocGrad)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+      animate={{ x: [0, 1, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+    />
+
+    <motion.path
+      d="M48 35 L42 55"
+      fill="none" stroke="url(#textDocGrad)" strokeWidth="3" strokeLinecap="round"
+      animate={{ opacity: [0.6, 1, 0.6] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+    />
+
+    {/* Abstract text lines below code block */}
+    <motion.rect x="30" y="60" width="30" height="3" rx="1.5" fill="url(#textDocGrad)"
+      animate={{ width: [30, 25, 30] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} />
+    <motion.rect x="30" y="68" width="20" height="3" rx="1.5" fill="url(#textDocGrad)"
+      animate={{ width: [20, 25, 20] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} />
+    <motion.rect x="30" y="76" width="25" height="3" rx="1.5" fill="url(#textDocGrad)"
+      animate={{ width: [25, 20, 25] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
+
+  </svg>
+);

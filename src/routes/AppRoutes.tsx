@@ -43,6 +43,7 @@ const AITalkPage = lazy(() => import('../features/ai/talk/AITalkPage').then(m =>
 const QuizPdfPptGenerator = lazy(() => import('../features/tools/quiz-pdf-ppt-generator/QuizPdfPptGenerator').then(module => ({ default: module.QuizPdfPptGenerator })));
 const FlashcardMaker = lazy(() => import('../features/tools/flashcard-maker/FlashcardMaker'));
 const BilingualPdfMaker = lazy(() => import('../features/tools/bilingual-pdf-maker/BilingualPdfMaker'));
+const TextExporter = lazy(() => import('../features/tools/text-exporter/TextExporter'));
 
 // Immersive Session Views (No standard layout)
 const LearningSession = lazy(() => import('../features/quiz/learning/LearningSession').then(m => ({ default: m.LearningSession })));
@@ -249,6 +250,7 @@ const AppRoutesContent: React.FC = () => {
                     <Route path="/ai/chat" element={<AIChatPage />} />
                     <Route path="/ai/talk" element={<AITalkPage />} />
                     <Route path="/tools/bilingual-pdf-maker" element={<BilingualPdfMaker />} />
+                    <Route path="/tools/text-exporter" element={<TextExporter />} />
                     <Route path="/tools/quiz-pdf-ppt-generator" element={<QuizPdfPptGenerator />} />
                 </Route>
 

@@ -4,7 +4,7 @@ import { useNavSpinner } from '../../hooks/useNavSpinner';
 import { Loader2 } from 'lucide-react';
 import { Wrench, ArrowLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { FlashcardMakerSVG, BilingualPdfSVG, PptGeneratorSVG } from './ToolsSVGs';
+import { FlashcardMakerSVG, BilingualPdfSVG, PptGeneratorSVG, TextExporterSVG } from './ToolsSVGs';
 
 const ToolsHome: React.FC = () => {
     const navigate = useNavigate();
@@ -36,7 +36,16 @@ const ToolsHome: React.FC = () => {
     };
 
     const tools = [
-        {
+                {
+            id: 'text-exporter',
+            title: 'Text Exporter',
+            description: 'Write, preview, and export raw text or markdown to .txt, .md, and .html.',
+            svg: <TextExporterSVG />,
+            themeColor: 'rose',
+            action: () => navigate('/tools/text-exporter'),
+            disabled: false
+        },
+{
             id: 'flashcard-maker',
             title: 'Flashcard Image Maker',
             description: 'Create beautiful vintage-style flashcards for idioms and OWS.',
@@ -104,6 +113,17 @@ const ToolsHome: React.FC = () => {
                             shadowColor = "bg-indigo-500";
                             textColor = "from-indigo-600 to-indigo-900 dark:from-indigo-300 dark:to-indigo-100";
                         } else if (tool.themeColor === 'purple') {
+                            gradientFrom = "dark:from-purple-900/20";
+                            gradientTo = "dark:to-purple-900/5";
+                            borderColorHover = "border-b-purple-200/50 dark:border-b-purple-700/50 group-hover:border-purple-300 dark:group-hover:border-purple-500";
+                            shadowColor = "bg-purple-500";
+                            textColor = "from-purple-600 to-purple-900 dark:from-purple-300 dark:to-purple-100";
+                        } else if (tool.themeColor === 'rose') {
+                            gradientFrom = "dark:from-rose-900/20";
+                            gradientTo = "dark:to-rose-900/5";
+                            borderColorHover = "border-b-rose-200/50 dark:border-b-rose-700/50 group-hover:border-rose-300 dark:group-hover:border-rose-500";
+                            shadowColor = "bg-rose-500";
+                            textColor = "from-rose-600 to-rose-900 dark:from-rose-300 dark:to-rose-100";
                             gradientFrom = "dark:from-purple-900/20";
                             gradientTo = "dark:to-purple-900/5";
                             borderColorHover = "border-b-purple-200/50 dark:border-b-purple-700/50 group-hover:border-purple-300 dark:group-hover:border-purple-500";
