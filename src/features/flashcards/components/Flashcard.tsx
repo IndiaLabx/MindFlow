@@ -82,7 +82,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ idiom, serialNumber, isFli
         {/* --- BACK FACE --- */}
         <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-3xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col">
           {/* Header */}
-          <div className="bg-amber-50 p-4 border-b border-amber-100 flex justify-between items-center">
+          <div className="bg-amber-50 p-4 border-b border-amber-100 flex justify-between items-center" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-bold text-amber-900 truncate max-w-[80%] font-serif text-lg">{idiom.content.phrase}</h3>
 
             <div className="flex items-center gap-3">
@@ -101,9 +101,6 @@ export const Flashcard: React.FC<FlashcardProps> = ({ idiom, serialNumber, isFli
                 {isRead ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
                 {isRead ? 'Marked as Read' : 'Mark as Read'}
               </button>
-              <div className="text-amber-400">
-                <BookOpen className="w-5 h-5" />
-              </div>
             </div>
           </div>
 
