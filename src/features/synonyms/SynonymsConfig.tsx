@@ -142,7 +142,7 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => handleNavigation('daily-challenge', () => navigate('/synonyms/quiz?mode=speed'))}
-                                className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden col-span-2 lg:col-span-1"
+                                className="relative group cursor-pointer w-full min-h-[120px] rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
@@ -155,13 +155,13 @@ export const SynonymsConfig: React.FC<SynonymsConfigProps> = ({ onBack, onStart 
                                     </div>
                                 )}
 
-                                <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'daily-challenge' ? 'opacity-0' : 'opacity-100'}`}>
-                                    <motion.div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                                <div className={`relative z-20 flex flex-row items-center justify-start gap-4 sm:gap-6 h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'daily-challenge' ? 'opacity-0' : 'opacity-100'}`}>
+                                    <motion.div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative drop-shadow-xl" initial={{ scale: 0.9, opacity: 0.8 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
                                         <DailyChallengeSVG />
                                     </motion.div>
-                                    <div className="flex flex-col items-center justify-end w-full text-center pb-2">
-                                        <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-sky-900 dark:from-sky-300 dark:to-sky-100 mb-1 sm:mb-2">Daily Challenge</h3>
-                                        <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">Master 20 important words every day.</p>
+                                    <div className="flex flex-col items-start justify-center flex-1 text-left">
+                                        <h3 className="text-lg sm:text-xl font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-sky-900 dark:from-sky-300 dark:to-sky-100 mb-1">Daily Challenge</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-semibold leading-snug">Master 20 important words every day.</p>
                                     </div>
                                 </div>
                             </motion.div>
