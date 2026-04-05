@@ -50,7 +50,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { isReviewMode } = useQuizContext();
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const location = useLocation();
-  const isAIFullScreen = location.pathname.startsWith('/ai/chat') || location.pathname.startsWith('/ai/talk');
+  const isAIFullScreen = location.pathname.startsWith('/ai/chat') || location.pathname.startsWith('/ai/talk') || location.pathname.startsWith('/tools/text-exporter') || location.pathname.startsWith('/tools/flashcard-maker');
 
   const handleProfileClick = () => {
     if (user) {

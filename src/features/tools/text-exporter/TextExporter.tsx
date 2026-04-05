@@ -163,13 +163,13 @@ const TextExporter: React.FC = () => {
                         </div>
 
                         {/* Preview View */}
-                        <div className={`flex-1 w-full h-full p-4 sm:p-8 overflow-y-auto custom-scrollbar ${viewMode === 'preview' ? 'block' : 'hidden md:block'} bg-white/40 dark:bg-slate-900/40`}>
+                        <div className={`flex-1 w-full h-full min-h-[50vh] flex flex-col p-4 sm:p-8 pb-24 sm:pb-8 overflow-y-auto custom-scrollbar ${viewMode === 'preview' ? 'block' : 'hidden md:block'} bg-white/40 dark:bg-slate-900/40`}>
 {viewMode === 'edit' && <div className="absolute top-4 right-4 px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider md:block hidden z-20">Live Preview</div>}
                             {isHtmlDocument ? (
                                 <iframe
                                     srcDoc={text}
                                     title="HTML Preview"
-                                    className="w-full h-full border-0 bg-white rounded-xl"
+                                    className="flex-1 w-full h-full min-h-full border-0 bg-white rounded-xl"
                                     sandbox="allow-scripts allow-same-origin"
                                 />
                             ) : (
