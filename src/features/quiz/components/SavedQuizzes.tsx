@@ -37,8 +37,12 @@ export const SavedQuizzes: React.FC = () => {
         };
 
         const handleSyncComplete = () => {
-            setIsSyncing(false);
-            loadQuizzes();
+            // Add a small delay to ensure IndexedDB transactions are fully committed
+            // before we try to read the hydrated data.
+            setTimeout(async () => {
+                await loadQuizzes();
+                setIsSyncing(false);
+            }, 100);
         };
 
         window.addEventListener('mindflow-sync-start', handleSyncStart);
