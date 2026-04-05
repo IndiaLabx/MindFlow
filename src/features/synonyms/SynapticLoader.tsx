@@ -218,7 +218,7 @@ export const SynapticLoader: React.FC = () => {
                 </div>
 
                 {/* Dynamic SVG Canvas */}
-                <div className="w-full h-[360px] md:h-[450px] relative z-10">
+                <div className="w-full h-[500px] md:h-[600px] relative z-10">
                     <svg viewBox="0 0 800 450" className="w-full h-full absolute inset-0 overflow-visible">
                         <defs>
                             <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -238,26 +238,26 @@ export const SynapticLoader: React.FC = () => {
                         </defs>
 
                         {/* Ambient Orbital Rings */}
-                        <circle cx="400" cy="225" r="160" fill="none" className="stroke-indigo-600/10 dark:stroke-indigo-500/15 animate-[spin_25s_linear_infinite]" strokeWidth="1" strokeDasharray="4 12" style={{ transformOrigin: '400px 225px' }} />
-                        <circle cx="400" cy="225" r="220" fill="none" className="stroke-indigo-600/10 dark:stroke-indigo-500/15 animate-[spin_40s_linear_infinite_reverse]" strokeWidth="1.5" strokeDasharray="20 20" style={{ transformOrigin: '400px 225px' }} />
+                        <circle cx="400" cy="225" r="160" fill="none" className="stroke-indigo-600/10 dark:stroke-indigo-500/15 animate-[spin_25s_linear_infinite]" strokeWidth="1" strokeDasharray="4 12" style={{ transformOrigin: '400px 225px', transform: 'scale(1.8)' }} />
+                        <circle cx="400" cy="225" r="220" fill="none" className="stroke-indigo-600/10 dark:stroke-indigo-500/15 animate-[spin_40s_linear_infinite_reverse]" strokeWidth="1.5" strokeDasharray="20 20" style={{ transformOrigin: '400px 225px', transform: 'scale(1.8)' }} />
 
                         {/* Dynamic Connections and Nodes Layer */}
-                        <g ref={connectionsRef}></g>
-                        <g ref={nodesRef}></g>
+                        <g ref={connectionsRef} style={{ transformOrigin: '400px 225px', transform: 'scale(1.8)' }}></g>
+                        <g ref={nodesRef} style={{ transformOrigin: '400px 225px', transform: 'scale(1.8)' }}></g>
 
                         {/* THE CENTRAL HUB */}
-                        <g style={{ filter: 'drop-shadow(0 0 40px rgba(99, 102, 241, 0.2))', transformOrigin: '400px 225px' }}>
+                        <g style={{ filter: 'drop-shadow(0 0 40px rgba(99, 102, 241, 0.2))', transformOrigin: '400px 225px', transform: 'scale(1.8)' }}>
                             {/* Background Circle */}
                             <circle cx="400" cy="225" r="110" className="fill-white/85 dark:fill-[#0f0c29]/65 stroke-indigo-600/10 dark:stroke-indigo-500/15" strokeWidth="1" />
 
                             {/* CIRCULAR PROGRESS BAR (Track) */}
-                            <circle cx="400" cy="225" r="110" fill="none" className="stroke-indigo-600/10 dark:stroke-indigo-500/15" strokeWidth="6" />
+                            <circle cx="400" cy="225" r="110" fill="none" className="stroke-indigo-600/10 dark:stroke-indigo-500/15" strokeWidth="8" />
 
                             {/* CIRCULAR PROGRESS BAR (Fill) */}
                             <circle
                                 ref={progressCircleRef}
                                 cx="400" cy="225" r="110" fill="none"
-                                stroke="url(#progressGrad)" strokeWidth="6" strokeLinecap="round"
+                                stroke="url(#progressGrad)" strokeWidth="8" strokeLinecap="round"
                                 strokeDasharray={CIRCUMFERENCE}
                                 strokeDashoffset={CIRCUMFERENCE}
                                 className="transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)]"
