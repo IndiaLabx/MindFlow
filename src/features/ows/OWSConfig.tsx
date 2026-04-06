@@ -258,14 +258,15 @@ export const OWSConfig: React.FC<OWSConfigProps> = ({ onStart, onBack }) => {
                     </div>
                 </div>
 
+                {/* Active Filters Displayed above sticky footer area */}
+                <div className="mt-6">
+                    <ActiveFiltersBar filters={filters} onRemoveFilter={handleRemoveFilter} onClearAll={() => setFilters(emptyFilters)} />
+                </div>
                 </div>
                 <div className="pb-32"></div>
                 {/* Sticky Action Footer */}
                 <div className="fixed bottom-0 left-0 w-full z-[40] border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-3 pb-safe md:px-6 md:py-4 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.1)] dark:shadow-none">
                     <div className="max-w-4xl mx-auto">
-                        <div className="mb-4">
-                            <ActiveFiltersBar filters={filters} onRemoveFilter={handleRemoveFilter} onClearAll={() => setFilters(emptyFilters)} />
-                        </div>
                         <Button
                             fullWidth
                             size="lg"
