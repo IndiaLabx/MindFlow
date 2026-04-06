@@ -8,22 +8,44 @@ export type OwsMetadata = {
     examYear: string;
     difficulty: string;
     readStatus: string;
+    status?: string;
+    next_review_at?: string;
+    deckMode?: string;
 };
 
-type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'readStatus';
-const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'readStatus'];
+type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'readStatus' | 'deckMode';
+const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'readStatus', 'deckMode'];
+
 
 export function useOwsQuestionIndex(metadata: OwsMetadata[]) {
     return useMemo(() => {
         const index: Record<string, Record<string, Set<string>>> = {};
+        const now = new Date().getTime();
 
         filterKeys.forEach(key => {
             index[key] = {};
         });
 
         metadata.forEach(item => {
+            // Calculate Deck Mode dynamically
+            let itemDeckModes: string[] = [];
+            if (item.status === 'mastered') {
+                itemDeckModes = []; // Completely ignore mastered cards
+            } else if (!item.status) {
+                itemDeckModes = ['All Unseen', 'Mix'];
+            } else if (item.next_review_at && new Date(item.next_review_at).getTime() <= now) {
+                itemDeckModes = ['Due for Review', 'Mix'];
+            }
+
+            // Assign dynamically computed deckModes so the Set algorithm picks them up
+            itemDeckModes.forEach(mode => {
+                if (!index['deckMode'][mode]) index['deckMode'][mode] = new Set();
+                index['deckMode'][mode].add(item.id);
+            });
+
             filterKeys.forEach(key => {
-                const value = item[key];
+                if (key === 'deckMode') return; // Handled above
+                const value = item[key as keyof OwsMetadata] as string;
                 if (!value) return;
 
                 if (!index[key][value]) {
@@ -36,6 +58,7 @@ export function useOwsQuestionIndex(metadata: OwsMetadata[]) {
         return index;
     }, [metadata]);
 }
+
 
 export function useOwsFilterCounts({
   metadata,

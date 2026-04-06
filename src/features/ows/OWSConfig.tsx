@@ -224,7 +224,7 @@ export const OWSConfig: React.FC<OWSConfigProps> = ({ onStart, onBack }) => {
                             options={['All Unseen', 'Due for Review', 'Mix']}
                             selectedOptions={filters.deckMode || ['All Unseen']}
                             onOptionToggle={(opt) => setFilters(prev => ({ ...prev, deckMode: [opt] }))}
-                            counts={{}}
+                            counts={filterCounts.deckMode || {}}
                         />
                     </div>
 
