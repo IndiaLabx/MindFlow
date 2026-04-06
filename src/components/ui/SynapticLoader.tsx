@@ -22,7 +22,7 @@ const iconClasses = {
 
 export const SynapticLoader: React.FC<SynapticLoaderProps> = ({ size = 'md', className = '' }) => {
   return (
-    <div className={`relative flex items-center justify-center ${className}`}>
+    <div className={`relative flex items-center justify-center min-h-[60vh] ${className}`}>
       {/* Outer spinning gradient ring */}
       <svg
         className={`animate-spin ${sizeClasses[size]} text-indigo-600 dark:text-indigo-400`}
