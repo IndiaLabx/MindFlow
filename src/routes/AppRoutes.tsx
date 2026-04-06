@@ -216,7 +216,11 @@ const AppRoutesContent: React.FC = () => {
                                 const dest = flashcardStore.type === 'ows' ? '/ows/config' : flashcardStore.type === 'synonyms' ? '/synonyms/config' : '/idioms/config';
                                 navTo(dest);
                             }}
-                            onHome={navHome}
+                            onHome={() => {
+                                const dest = flashcardStore.type === 'ows' ? '/ows/config' : flashcardStore.type === 'synonyms' ? '/synonyms/config' : '/idioms/config';
+                                navTo(dest);
+                            }}
+                            backText={flashcardStore.type === 'ows' ? 'Back To OWS Config' : flashcardStore.type === 'synonyms' ? 'Back To Synonyms Config' : 'Back To Idioms Config'}
                         />
                     } />
 

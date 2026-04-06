@@ -17,6 +17,8 @@ interface FlashcardSummaryProps {
   onRestart: () => void;
   /** Callback to return to the dashboard. */
   onHome: () => void;
+  /** Custom text for the back button. */
+  backText?: string;
 }
 
 /**
@@ -33,7 +35,8 @@ export const FlashcardSummary: React.FC<FlashcardSummaryProps> = ({
   totalCards,
   filters,
   onRestart,
-  onHome
+  onHome,
+  backText = "Dashboard"
 }) => {
 
   // derived display values
@@ -104,7 +107,7 @@ export const FlashcardSummary: React.FC<FlashcardSummaryProps> = ({
               onClick={onHome}
               className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-slate-800"
             >
-              <Home className="w-4 h-4 mr-2" /> Dashboard
+              <Home className="w-4 h-4 mr-2" /> {backText}
             </Button>
           </div>
         </motion.div>

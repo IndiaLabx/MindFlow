@@ -29,12 +29,16 @@ export function useOwsQuestionIndex(metadata: OwsMetadata[]) {
         metadata.forEach(item => {
             // Calculate Deck Mode dynamically
             let itemDeckModes: string[] = [];
-            if (item.status === 'mastered') {
-                itemDeckModes = []; // Completely ignore mastered cards
-            } else if (!item.status) {
-                itemDeckModes = ['All Unseen', 'Mix'];
-            } else if (item.next_review_at && new Date(item.next_review_at).getTime() <= now) {
-                itemDeckModes = ['Due for Review', 'Mix'];
+            if (!item.status) {
+                itemDeckModes = ['Unseen'];
+            } else if (item.status === 'mastered') {
+                itemDeckModes = ['Mastered'];
+            } else if (item.status === 'review') {
+                itemDeckModes = ['Review'];
+            } else if (item.status === 'clueless') {
+                itemDeckModes = ['Clueless'];
+            } else if (item.status === 'tricky') {
+                itemDeckModes = ['Tricky'];
             }
 
             // Assign dynamically computed deckModes so the Set algorithm picks them up

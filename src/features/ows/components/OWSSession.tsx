@@ -328,7 +328,11 @@ export const OWSSession: React.FC<OWSSessionProps> = ({
      y.set(0);
      setSwipeDirection(null);
 
-     onNext(); // Advance the parent's pointer
+     if (isLast) {
+         onFinish();
+     } else {
+         onNext(); // Advance the parent's pointer
+     }
 
      controls.set({ x: 0, y: 0, opacity: 1 });
      setIsAnimating(false);

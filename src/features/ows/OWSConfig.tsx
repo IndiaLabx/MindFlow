@@ -27,7 +27,7 @@ const emptyFilters: InitialFilters = {
     examDateShift: [],
     tags: [],
     readStatus: [],
-    deckMode: ['All Unseen']
+    deckMode: ['Unseen']
 };
 
 export const OWSConfig: React.FC<OWSConfigProps> = ({ onStart, onBack }) => {
@@ -221,8 +221,8 @@ export const OWSConfig: React.FC<OWSConfigProps> = ({ onStart, onBack }) => {
                             <CheckCircle className="w-4 h-4" /> Deck Mode (Spatial Engine)
                         </div>
                         <SegmentedControl
-                            options={['All Unseen', 'Due for Review', 'Mix']}
-                            selectedOptions={filters.deckMode || ['All Unseen']}
+                            options={['Unseen', 'Mastered', 'Review', 'Clueless', 'Tricky']}
+                            selectedOptions={filters.deckMode || ['Unseen']}
                             onOptionToggle={(opt) => setFilters(prev => ({ ...prev, deckMode: [opt] }))}
                             counts={filterCounts.deckMode || {}}
                         />
