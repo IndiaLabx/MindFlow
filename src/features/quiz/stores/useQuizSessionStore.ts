@@ -6,6 +6,7 @@ interface QuizSessionState extends QuizState {
   // Actions
   enterHome: () => void;
   enterConfig: () => void;
+  enterBlueprints: () => void;
   enterEnglishHome: () => void;
   enterIdiomsConfig: () => void;
   enterSynonymsConfig: () => void;
@@ -72,6 +73,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
 
   enterHome: () => set({ ...initialState, status: 'idle' }),
   enterConfig: () => set({ status: 'config' }),
+  enterBlueprints: () => set({ status: 'blueprints' as any }),
   enterEnglishHome: () => set({ status: 'english-home' }),
   enterIdiomsConfig: () => set({ status: 'idioms-config' }),
   enterSynonymsConfig: () => set({ ...initialState, status: 'synonyms-config' }),

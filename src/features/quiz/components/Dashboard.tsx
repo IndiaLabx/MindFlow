@@ -190,6 +190,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                         </div>
                     </motion.div>
 
+                    {/* Card Blueprints */}
+                    <motion.div
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleNavigation('blueprints', () => navigate('/blueprints'))}
+                        className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+
+                        <div className="absolute top-0 right-0 p-6 z-20">
+                            <div className="w-10 h-10 rounded-full bg-white/20 dark:bg-white/5 flex items-center justify-center backdrop-blur-md border border-white/20">
+                                <ChevronRight className="w-5 h-5 text-gray-800 dark:text-white" />
+                            </div>
+                        </div>
+
+                        <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 z-10">
+                            <div className="mb-auto">
+                                <div className="w-16 h-16 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center border border-red-500/30">
+                                    <ToolsSVG />
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 className="text-2xl sm:text-3xl font-display font-bold text-gray-900 dark:text-white mb-2">
+                                    Exam Blueprints
+                                </h3>
+                                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-[200px] font-medium leading-relaxed">
+                                    God-Mode configuration for precise %-based exams.
+                                </p>
+                            </div>
+
+                            {loadingId === 'blueprints' && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-30">
+                                    <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+
                     {/* Card card-3 */}
                     <motion.div
                         variants={itemVariants}
