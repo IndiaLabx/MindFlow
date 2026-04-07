@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
   Layers,
@@ -13,7 +13,8 @@ import {
   BookOpen,
   Timer,
   Check,
-  Save
+  Save,
+  Crown
 } from 'lucide-react';
 import { Button } from '../../../components/Button/Button';
 import { fetchQuestionMetadata, fetchQuestionsByIds } from '../services/questionService';
@@ -33,6 +34,7 @@ import { QuickStartButtons } from './ui/QuickStartButtons';
 import { ActiveFiltersBar } from './ui/ActiveFiltersBar';
 import { Accordion } from './ui/Accordion';
 import { ScrollableCapsules } from './ui/ScrollableCapsules';
+import { ExamBlueprintsHub } from './ExamBlueprintsHub';
 
 // Optimization Hooks
 import { useQuestionIndex, filterQuestionsByIndex } from '../hooks/useQuestionIndex';
@@ -57,7 +59,8 @@ const emptyFilters: InitialFilters = {
 
 export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<QuizMode>('learning');
+  const location = useLocation();
+  const [mode, setMode] = useState<QuizMode>((location.state as any)?.initialMode || 'learning');
   const [filters, setFilters] = useState<InitialFilters>(emptyFilters);
   const [quizName, setQuizName] = useState('');
 
@@ -302,7 +305,7 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
         <div className="flex flex-row items-center justify-between gap-3 mb-4 bg-white dark:bg-gray-800 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative z-20">
 
           {/* Segmented Control for Mode Switch */}
-          <div className="flex bg-gray-100 dark:bg-gray-900/50 p-1 rounded-xl flex-1 max-w-[280px]">
+          <div className="flex bg-gray-100 dark:bg-gray-900/50 p-1 rounded-xl flex-1 max-w-[400px]">
             <button
               onClick={() => setMode('learning')}
               className={cn(
@@ -312,7 +315,7 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent"
               )}
             >
-              <BookOpen className="w-4 h-4" />
+              <BookOpen className="w-4 h-4 hidden sm:block" />
               <span>Learning</span>
             </button>
             <button
@@ -324,8 +327,20 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent"
               )}
             >
-              <Timer className="w-4 h-4" />
+              <Timer className="w-4 h-4 hidden sm:block" />
               <span>Mock</span>
+            </button>
+            <button
+              onClick={() => setMode('god')}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200",
+                mode === 'god'
+                  ? "bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm border border-red-200 dark:border-red-900/30"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border border-transparent"
+              )}
+            >
+              <Crown className="w-4 h-4 hidden sm:block" />
+              <span>God Mode</span>
             </button>
           </div>
 
@@ -336,7 +351,14 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
         </div>
 
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {mode === 'god' && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <ExamBlueprintsHub onBack={onBack} onLaunchBlueprint={(bp) => navigate(`/blueprints/preview/${bp.id}`)} />
+          </div>
+        )}
+
+        <div className={cn("grid grid-cols-1 lg:grid-cols-2 gap-6", mode === 'god' && "hidden")}>
           <FilterGroup
             title="Classification"
             icon={<Layers className="w-5 h-5" />}

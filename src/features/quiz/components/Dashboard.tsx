@@ -334,7 +334,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onEnglish, on
                         variants={itemVariants}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => handleNavigation('card-godmode', () => navigate('/blueprints'))}
+                        onClick={() => handleNavigation('card-godmode', () => navigate('/quiz/config', { state: { initialMode: 'god' } }))}
                         className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden sm:col-span-2 md:col-span-3 lg:col-span-1"
                     >
                         {/* Glow Background Layer */}
