@@ -45,7 +45,11 @@ const newSieve = `        parsedData = parsedData.filter(card => {
              } else if (mode === 'Tricky') {
                  return userState?.status === 'tricky';
              }
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> origin/main
              return true;
         });`;
 
