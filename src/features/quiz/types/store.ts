@@ -27,7 +27,7 @@ export type QuizStatus =
  * - 'learning': Interactive, immediate feedback, untimed or per-question timer.
  * - 'mock': Exam simulation, global timer, no immediate feedback.
  */
-export type QuizMode = 'learning' | 'mock';
+export type QuizMode = 'learning' | 'mock' | 'god';
 
 /**
  * The core state object for the Quiz Reducer.

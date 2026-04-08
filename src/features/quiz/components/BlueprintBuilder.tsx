@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronRight, ChevronDown, Plus, Trash2, Save, X, Target } from 'lucide-react';
 import { Button } from '../../../components/Button/Button';
 import { ExamBlueprint, BlueprintNode } from '../types/blueprint';
 import { v4 as uuidv4 } from 'uuid';
+import { fetchQuestionMetadata } from '../services/questionService';
+import { useQuestionIndex } from '../hooks/useQuestionIndex';
+import { Question } from '../types';
+import { CookingLoader } from './CookingLoader';
 
 interface BlueprintBuilderProps {
   initialData?: ExamBlueprint;
   onSave: (blueprint: ExamBlueprint) => void;
   onCancel: () => void;
   onLaunch?: (blueprint: ExamBlueprint) => void;
+  metadataIndex?: Record<string, Record<string, Set<string>>>;
 }
 
-const NodeItem = ({ node, updateNode, deleteNode, depth = 0 }: { node: BlueprintNode, updateNode: (n: BlueprintNode) => void, deleteNode: () => void, depth?: number }) => {
+const NodeItem = ({ node, updateNode, deleteNode, depth = 0, metadataIndex }: { node: BlueprintNode, updateNode: (n: BlueprintNode) => void, deleteNode: () => void, depth?: number, metadataIndex?: Record<string, Record<string, Set<string>>> }) => {
   const [expanded, setExpanded] = useState(true);
 
   const handleAddChild = () => {
@@ -46,6 +51,12 @@ const NodeItem = ({ node, updateNode, deleteNode, depth = 0 }: { node: Blueprint
     });
   };
 
+  const availableOptions = useMemo(() => {
+    if (!metadataIndex || !metadataIndex[node.type]) return [];
+    const options = Object.keys(metadataIndex[node.type]).sort();
+    return options.filter(o => o.trim().length > 0);
+  }, [metadataIndex, node.type]);
+
   return (
     <div className={`mt-2 border border-white/10 rounded-lg overflow-hidden bg-white/5 ${depth > 0 ? 'ml-6' : ''}`}>
       <div className="flex flex-wrap items-center gap-2 p-3 bg-white/5">
@@ -63,13 +74,26 @@ const NodeItem = ({ node, updateNode, deleteNode, depth = 0 }: { node: Blueprint
           <option value="subTopic">Sub-Topic</option>
         </select>
 
-        <input
-          type="text"
-          value={node.value}
-          onChange={(e) => updateNode({...node, value: e.target.value, name: e.target.value})}
-          placeholder="e.g. History"
-          className="bg-black border border-white/20 rounded p-1 text-sm text-white focus:outline-none focus:border-purple-500 min-w-[100px] flex-1"
-        />
+        {availableOptions.length > 0 ? (
+          <select
+            value={node.value}
+            onChange={(e) => updateNode({...node, value: e.target.value, name: e.target.value})}
+            className="bg-black border border-white/20 rounded p-1 text-sm text-white focus:outline-none focus:border-purple-500 min-w-[100px] flex-1"
+          >
+            <option value="" disabled>Select {node.type}</option>
+            {availableOptions.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type="text"
+            value={node.value}
+            onChange={(e) => updateNode({...node, value: e.target.value, name: e.target.value})}
+            placeholder={`e.g. ${node.type}`}
+            className="bg-black border border-white/20 rounded p-1 text-sm text-white focus:outline-none focus:border-purple-500 min-w-[100px] flex-1"
+          />
+        )}
 
         <div className="flex items-center space-x-1 bg-black border border-white/20 rounded overflow-hidden">
           <input

@@ -51,6 +51,7 @@ const TextExporter = lazy(() => import('../features/tools/text-exporter/TextExpo
 // Immersive Session Views (No standard layout)
 const LearningSession = lazy(() => import('../features/quiz/learning/LearningSession').then(m => ({ default: m.LearningSession })));
 const MockSession = lazy(() => import('../features/quiz/mock/MockSession').then(m => ({ default: m.MockSession })));
+const GodModeSession = lazy(() => import('../features/quiz/mock/GodModeSession').then(m => ({ default: m.GodModeSession })));
 const FlashcardSession = lazy(() => import('../features/flashcards/components/FlashcardSession').then(m => ({ default: m.FlashcardSession })));
 const OWSSession = lazy(() => import('../features/ows/components/OWSSession').then(m => ({ default: m.OWSSession })));
 
@@ -300,7 +301,7 @@ const AppRoutesContent: React.FC = () => {
                         onPrev={prevQuestion}
                         onJump={jumpToQuestion}
                         onToggleBookmark={toggleBookmark}
-                        onComplete={(results) => { submitSessionResults(results); navTo('/result'); }}
+                        onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
                         onGoHome={navHome}
                         onPause={pauseQuiz}
                         onResume={resumeQuiz}
@@ -320,7 +321,16 @@ const AppRoutesContent: React.FC = () => {
                             pauseQuiz();
                             setTimeout(() => navTo('/quiz/saved'), 100);
                         }}
-                        onComplete={(results) => { submitSessionResults(results); navTo('/result'); }}
+                        onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
+                    />
+                } />
+
+                {/* God Mode: Stricter timed blueprint simulation */}
+                <Route path="/quiz/session/god" element={
+                    <GodModeSession
+                        questions={state.activeQuestions}
+                        initialTime={state.quizTimeRemaining}
+                        onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
                     />
                 } />
 

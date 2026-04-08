@@ -93,7 +93,7 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
     case 'START_QUIZ': {
       const { questions, filters, mode } = action.payload;
       // Mock Mode: Calculate global time (e.g. 30s * questions)
-      const globalTime = mode === 'mock'
+      const globalTime = (mode === 'mock' || mode === 'god')
         ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, questions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
         : 0;
 
@@ -273,7 +273,7 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
     case 'RESTART_QUIZ': {
 
       // If restarting regular quiz
-      const globalTime = state.mode === 'mock'
+      const globalTime = (state.mode === 'mock' || state.mode === 'god')
         ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, state.activeQuestions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
         : 0;
       return {

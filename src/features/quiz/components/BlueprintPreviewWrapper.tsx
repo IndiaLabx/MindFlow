@@ -39,7 +39,7 @@ export const BlueprintPreviewWrapper: React.FC = () => {
         }
       } catch (err: any) {
         showToast({ title: 'Error', message: 'Could not load blueprint', variant: 'error' });
-        navigate('/blueprints');
+        navigate('/quiz/config');
       } finally {
         setLoading(false);
       }
@@ -49,9 +49,9 @@ export const BlueprintPreviewWrapper: React.FC = () => {
   }, [id, user, navigate, showToast]);
 
   const handleStartExam = (questions: Question[]) => {
-    // Mode is mock because God Mode Blueprints simulate real strict exams
-    startQuiz(questions, { subject: [], topic: [], subTopic: [], difficulty: [], isGodMode: true } as any, 'mock');
-    navigate('/quiz');
+    // Launching in native God Mode for strict exam simulation
+    startQuiz(questions, { subject: [], topic: [], subTopic: [], difficulty: [], isGodMode: true } as any, 'god');
+    navigate('/quiz/session/god');
   };
 
   if (loading) {
@@ -65,7 +65,7 @@ export const BlueprintPreviewWrapper: React.FC = () => {
   return (
     <BlueprintPreview
       blueprint={blueprint}
-      onBack={() => navigate('/blueprints')}
+      onBack={() => navigate('/quiz/config')}
       onStartExam={handleStartExam}
     />
   );

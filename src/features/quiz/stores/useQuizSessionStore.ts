@@ -83,7 +83,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   goToIntro: () => set({ ...initialState, status: 'intro' }),
 
   startQuiz: (questions, filters, mode) => {
-    const globalTime = mode === 'mock'
+    const globalTime = (mode === 'mock' || mode === 'god')
       ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, questions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
       : 0;
 
@@ -208,7 +208,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   })),
 
   restartQuiz: () => set((state) => {
-    const globalTime = state.mode === 'mock'
+    const globalTime = (state.mode === 'mock' || state.mode === 'god')
       ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, state.activeQuestions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
       : 0;
     return {
