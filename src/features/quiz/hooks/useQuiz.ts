@@ -104,7 +104,7 @@ export const useQuiz = () => {
       }
 
       const answer = results.answers[q.id];
-      const time = useAnalyticsStore.getState().timeTaken[q.id] || 0;
+      const time = results.timeTaken[q.id] || useAnalyticsStore.getState().timeTaken[q.id] || 0;
       totalTimeSpent += time;
 
       if (!answer) {
