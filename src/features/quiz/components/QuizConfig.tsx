@@ -431,6 +431,7 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
         </div>
 
         {/* Progressive Disclosure: Advanced Filters Accordion */}
+        {mode !== 'god' && (
         <Accordion title="Advanced Filters">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <FilterGroup title="Source" icon={<FileText className="w-5 h-5" />}>
@@ -472,8 +473,10 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
             </FilterGroup>
           </div>
         </Accordion>
+        )}
 
         {/* Active Filters Displayed above sticky footer area */}
+        {mode !== 'god' && (
         <div className="pb-8">
            <ActiveFiltersBar
             filters={filters}
@@ -481,9 +484,11 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
             onClearAll={() => setFilters(emptyFilters)}
           />
         </div>
+        )}
       </div>
 
       {/* Sticky Action Footer */}
+      {mode !== 'god' && (
       <div className="fixed bottom-0 left-0 w-full z-[40] border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md px-4 py-3 pb-safe md:px-6 md:py-4 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.1)] dark:shadow-none">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 w-full">
            {/* Quiz Name Input - Compact for footer */}
@@ -529,6 +534,7 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };
