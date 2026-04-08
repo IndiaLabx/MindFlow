@@ -201,7 +201,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
 
   submitSessionResults: (results) => set((state) => ({
     answers: results.answers,
-    timeTaken: results.timeTaken,
+    timeTaken: Object.keys(results.timeTaken).length > 0 ? results.timeTaken : state.timeTaken,
     score: results.score,
     bookmarks: results.bookmarks,
     status: 'result'
