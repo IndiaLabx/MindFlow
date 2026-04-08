@@ -14,7 +14,7 @@ import { useNotification } from '../../../stores/useNotificationStore';
  */
 interface DashboardProps {
     /** Callback to navigate to the English Zone. */
-    onSchool: () => void;
+
     /** Callback to return to the Landing Page intro. */
     onBackToIntro: () => void;
 }
@@ -32,7 +32,7 @@ interface DashboardProps {
  * @param {DashboardProps} props - The component props.
  * @returns {JSX.Element} The rendered Dashboard.
  */
-export const Dashboard: React.FC<DashboardProps> = ({ onSchool, onBackToIntro }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onBackToIntro }) => {
     const navigate = useNavigate();
     const { loadingId, handleNavigation } = useNavSpinner();
     const { user } = useAuth();
@@ -145,7 +145,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSchool, onBackToIntro })
                         variants={itemVariants}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => handleNavigation('card-3', onSchool)}
+                        onClick={() => handleNavigation('card-3', () => navigate('/english'))}
                         className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
                     >
                         {/* Glow Background Layer */}
@@ -324,6 +324,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSchool, onBackToIntro })
                         </div>
                     </motion.div>
 
+
+
+                    {/* Admin Room (Visible only to mindflow@user.com) */}
+                    {user?.email === 'mindflow@user.com' && (
+                    <motion.div
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleNavigation('card-admin', () => navigate('/admin'))}
+                        className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>
+                        <div className="absolute inset-0 rounded-[32px] sm:rounded-[40px] border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-active:border-b-0 border-b-[4px] border-b-red-200/50 dark:border-b-red-700/50 group-hover:border-red-300 dark:group-hover:border-red-500"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-red-500"></div>
+
+                        {loadingId === 'card-admin' ? (
+                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-[32px] sm:rounded-[40px]">
+                                <Loader2 className="w-8 h-8 text-red-500 animate-spin drop-shadow-md" />
+                            </div>
+                        ) : null}
+
+                        <div className={`relative z-20 flex flex-col items-center justify-between h-full w-full p-4 sm:p-6 transition-opacity duration-300 ${loadingId === 'card-admin' ? 'opacity-0' : 'opacity-100'}`}>
+                            <motion.div
+                                className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 mt-2 relative drop-shadow-xl"
+                                initial={{ scale: 0.9, opacity: 0.8 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                            >
+                                <AdminSVG />
+                            </motion.div>
+
+                            <div className="flex flex-col items-center justify-end w-full text-center pb-2">
+                                <h3 className="text-sm sm:text-lg font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-red-900 dark:from-red-300 dark:to-red-100 mb-1 sm:mb-2">Admin Room</h3>
+                                <p className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[90%]">
+                                    Broadcast & Upload
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                    )}
 
                     {/* Card card-download */}
                     <motion.div
