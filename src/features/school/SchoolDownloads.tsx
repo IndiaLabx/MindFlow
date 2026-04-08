@@ -80,12 +80,12 @@ export const SchoolDownloads: React.FC = () => {
         showToast({ title: "Downloading...", message: "Your file is being prepared.", variant: "info" });
 
         try {
-            // Attempt 1: Direct Fetch (Works perfectly for Supabase Storage URLs since CORS is configured)
-
+            // Direct Fetch (Works perfectly for Supabase Storage URLs since CORS is configured)
             // Ensure Supabase urls have download parameter to enforce Content-Disposition: attachment
             const downloadUrl = url.includes('supabase.co') && !url.includes('download=')
                 ? `${url}?download=`
                 : url;
+
             const directResponse = await fetch(downloadUrl);
 
             if (directResponse.ok) {
@@ -100,81 +100,13 @@ export const SchoolDownloads: React.FC = () => {
                 URL.revokeObjectURL(blobUrl);
                 setDownloadStatus(prev => ({ ...prev, [id]: 'success' }));
                 showToast({ title: "Success", message: "File downloaded successfully!", variant: "success" });
-                return;
             } else {
                 throw new Error(`Direct fetch failed: ${directResponse.status}`);
             }
-        } catch (directError) {
-            console.warn("Direct fetch failed, falling back to proxies...", directError);
-
-            try {
-                // Attempt 2: Supabase Edge Function Proxy (For Archive.org legacy links)
-                const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/proxy-download`;
-                const proxyResponse = await fetch(functionUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-                    },
-                    body: JSON.stringify({ url, filename: suggestedName })
-                });
-
-                if (!proxyResponse.ok) throw new Error(`Proxy failed with status ${proxyResponse.status}`);
-
-                const blob = await proxyResponse.blob();
-                const blobUrl = URL.createObjectURL(blob);
-
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = suggestedName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-                setDownloadStatus(prev => ({ ...prev, [id]: 'success' }));
-                showToast({ title: "Success", message: "File downloaded successfully!", variant: "success" });
-                return;
-
-            } catch (error) {
-                console.warn("Attempt 2 (Edge Function) failed:", error);
-
-                try {
-                    // Attempt 3: Free CORS Proxy
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                    const response = await fetch(proxyUrl);
-
-                    if (!response.ok) throw new Error(`CORS proxy failed with status ${response.status}`);
-
-                    const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
-
-                    const a = document.createElement('a');
-                    a.href = blobUrl;
-                    a.download = suggestedName;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(blobUrl);
-                    setDownloadStatus(prev => ({ ...prev, [id]: 'success' }));
-                    showToast({ title: "Success", message: "File downloaded successfully!", variant: "success" });
-                    return;
-
-                } catch (proxyError) {
-                    console.warn("Attempt 3 (CORS Proxy) failed:", proxyError);
-
-                    // Attempt 4: Ultimate Fallback - Window Open / Anchor Tag
-                    const link = document.createElement("a");
-                    link.href = url;
-                    link.download = suggestedName;
-                    link.target = "_blank";
-                    link.rel = "noopener noreferrer";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-
-                    setDownloadStatus(prev => ({ ...prev, [id]: 'success' })); // Assume success if browser handles it
-                }
-            }
+        } catch (error) {
+            console.error("Download failed:", error);
+            setDownloadStatus(prev => ({ ...prev, [id]: null }));
+            showToast({ title: "Error", message: "Failed to download file. Please try again.", variant: "error" });
         }
     };
 
