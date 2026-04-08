@@ -41,7 +41,7 @@ export const SegmentedControl = React.memo(function SegmentedControl({
           )}
         </div>
       )}
-      <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl gap-1" role="group" aria-label={label || "Segmented Control"}>
+      <div className="flex flex-wrap p-1 bg-gray-100 dark:bg-gray-800 rounded-xl gap-1" role="group" aria-label={label || "Segmented Control"}>
         {options.map(option => {
             const count = counts?.[option] || 0;
             const isSelected = selectedOptions.includes(option);
