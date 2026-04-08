@@ -8,6 +8,7 @@ import { cn } from '../../utils/cn';
 type MaterialType = 'NCERT Textbook' | 'Study Notes' | 'MCQ Test' | 'Chapter Test' | 'Other Test' | 'Answer Key';
 
 interface StudyMaterial {
+    parts?: string | null;
     id: string;
     class: string;
     subject: string;
@@ -296,7 +297,7 @@ export const SchoolDownloads: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <h4 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">{material.title}</h4>
-                                                    <p className="text-xs text-slate-500 mt-0.5">{material.class} • {material.subject}</p>
+                                                    <p className="text-xs text-slate-500 mt-0.5">{material.class} • {material.subject} • {material.type}{material.parts ? ` • Part ${material.parts}` : ""}</p>
                                                 </div>
                                             </div>
 
