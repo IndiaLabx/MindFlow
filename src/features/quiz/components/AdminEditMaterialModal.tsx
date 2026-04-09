@@ -25,7 +25,7 @@ interface AdminEditMaterialModalProps {
     onSuccess: (updatedMaterial: StudyMaterial) => void;
 }
 
-const CLASSES = ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12', 'Competitive'];
+const CLASSES = ['Class VI', 'Class VII', 'Class VIII', 'Class IX', 'Class X', 'Class XI', 'Class XII'];
 const TYPES: MaterialType[] = ['NCERT Textbook', 'Study Notes', 'MCQ Test', 'Chapter Test', 'Other Test', 'Answer Key'];
 
 export const AdminEditMaterialModal: React.FC<AdminEditMaterialModalProps> = ({ isOpen, onClose, material, onSuccess }) => {
