@@ -34,13 +34,13 @@ export const SchoolHome: React.FC = () => {
         </motion.div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 w-full max-w-sm mx-auto">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           {/* Download Card */}
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate("/school/download")}
-            className="relative group cursor-pointer aspect-square rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+            className="relative group cursor-pointer w-full min-h-[120px] rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
           >
             {/* Glow Background Layer */}
             <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
@@ -52,10 +52,10 @@ export const SchoolHome: React.FC = () => {
             {/* Centered Subtle Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-cyan-500"></div>
 
-            <div className="relative z-20 flex flex-col items-center justify-center h-full w-full p-4 sm:p-6">
+            <div className="relative z-20 flex flex-row items-center justify-start gap-4 sm:gap-6 h-full w-full p-4 sm:p-6">
               {/* SVG Container */}
               <motion.div
-                className="w-24 h-24 sm:w-32 sm:h-32 mb-4 relative drop-shadow-xl"
+                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative drop-shadow-xl"
                 initial={{ scale: 0.9, opacity: 0.8 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
@@ -64,14 +64,14 @@ export const SchoolHome: React.FC = () => {
               </motion.div>
 
               {/* Text Area */}
-              <div className="flex flex-col items-center justify-end w-full text-center">
-                <div className="flex items-center justify-center mb-2 gap-1">
-                  <h3 className="text-xl sm:text-2xl font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-cyan-900 dark:from-cyan-300 dark:to-cyan-100">
+              <div className="flex flex-col items-start justify-center flex-1 text-left">
+                <div className="flex items-center justify-start mb-1 gap-1">
+                  <h3 className="text-lg sm:text-xl font-black leading-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-cyan-900 dark:from-cyan-300 dark:to-cyan-100">
                     Download Center
                   </h3>
                   <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-semibold leading-tight px-4">
+                <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-semibold leading-snug px-0">
                   Get NCERT PDFs, study notes & question banks.
                 </p>
               </div>
