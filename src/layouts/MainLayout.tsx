@@ -1,5 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BrainCircuit, Home, GraduationCap, PlusCircle, User, Settings, LogIn, Sun, Moon, Brain, Menu } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useAuth } from '../features/auth/context/AuthContext';
@@ -53,6 +54,40 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const location = useLocation();
   const isAIFullScreen = location.pathname.startsWith('/ai/chat') || location.pathname.startsWith('/ai/talk') || location.pathname.startsWith('/tools/text-exporter') || location.pathname.startsWith('/tools/flashcard-maker');
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+
+  // Golden Ring Animation Setup
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
+  const navRef = useRef<HTMLDivElement>(null);
+  const homeRef = useRef<HTMLButtonElement>(null);
+  const schoolRef = useRef<HTMLButtonElement>(null);
+  const profileRef = useRef<HTMLButtonElement>(null);
+
+  useLayoutEffect(() => {
+    const updateIndicator = () => {
+      let activeRef = null;
+      if (activeTab === 'home') activeRef = homeRef;
+      else if (activeTab === 'school') activeRef = schoolRef;
+      else if (activeTab === 'profile' || activeTab === 'login') activeRef = profileRef;
+
+      if (activeRef && activeRef.current && navRef.current) {
+        const navRect = navRef.current.getBoundingClientRect();
+        const tabRect = activeRef.current.getBoundingClientRect();
+        setIndicatorStyle({
+          left: tabRect.left - navRect.left,
+          width: tabRect.width,
+          opacity: 1
+        });
+      } else {
+        // AI button is active, hide indicator or keep it transparent
+        setIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+      }
+    };
+
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [activeTab]);
+
 
   const handleProfileClick = () => {
     if (user) {
@@ -171,14 +206,44 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
         {/* Centered Subtle Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-20 transition-opacity duration-500 z-0 bg-indigo-500"></div>
-        <div className="max-w-3xl mx-auto px-2 h-16 flex items-center justify-around relative z-20">
+        <div ref={navRef} role="tablist" className="max-w-3xl mx-auto px-2 h-16 flex items-center justify-around relative z-20">
           
+          {/* Golden Ring Active Indicator */}
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 h-12 rounded-2xl pointer-events-none z-0"
+            animate={{
+              x: indicatorStyle.left,
+              width: indicatorStyle.width,
+              opacity: indicatorStyle.opacity,
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            style={{
+              willChange: 'transform, width, opacity',
+              transform: 'translateZ(0)'
+            }}
+          >
+            {/* Glow Layer */}
+            <div className="absolute inset-0 bg-[var(--gold-glow)] blur-xl rounded-2xl"></div>
+
+            {/* Inner Plate & Clip Mask Container */}
+            <div className="absolute inset-0 rounded-2xl overflow-hidden p-[2px]">
+              {/* Rotating Conic Gradient */}
+              <div className="absolute inset-[-100%] indicator-gradient" style={{
+                background: 'conic-gradient(from 0deg, transparent 0%, var(--gold-2) 20%, var(--gold-3) 50%, var(--gold-2) 80%, transparent 100%)'
+              }}></div>
+
+              {/* Inner Plate Layer */}
+              <div className="absolute inset-[2px] bg-white dark:bg-slate-900 rounded-xl shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"></div>
+            </div>
+          </motion.div>
+
           <NavTab 
             id="home" 
             label="Home" 
             icon={<Home className="w-6 h-6" />} 
             isActive={activeTab === 'home'} 
-            onClick={() => onTabChange('home')} 
+            onClick={() => onTabChange('home')}
+            buttonRef={homeRef}
           />
           
           <NavTab 
@@ -187,11 +252,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             icon={<GraduationCap className="w-6 h-6" />}
             isActive={activeTab === 'school'}
             onClick={() => onTabChange('school')}
+            buttonRef={schoolRef}
           />
           
           <button 
             onClick={() => onTabChange('ai')}
-            className="relative -top-5 group"
+            className="relative -top-5 group z-30"
           >
             <div className={cn(
               "relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-white dark:border-slate-900",
@@ -222,6 +288,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               icon={<User className="w-6 h-6" />}
               isActive={activeTab === 'profile'}
               onClick={handleProfileClick}
+              buttonRef={profileRef}
             />
           ) : (
             <NavTab
@@ -230,6 +297,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               icon={<LogIn className="w-6 h-6" />}
               isActive={activeTab === 'login'}
               onClick={handleProfileClick}
+              buttonRef={profileRef}
             />
           )}
         </div>
@@ -239,32 +307,41 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 };
 
 // Helper Subcomponent for Tab Items
-const NavTab = ({ id, label, icon, isActive, onClick }: { id: string, label: string, icon: React.ReactNode, isActive: boolean, onClick: () => void }) => (
-  <button 
+const NavTab = ({ id, label, icon, isActive, onClick, buttonRef }: { id: string, label: string, icon: React.ReactNode, isActive: boolean, onClick: () => void, buttonRef?: React.RefObject<HTMLButtonElement | null> }) => (
+  <motion.button
+    ref={buttonRef}
     onClick={onClick}
+    whileHover={{ scale: 1.10 }}
+    whileTap={{ scale: 1.05 }}
+    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+    role="tab"
+    aria-pressed={isActive}
+    aria-selected={isActive}
     className={cn(
-      "relative flex flex-col items-center justify-center w-16 py-1 transition-all duration-300 active:scale-95 group",
+      "relative flex flex-col items-center justify-center w-16 py-1 transition-all group outline-none",
+      "style-[transition:all_0.4s_var(--easing-bounce)]",
       isActive ? "" : "text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-slate-300"
     )}
   >
-    {/* Active background glow */}
-    {isActive && (
-       <div className="absolute inset-0 bg-indigo-500/10 dark:bg-indigo-400/10 rounded-xl blur-md transition-opacity duration-300" />
-    )}
-
     <div className={cn(
-      "relative transition-all duration-300 z-10 p-1.5 rounded-xl",
+      "relative z-10 p-1.5 rounded-xl transition-all duration-400",
       isActive
-         ? "bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/30 -translate-y-1"
+         ? ""
          : "bg-transparent group-hover:bg-gray-100/50 dark:group-hover:bg-gray-800/50"
     )}>
-      {icon}
+      {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
+         className: cn(
+           (icon as React.ReactElement<{ className?: string }>).props.className,
+           "transition-all duration-400",
+           isActive ? "text-[var(--gold-2)] dark:text-[var(--gold-3)] scale-110" : ""
+         )
+      }) : icon}
     </div>
     <span className={cn(
-      "text-[10px] font-bold mt-1 transition-all duration-300 z-10",
+      "text-[10px] font-bold mt-1 transition-all z-10",
       isActive
-         ? "bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-800 dark:from-indigo-300 dark:to-indigo-100 font-black tracking-wide"
+         ? "text-[var(--gold-2)] dark:text-[var(--gold-3)] font-black tracking-wide"
          : "font-semibold"
     )}>{label}</span>
-  </button>
+  </motion.button>
 );
