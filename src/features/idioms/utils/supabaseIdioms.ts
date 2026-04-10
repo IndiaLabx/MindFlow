@@ -29,30 +29,37 @@ export async function fetchIdiomMetadata() {
         }
     }
 
-    // Fetch user interactions for read status
+    // Fetch user interactions for read status and spatial engine
     const { data: userData } = await supabase.auth.getUser();
-    let readIds = new Set<string>();
+    let userInteractions: Record<string, any> = {};
 
     if (userData?.user) {
         const { data: interactions, error: intError } = await supabase
             .from('user_idiom_interactions')
-            .select('idiom_id')
-            .eq('user_id', userData.user.id)
-            .eq('is_read', true);
+            .select('idiom_id, is_read, status, next_review_at')
+            .eq('user_id', userData.user.id);
 
         if (!intError && interactions) {
-            interactions.forEach(int => readIds.add(String(int.idiom_id)));
+            interactions.forEach(int => {
+                 userInteractions[String(int.idiom_id)] = int;
+            });
         }
     }
 
-    return allData.map(row => ({
-        id: String(row.id),
-        alphabet: row.phrase ? row.phrase.charAt(0).toUpperCase() : '',
-        examName: row.source_pdf || 'Unknown',
-        examYear: String(row.exam_year || ''),
-        difficulty: row.difficulty || 'Medium',
-        readStatus: readIds.has(String(row.id)) ? 'read' : 'unread'
-    }));
+    return allData.map(row => {
+        const rowId = String(row.id);
+        const interaction = userInteractions[rowId];
+        return {
+            id: rowId,
+            alphabet: row.phrase ? row.phrase.charAt(0).toUpperCase() : '',
+            examName: row.source_pdf || 'Unknown',
+            examYear: String(row.exam_year || ''),
+            difficulty: row.difficulty || 'Medium',
+            readStatus: interaction?.is_read ? 'read' : 'unread',
+            status: interaction?.status,
+            next_review_at: interaction?.next_review_at
+        };
+    });
 }
 
 export async function getFilteredIdioms(filters: InitialFilters, selectedLetter: string | null): Promise<Idiom[]> {
@@ -78,8 +85,8 @@ export async function getFilteredIdioms(filters: InitialFilters, selectedLetter:
         return [];
     }
 
-    return (data || []).map(row => ({
-        id: row.id || row.v1_id,
+    let parsedData = (data || []).map(row => ({
+        id: String(row.id),
         sourceInfo: {
             pdfName: row.source_pdf || 'Unknown',
             examYear: row.exam_year || 0
@@ -101,4 +108,38 @@ export async function getFilteredIdioms(filters: InitialFilters, selectedLetter:
             }
         }
     })) as Idiom[];
+
+    // THE SIEVE (Deck Mode Filter)
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData?.user && filters.deckMode && filters.deckMode.length > 0) {
+        const { data: interactions } = await supabase
+            .from('user_idiom_interactions')
+            .select('idiom_id, status, next_review_at')
+            .eq('user_id', userData.user.id);
+
+        const interactMap = new Map();
+        if (interactions) interactions.forEach(i => interactMap.set(String(i.idiom_id), i));
+
+        const mode = filters.deckMode[0];
+
+        parsedData = parsedData.filter(card => {
+             const userState = interactMap.get(card.id);
+
+             if (mode === 'Unseen') {
+                 return !userState || !userState.status; // Only cards never interacted with
+             } else if (mode === 'Mastered') {
+                 return userState?.status === 'mastered';
+             } else if (mode === 'Review') {
+                 return userState?.status === 'review';
+             } else if (mode === 'Clueless') {
+                 return userState?.status === 'clueless';
+             } else if (mode === 'Tricky') {
+                 return userState?.status === 'tricky';
+             }
+
+             return true;
+        });
+    }
+
+    return parsedData;
 }
