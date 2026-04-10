@@ -18,6 +18,9 @@ export interface SynonymInteraction {
 
 
 export interface IdiomInteraction {
+  status?: "mastered" | "tricky" | "review" | "clueless";
+  next_review_at?: string;
+  swipe_velocity?: number;
   idiomId: string;
   isRead: boolean;
   lastInteractedAt: string;

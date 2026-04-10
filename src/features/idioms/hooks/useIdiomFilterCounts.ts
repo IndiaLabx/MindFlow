@@ -8,10 +8,12 @@ export type IdiomMetadata = {
     examYear: string;
     difficulty: string;
     readStatus: string;
+    status?: string;
+    deckMode?: string;
 };
 
-type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'readStatus';
-const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'readStatus'];
+type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'readStatus' | 'deckMode';
+const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'readStatus', 'deckMode'];
 
 export function useIdiomQuestionIndex(metadata: IdiomMetadata[]) {
     return useMemo(() => {
@@ -23,18 +25,37 @@ export function useIdiomQuestionIndex(metadata: IdiomMetadata[]) {
 
         metadata.forEach(item => {
             filterKeys.forEach(key => {
-                const value = item[key];
+                if (key === 'deckMode') return; // Handled below dynamically
+
+                const value = item[key as keyof IdiomMetadata];
                 if (!value) return;
 
-                if (!index[key][value]) {
-                    index[key][value] = new Set();
+                if (!index[key][value as string]) {
+                    index[key][value as string] = new Set();
                 }
-                index[key][value].add(item.id);
+                index[key][value as string].add(item.id);
+            });
+
+            // Assign dynamically computed deckModes so the Set algorithm picks them up
+            const itemModes = determineDeckModes(item.status);
+            itemModes.forEach(mode => {
+                if (!index['deckMode'][mode]) index['deckMode'][mode] = new Set();
+                index['deckMode'][mode].add(item.id);
             });
         });
 
         return index;
     }, [metadata]);
+}
+
+function determineDeckModes(status?: string): string[] {
+    const modes = [];
+    if (!status) modes.push('Unseen');
+    if (status === 'mastered') modes.push('Mastered');
+    if (status === 'review') modes.push('Review');
+    if (status === 'clueless') modes.push('Clueless');
+    if (status === 'tricky') modes.push('Tricky');
+    return modes;
 }
 
 export function useIdiomFilterCounts({

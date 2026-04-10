@@ -24,7 +24,6 @@ const IdiomsConfig = lazy(() => import('../features/idioms/IdiomsConfig').then(m
 const OWSConfig = lazy(() => import('../features/ows/OWSConfig').then(m => ({ default: m.OWSConfig })));
 const LiveQuizRoom = lazy(() => import('../features/quiz/live/LiveQuizRoom').then(m => ({ default: m.LiveQuizRoom })));
 const SynonymsConfig = lazy(() => import('../features/synonyms/SynonymsConfig').then(m => ({ default: m.SynonymsConfig })));
-const SynonymFlashcardSession = lazy(() => import('../features/synonyms/components/SynonymFlashcardSession').then(m => ({ default: m.SynonymFlashcardSession })));
 const SynonymClusterList = lazy(() => import('../features/synonyms/components/SynonymClusterList').then(m => ({ default: m.SynonymClusterList })));
 
 const BlueprintPreviewWrapper = lazy(() => import('../features/quiz/components/BlueprintPreviewWrapper').then(m => ({ default: m.BlueprintPreviewWrapper })));
@@ -40,6 +39,7 @@ const SynonymPhase1Session = lazy(() => import('../features/synonyms/components/
 
 const QuizResult = lazy(() => import('../features/quiz/components/QuizResult').then(m => ({ default: m.QuizResult })));
 const MockQuizResult = lazy(() => import('../features/quiz/components/MockQuizResult').then(m => ({ default: m.MockQuizResult })));
+const SynonymFlashcardSession = lazy(() => import("../features/synonyms/components/SynonymFlashcardSession").then(m => ({ default: m.SynonymFlashcardSession })));
 const GodQuizResult = lazy(() => import('../features/quiz/components/GodQuizResult').then(m => ({ default: m.GodQuizResult })));
 const FlashcardSummary = lazy(() => import('../features/flashcards/components/FlashcardSummary').then(m => ({ default: m.FlashcardSummary })));
 const AboutUs = lazy(() => import('../features/about/components/AboutUs').then(m => ({ default: m.AboutUs })));
@@ -62,7 +62,7 @@ const TextExporter = lazy(() => import('../features/tools/text-exporter/TextExpo
 const LearningSession = lazy(() => import('../features/quiz/learning/LearningSession').then(m => ({ default: m.LearningSession })));
 const MockSession = lazy(() => import('../features/quiz/mock/MockSession').then(m => ({ default: m.MockSession })));
 const GodModeSession = lazy(() => import('../features/quiz/mock/GodModeSession').then(m => ({ default: m.GodModeSession })));
-const FlashcardSession = lazy(() => import('../features/flashcards/components/FlashcardSession').then(m => ({ default: m.FlashcardSession })));
+const IdiomSession = lazy(() => import('../features/idioms/components/IdiomSession').then(m => ({ default: m.IdiomSession })));
 const OWSSession = lazy(() => import('../features/ows/components/OWSSession').then(m => ({ default: m.OWSSession })));
 
 // Auth & User Management
@@ -295,7 +295,7 @@ const AppRoutesContent: React.FC = () => {
                             onBack={() => { enterEnglishHome(); navTo('/english'); }}
                             onStart={(data, filters) => {
                                 flashcardStore.startIdioms(data as any, filters);
-                                navTo('/flashcards/session');
+                                navTo('/idioms/session');
                             }}
                         />
                     } />
@@ -374,9 +374,9 @@ const AppRoutesContent: React.FC = () => {
                 } />
 
                 {/* Flashcard Sessions */}
-                <Route path="/flashcards/session" element={
-                    <FlashcardSession
-                        idioms={flashcardStore.idioms}
+                <Route path="/idioms/session" element={
+                    <IdiomSession
+                        data={flashcardStore.idioms}
                         currentIndex={flashcardStore.currentIndex}
                         onNext={flashcardStore.nextCard}
                         onPrev={flashcardStore.prevCard}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronDown, ChevronRight, Map, ArrowDown, Loader2 } from 'lucide-react';
-import { Idiom } from '../../../types/models';
+import { Idiom } from '../../quiz/types';
 import { cn } from '../../../../utils/cn';
 import { APP_CONFIG } from '../../../constants/config';
 import { usePDFGenerator } from '../../../hooks/usePDFGenerator';
@@ -13,7 +13,7 @@ import { DownloadResult } from '../../../hooks/useJSONDownloader';
 /**
  * Props for the FlashcardNavigationPanel component.
  */
-interface FlashcardNavigationPanelProps {
+interface IdiomNavigationPanelProps {
   /** Whether the panel is open (visible). */
   isOpen: boolean;
   /** Callback to close the panel. */
@@ -36,16 +36,16 @@ interface FlashcardNavigationPanelProps {
  *
  * Renders as a Portal to overlay the entire application.
  *
- * @param {FlashcardNavigationPanelProps} props - The component props.
+ * @param {IdiomNavigationPanelProps} props - The component props.
  * @returns {JSX.Element | null} The rendered panel or null if closed.
  */
-export const FlashcardNavigationPanel: React.FC<FlashcardNavigationPanelProps> = ({
+export const IdiomNavigationPanel: React.FC<IdiomNavigationPanelProps> = ({
   isOpen, onClose, idioms, currentIndex, onJump
 }) => {
   const [openGroups, setOpenGroups] = useState<Set<number>>(new Set());
 
   // Generators
-  const { generatePDF, isGenerating: isGeneratingPDF, error: pdfError } = usePDFGenerator(() => import('../utils/pdfGenerator').then(m => m.generateIdiomsPDF as any));
+  const { generatePDF, isGenerating: isGeneratingPDF, error: pdfError } = usePDFGenerator(() => import('../../ows/utils/pdfGenerator').then(m => m.generateOWSPDF as any));
   const { downloadJSON, isGenerating: isGeneratingJSON, error: jsonError } = useJSONDownloader<Idiom>();
 
   // State to track which chunk is currently being downloaded (to show spinner in list)

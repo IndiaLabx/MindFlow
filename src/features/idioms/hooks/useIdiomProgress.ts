@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { db, IdiomInteraction } from '../../../lib/db';
 import { Idiom } from '../../quiz/types';
 
+export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
+
 export const useIdiomProgress = () => {
   const [interactions, setInteractions] = useState<Record<string, IdiomInteraction>>({});
   const [isLoaded, setIsLoaded] = useState(false);
@@ -23,10 +25,11 @@ export const useIdiomProgress = () => {
     init();
   }, []);
 
-  const updateInteraction = async (idiomId: string, isRead: boolean) => {
+  const updateInteraction = async (idiomId: string, updates: Partial<IdiomInteraction>) => {
+      const existing = interactions[idiomId] || { idiomId, isRead: false };
       const updated: IdiomInteraction = {
-          idiomId,
-          isRead,
+          ...existing,
+          ...updates,
           lastInteractedAt: new Date().toISOString()
       };
 
@@ -45,8 +48,46 @@ export const useIdiomProgress = () => {
   const toggleReadStatus = useCallback(async (wordObj: Idiom) => {
       const currentInteraction = interactions[wordObj.id];
       const isCurrentlyRead = currentInteraction ? currentInteraction.isRead : false;
-      await updateInteraction(wordObj.id, !isCurrentlyRead);
+      await updateInteraction(wordObj.id, { isRead: !isCurrentlyRead });
   }, [interactions]);
+
+  /**
+   * Updates progress via Spatially-Hashed Swipe Algorithm
+   */
+  const handleSwipe = useCallback(async (wordObj: Idiom, direction: SwipeDirection, velocity: number) => {
+    let status: IdiomInteraction['status'] = 'review';
+    let reviewDays = 1;
+
+    switch (direction) {
+        case 'right': // Mastered
+            status = 'mastered';
+            reviewDays = 30; // Review in 1 month
+            break;
+        case 'up': // Tricky
+            status = 'tricky';
+            reviewDays = 3; // Review soon
+            break;
+        case 'left': // Review (Default)
+            status = 'review';
+            reviewDays = 1; // Review tomorrow
+            break;
+        case 'down': // Clueless
+            status = 'clueless';
+            reviewDays = 0; // Immediate review
+            break;
+    }
+
+    const next_review_at = new Date();
+    next_review_at.setDate(next_review_at.getDate() + reviewDays);
+
+    await updateInteraction(wordObj.id, {
+        status,
+        next_review_at: next_review_at.toISOString(),
+        swipe_velocity: velocity,
+        isRead: true // Swiping marks it as read implicitly
+    });
+  }, [interactions]);
+
 
   /**
    * Determines the read status of a Idiom object.
@@ -57,6 +98,14 @@ export const useIdiomProgress = () => {
         return interactions[idToCheck].isRead;
     }
     return false;
+  }, [interactions]);
+
+  const getInteractionStatus = useCallback((wordObj: Idiom) => {
+      const idToCheck = wordObj.id;
+      if (idToCheck && interactions[idToCheck]) {
+          return interactions[idToCheck].status;
+      }
+      return undefined;
   }, [interactions]);
 
   const clearProgress = useCallback(async () => {
@@ -72,7 +121,9 @@ export const useIdiomProgress = () => {
     isLoaded,
     interactions,
     toggleReadStatus,
+    handleSwipe,
     getReadStatus,
+    getInteractionStatus,
     clearProgress
   };
 };

@@ -7,7 +7,7 @@ import { useIdiomProgress } from '../../idioms/hooks/useIdiomProgress';
 /**
  * Props for the Flashcard component.
  */
-interface FlashcardProps {
+interface IdiomCardProps {
   /** The idiom data to display on the card. */
   idiom: Idiom;
   /** The serial number of the card in the current session (1-based). */
@@ -22,10 +22,10 @@ interface FlashcardProps {
  * Displays the idiom phrase on the front and detailed meanings/usage on the back.
  * Uses CSS 3D transforms for the flip animation.
  *
- * @param {FlashcardProps} props - The component props.
+ * @param {IdiomCardProps} props - The component props.
  * @returns {JSX.Element} The rendered Flashcard.
  */
-export const Flashcard: React.FC<FlashcardProps> = ({ idiom, serialNumber, isFlipped }) => {
+export const IdiomCard: React.FC<IdiomCardProps> = ({ idiom, serialNumber, isFlipped }) => {
   const { getReadStatus, toggleReadStatus } = useIdiomProgress();
   const isRead = getReadStatus(idiom);
 
