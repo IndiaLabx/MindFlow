@@ -56,36 +56,77 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
 
   // Golden Ring Animation Setup
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, height: 48, top: 8, borderRadius: 16, opacity: 0 });
   const navRef = useRef<HTMLDivElement>(null);
   const homeRef = useRef<HTMLButtonElement>(null);
   const schoolRef = useRef<HTMLButtonElement>(null);
   const profileRef = useRef<HTMLButtonElement>(null);
+  const aiRef = useRef<HTMLButtonElement>(null);
 
   useLayoutEffect(() => {
     const updateIndicator = () => {
       let activeRef = null;
+      let isAi = false;
       if (activeTab === 'home') activeRef = homeRef;
       else if (activeTab === 'school') activeRef = schoolRef;
       else if (activeTab === 'profile' || activeTab === 'login') activeRef = profileRef;
+      else if (activeTab === 'ai') {
+        activeRef = aiRef;
+        isAi = true;
+      }
 
       if (activeRef && activeRef.current && navRef.current) {
         const navRect = navRef.current.getBoundingClientRect();
         const tabRect = activeRef.current.getBoundingClientRect();
-        setIndicatorStyle({
-          left: tabRect.left - navRect.left,
-          width: tabRect.width,
-          opacity: 1
-        });
+
+        // Calculate offset relative to the nav container
+        // offsetLeft avoids issues when scroll is present or viewport resize happens unexpectedly
+        const left = tabRect.left - navRect.left;
+        const width = tabRect.width;
+
+        if (isAi) {
+          // AI Button logic: Wrap the elevated circular button
+          const height = tabRect.height + 12; // Extra padding
+          const widthForAi = tabRect.width + 12;
+          const leftForAi = left - 6; // Center the larger outline over the button
+          const top = tabRect.top - navRect.top - 6;
+
+          setIndicatorStyle({
+            left: leftForAi,
+            width: widthForAi,
+            height: height,
+            top: top,
+            borderRadius: height / 2,
+            opacity: 1
+          });
+        } else {
+          // Standard tab logic
+          const height = 48; // Standard h-12 is 48px
+          // Vertically center in the 64px (h-16) nav container
+          const top = (64 - height) / 2;
+
+          setIndicatorStyle({
+            left,
+            width,
+            height,
+            top,
+            borderRadius: 16, // rounded-2xl
+            opacity: 1
+          });
+        }
       } else {
-        // AI button is active, hide indicator or keep it transparent
         setIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
       }
     };
 
     updateIndicator();
+    // Using setTimeout to guarantee layout is fully rendered when clicking (fixes sudden shape changes)
+    const timeoutId = setTimeout(updateIndicator, 50);
     window.addEventListener('resize', updateIndicator);
-    return () => window.removeEventListener('resize', updateIndicator);
+    return () => {
+      window.removeEventListener('resize', updateIndicator);
+      clearTimeout(timeoutId);
+    };
   }, [activeTab]);
 
 
@@ -210,30 +251,33 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           
           {/* Golden Ring Active Indicator */}
           <motion.div
-            className="absolute top-1/2 -translate-y-1/2 h-12 rounded-2xl pointer-events-none z-0"
+            className="absolute left-0 top-0 pointer-events-none z-0"
             animate={{
               x: indicatorStyle.left,
+              y: indicatorStyle.top,
               width: indicatorStyle.width,
+              height: indicatorStyle.height,
+              borderRadius: indicatorStyle.borderRadius,
               opacity: indicatorStyle.opacity,
             }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             style={{
-              willChange: 'transform, width, opacity',
+              willChange: 'transform, width, height, border-radius, opacity',
               transform: 'translateZ(0)'
             }}
           >
             {/* Glow Layer */}
-            <div className="absolute inset-0 bg-[var(--gold-glow)] blur-xl rounded-2xl"></div>
+            <div className="absolute inset-0 bg-[var(--gold-glow)] blur-xl" style={{ borderRadius: 'inherit' }}></div>
 
             {/* Inner Plate & Clip Mask Container */}
-            <div className="absolute inset-0 rounded-2xl overflow-hidden p-[2px]">
+            <div className="absolute inset-0 overflow-hidden p-[2px]" style={{ borderRadius: 'inherit' }}>
               {/* Rotating Conic Gradient */}
               <div className="absolute inset-[-100%] indicator-gradient" style={{
                 background: 'conic-gradient(from 0deg, transparent 0%, var(--gold-2) 20%, var(--gold-3) 50%, var(--gold-2) 80%, transparent 100%)'
               }}></div>
 
               {/* Inner Plate Layer */}
-              <div className="absolute inset-[2px] bg-white dark:bg-slate-900 rounded-xl shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]"></div>
+              <div className="absolute inset-[2px] bg-white dark:bg-slate-900 shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)]" style={{ borderRadius: 'inherit' }}></div>
             </div>
           </motion.div>
 
@@ -256,6 +300,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           />
           
           <button 
+            ref={aiRef}
             onClick={() => onTabChange('ai')}
             className="relative -top-5 group z-30"
           >
