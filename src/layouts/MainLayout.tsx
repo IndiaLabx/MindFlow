@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useRef, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BrainCircuit, Home, GraduationCap, PlusCircle, User, Settings, LogIn, Sun, Moon, Brain, Menu } from 'lucide-react';
+import { BrainCircuit, Home, LayoutDashboard, GraduationCap, PlusCircle, User, Settings, LogIn, Sun, Moon, Brain, Menu } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { useQuizContext } from '../features/quiz/context/QuizContext';
@@ -285,8 +285,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
           <NavTab 
             id="home" 
-            label="Home" 
-            icon={<Home className="w-6 h-6" />} 
+            label="Dashboard"
+            icon={<LayoutDashboard className="w-6 h-6" />}
             isActive={activeTab === 'home'} 
             onClick={() => onTabChange('home')}
             buttonRef={homeRef}
