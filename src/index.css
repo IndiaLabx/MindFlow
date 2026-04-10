@@ -78,3 +78,30 @@ input, textarea, [contenteditable] {
 .katex {
   @apply text-indigo-700 dark:text-indigo-400 font-semibold mx-0.5 !important;
 }
+
+
+@layer base {
+  :root {
+    --gold-1: #533517;
+    --gold-2: #c49746;
+    --gold-3: #feeaa5;
+    --gold-glow: rgba(232, 175, 72, 0.18);
+    --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+@keyframes spin-gradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.indicator-gradient {
+  animation: spin-gradient 4s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator-gradient {
+    animation: none;
+  }
+}
