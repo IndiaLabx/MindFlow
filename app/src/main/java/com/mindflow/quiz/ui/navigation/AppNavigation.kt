@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.mindflow.quiz.ui.auth.AuthViewModel
 import com.mindflow.quiz.ui.auth.LoginScreen
 import com.mindflow.quiz.ui.auth.SignupScreen
+import com.mindflow.quiz.ui.dashboard.MainLayoutScreen
 import io.github.jan.supabase.gotrue.SessionStatus
 
 @Composable
@@ -55,8 +56,8 @@ fun AppNavigation(
             )
         }
         composable("dashboard") {
-            // Dashboard placeholder representing Phase 4
-            // DashboardScreen(onLogout = { authViewModel.signOut() })
+            MainLayoutScreen(authViewModel = authViewModel, rootNavController = navController)
+
         }
     }
 }
