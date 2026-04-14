@@ -14,6 +14,8 @@ import com.mindflow.quiz.ui.auth.SignupScreen
 import com.mindflow.quiz.ui.dashboard.MainLayoutScreen
 import com.mindflow.quiz.ui.quiz.QuizViewModel
 import com.mindflow.quiz.ui.quiz.QuizScreen
+import com.mindflow.quiz.ui.flashcards.FlashcardViewModel
+import com.mindflow.quiz.ui.flashcards.FlashcardScreen
 import com.mindflow.quiz.ui.quiz.ResultScreen
 import io.github.jan.supabase.gotrue.SessionStatus
 
@@ -21,6 +23,7 @@ import io.github.jan.supabase.gotrue.SessionStatus
 fun AppNavigation(
     authViewModel: AuthViewModel = viewModel()
 ) {
+    val flashcardViewModel: FlashcardViewModel = viewModel()
     val quizViewModel: QuizViewModel = viewModel()
     val navController = rememberNavController()
     val sessionStatus by authViewModel.sessionStatus.collectAsState(initial = SessionStatus.LoadingFromStorage)
