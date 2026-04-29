@@ -508,6 +508,17 @@ export const OWSSession: React.FC<OWSSessionProps> = ({
           <div className="h-1 w-full bg-gray-200 dark:bg-gray-700">
             <div className="h-full bg-teal-500 transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
+          {mode === 'basic' && (
+            <div className="flex justify-between items-center px-6 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                <div className="flex items-center gap-2 text-green-600 font-semibold">
+                    <CheckCircle className="w-5 h-5" /> <span>{swipeStats.known || 0}</span>
+                </div>
+                <div className="text-gray-500 dark:text-gray-400 font-medium text-sm">Word</div>
+                <div className="flex items-center gap-2 text-red-500 font-semibold">
+                    <span>{swipeStats.unknown || 0}</span> <Target className="w-5 h-5" />
+                </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -577,12 +588,12 @@ export const OWSSession: React.FC<OWSSessionProps> = ({
         )}
 
             <motion.div
-
-
-
-
-
-
+              drag={mode === 'basic' ? "x" : true}
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              dragElastic={1}
+              onPanStart={handlePanStart}
+              onPan={handlePan}
+              onPanEnd={handlePanEnd}
               animate={controls}
               style={{ x, y, rotate }}
 

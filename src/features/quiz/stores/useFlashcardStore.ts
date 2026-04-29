@@ -18,7 +18,7 @@ interface FlashcardState {
   synonyms: SynonymWord[];
 
   // Actions
-  startIdioms: (data: Idiom[], filters?: InitialFilters) => void;
+  startIdioms: (data: Idiom[], filters?: InitialFilters, mode?: 'basic' | 'review') => void;
   startOWS: (data: OneWord[], filters?: InitialFilters, mode?: 'basic' | 'review') => void;
   startSynonyms: (data: SynonymWord[], filters?: InitialFilters) => void;
 
@@ -41,11 +41,12 @@ export const useFlashcardStore = create<FlashcardState>((set, get) => ({
   ows: [],
   synonyms: [],
 
-  startIdioms: (data, filters) => set({
+  startIdioms: (data, filters, mode = 'review') => set({
     status: 'active',
     type: 'idioms',
     idioms: data,
     filters: filters || null,
+    mode,
     currentIndex: 0
   }),
 
