@@ -293,8 +293,8 @@ const AppRoutesContent: React.FC = () => {
                     <Route path="/idioms/config" element={
                         <IdiomsConfig
                             onBack={() => { enterEnglishHome(); navTo('/english'); }}
-                            onStart={(data, filters) => {
-                                flashcardStore.startIdioms(data as any, filters);
+                            onStart={(data, filters, mode) => {
+                                flashcardStore.startIdioms(data as any, filters, mode as 'basic' | 'review');
                                 navTo('/idioms/session');
                             }}
                         />

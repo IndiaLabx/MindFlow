@@ -14,6 +14,8 @@ import { Idiom } from '../../quiz/types';
 import { IdiomNavigationPanel } from './IdiomNavigationPanel';
 
 import { cn } from '../../../utils/cn';
+import { useFlashcardStore } from '../../quiz/stores/useFlashcardStore';
+import { Target, CheckCircle } from 'lucide-react';
 
 /**
  * Interface for Framer Motion pan gesture info.
@@ -72,6 +74,7 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
   filters
 }) => {
   const { user } = useAuth();
+  const mode = useFlashcardStore(state => state.mode) || 'review';
 
   const [hasSeenTutorial, setHasSeenTutorial] = useState(true);
 
@@ -261,7 +264,7 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
     }
   };
 
-  const handlePanEnd = async (e: any, info: PanInfo) => {
+    const handlePanEnd = async (e: any, info: PanInfo) => {
     if (isAnimating) return;
 
     const { offset, velocity } = info;
@@ -270,6 +273,23 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
 
     const isSwipeX = Math.abs(offset.x) > swipeThreshold || Math.abs(velocity.x) > velocityThreshold;
     const isSwipeY = Math.abs(offset.y) > swipeThreshold || Math.abs(velocity.y) > velocityThreshold;
+
+    if (mode === 'basic') {
+        if (isSwipeX) {
+            if (offset.x < 0) {
+                // Swipe Left = Known
+                await handleBasicAction(true, velocity.x);
+            } else {
+                // Swipe Right = Unknown
+                await handleBasicAction(false, velocity.x);
+            }
+        } else {
+            x.set(0);
+            y.set(0);
+            setSwipeDirection(null);
+        }
+        return;
+    }
 
     if (isSwipeX || isSwipeY) {
       if (Math.abs(offset.x) > Math.abs(offset.y)) {
@@ -293,10 +313,56 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
     }
   };
 
-  const [swipeStats, setSwipeStats] = useState({ mastered: 0, tricky: 0, review: 0, clueless: 0 });
+
+  const [swipeStats, setSwipeStats] = useState({ mastered: 0, tricky: 0, review: 0, clueless: 0, known: 0, unknown: 0 });
   const [historyStack, setHistoryStack] = useState<any[]>([]);
 
+  const handleBasicAction = async (isKnown: boolean, vel: number) => {
+      setIsAnimating(true);
+      setSwipeDirection(isKnown ? 'known' : 'unknown');
+
+      if (navigator.vibrate) navigator.vibrate(50);
+
+      // Record for Undo
+      setHistoryStack(prev => [...prev, { item: currentItem, status: isKnown ? 'known' : 'unknown', index: currentIndex }]);
+      setSwipeStats(prev => ({ ...prev, [isKnown ? 'known' : 'unknown']: prev[isKnown ? 'known' : 'unknown' as keyof typeof prev] + 1 }));
+
+      let finalX = isKnown ? -500 : 500;
+
+      await Promise.all([
+          controls.start({ x: finalX, opacity: 0, transition: { duration: 0.3, ease: "easeOut" } })
+      ]);
+
+      queueBasicSwipe(currentItem.id, isKnown, vel);
+
+      setIsFlipped(false);
+      setSwipeDirection(null);
+      onNext();
+      x.set(0);
+      y.set(0);
+
+      await controls.start({ x: 0, y: 0, opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 30 } });
+      setIsAnimating(false);
+  };
+
+  const queueBasicSwipe = (idiomId: string, isKnown: boolean, vel: number) => {
+      if (!user) return;
+      try {
+          const queue = JSON.parse(localStorage.getItem('idiom_swipe_queue') || '[]');
+          queue.push({
+              idiom_id: idiomId,
+              known_ows: isKnown,
+              velocity: vel,
+              timestamp: Date.now()
+          });
+          localStorage.setItem('idiom_swipe_queue', JSON.stringify(queue));
+      } catch (e) {
+          console.error("Failed to queue basic swipe", e);
+      }
+  };
+
   const handleAction = async (status: 'mastered'|'tricky'|'review'|'clueless', vel: number) => {
+
      setIsAnimating(true);
      setSwipeDirection(status);
 
@@ -373,6 +439,17 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
       setHistoryStack(prev => prev.slice(0, -1));
       setSwipeStats(prev => ({ ...prev, [lastAction.status]: Math.max(0, prev[lastAction.status as keyof typeof prev] - 1) }));
 
+      // Remove from queue if it's there
+      try {
+          const queueStr = localStorage.getItem('idiom_swipe_queue');
+          if (queueStr) {
+              let queue = JSON.parse(queueStr);
+              queue = queue.filter((q: any) => q.idiom_id !== lastAction.item.id);
+              localStorage.setItem('idiom_swipe_queue', JSON.stringify(queue));
+          }
+      } catch (e) {}
+
+
       onPrev();
   };
 
@@ -434,6 +511,17 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
           <div className="h-1 w-full bg-gray-200 dark:bg-gray-700">
             <div className="h-full bg-teal-500 transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
+          {mode === 'basic' && (
+            <div className="flex justify-between items-center px-6 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                <div className="flex items-center gap-2 text-green-600 font-semibold">
+                    <CheckCircle className="w-5 h-5" /> <span>{swipeStats.known || 0}</span>
+                </div>
+                <div className="text-gray-500 dark:text-gray-400 font-medium text-sm">Idiom</div>
+                <div className="flex items-center gap-2 text-red-500 font-semibold">
+                    <span>{swipeStats.unknown || 0}</span> <Target className="w-5 h-5" />
+                </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -457,6 +545,31 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
 
 
         {/* AUTH GUARD OVERLAY */}
+        {/* BASIC MODE HELP OVERLAY */}
+        {mode === 'basic' && !hasSeenTutorial && (
+          <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center text-white" onClick={dismissTutorial}>
+             <div className="max-w-xs animate-fade-in-up">
+                 <h2 className="text-2xl font-bold mb-4">Basic Mode</h2>
+                 <p className="text-lg opacity-90 mb-8">Move the known cards to the left and the unknown cards to the right. Touch the card to reveal its meaning.</p>
+                 <div className="flex justify-between w-full mb-12">
+                     <div className="flex flex-col items-center opacity-80">
+                         <div className="w-16 h-16 border-2 border-dashed border-white rounded-xl mb-2 flex items-center justify-center">
+                             <CheckCircle className="w-8 h-8 text-green-400" />
+                         </div>
+                         <span>Known</span>
+                     </div>
+                     <div className="flex flex-col items-center opacity-80">
+                         <div className="w-16 h-16 border-2 border-dashed border-white rounded-xl mb-2 flex items-center justify-center">
+                             <Target className="w-8 h-8 text-red-400" />
+                         </div>
+                         <span>Unknown</span>
+                     </div>
+                 </div>
+                 <Button onClick={dismissTutorial} className="bg-white text-black hover:bg-gray-100" fullWidth>Got it!</Button>
+             </div>
+          </div>
+        )}
+
         {!user && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md rounded-xl">
             <div className="bg-white/90 dark:bg-slate-800/90 p-8 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-sm border border-slate-200 dark:border-slate-700">
@@ -478,12 +591,12 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
         )}
 
             <motion.div
-
-
-
-
-
-
+              drag={mode === 'basic' ? "x" : true}
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              dragElastic={1}
+              onPanStart={handlePanStart}
+              onPan={handlePan}
+              onPanEnd={handlePanEnd}
               animate={controls}
               style={{ x, y, rotate }}
 
@@ -519,6 +632,7 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
       <div className="flex-none z-30 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 pb-safe">
         <div className="max-w-md mx-auto flex flex-col gap-4">
           {/* Anki-style Action Buttons */}
+          {mode === 'review' && (
           <div className="flex justify-between items-center gap-2">
             <button
               onClick={() => !isAnimating && handleAction('clueless', 0)}
@@ -556,6 +670,7 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
               <span className="text-xs font-medium">Done</span>
             </button>
           </div>
+          )}
 
           {/* Utility Buttons */}
           <div className="flex justify-center items-center gap-6 text-gray-500 dark:text-gray-400">

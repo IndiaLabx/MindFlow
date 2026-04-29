@@ -12,7 +12,7 @@ import { fetchIdiomMetadata, getFilteredIdioms } from './utils/supabaseIdioms';
 import { useIdiomQuestionIndex, useIdiomFilterCounts, IdiomMetadata } from './hooks/useIdiomFilterCounts';
 
 interface IdiomsConfigProps {
-    onStart: (data: Idiom[], filters?: InitialFilters) => void;
+    onStart: (data: Idiom[], filters?: InitialFilters, mode?: 'basic' | 'review') => void;
     onBack: () => void;
 }
 
@@ -33,6 +33,7 @@ const emptyFilters: InitialFilters = {
 export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) => {
     const [filters, setFilters] = useState<InitialFilters>(emptyFilters);
     const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+    const [sessionMode, setSessionMode] = useState<'basic' | 'review'>('basic');
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
     const [metadata, setMetadata] = useState<IdiomMetadata[]>([]);
@@ -85,7 +86,7 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
             }
             const data = await getFilteredIdioms(filters, selectedLetter);
             if (data.length > 0) {
-                onStart(data, filters);
+                onStart(data, filters, sessionMode);
             } else {
                 alert("No Idioms found matching current filters.");
             }
@@ -119,6 +120,31 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
             </div>
 
             <div className="flex-1 flex flex-col relative z-10 animate-fade-in w-full max-w-4xl mx-auto">
+                {/* Mode Selection */}
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-teal-100 shadow-sm mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Settings className="w-5 h-5 text-teal-600" />
+                        <div>
+                            <h3 className="font-bold text-slate-800 dark:text-white text-sm">Session Mode</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{sessionMode === 'basic' ? 'Simple Left/Right swiping' : 'Advanced Anki-style 4-way swiping'}</p>
+                        </div>
+                    </div>
+                    <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+                        <button
+                            onClick={() => setSessionMode('basic')}
+                            className={cn("px-4 py-1.5 rounded-md text-sm font-medium transition-all", sessionMode === 'basic' ? "bg-white dark:bg-slate-800 text-teal-600 shadow-sm" : "text-slate-500 hover:text-slate-700 dark:text-slate-400")}
+                        >
+                            Basic
+                        </button>
+                        <button
+                            onClick={() => setSessionMode('review')}
+                            className={cn("px-4 py-1.5 rounded-md text-sm font-medium transition-all", sessionMode === 'review' ? "bg-white dark:bg-slate-800 text-teal-600 shadow-sm" : "text-slate-500 hover:text-slate-700 dark:text-slate-400")}
+                        >
+                            Review
+                        </button>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Alphabetical Filter */}
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-indigo-100 border-l-4 border-l-indigo-400 shadow-sm relative">
