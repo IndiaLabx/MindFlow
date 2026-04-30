@@ -176,15 +176,18 @@ export const OWSSession: React.FC<OWSSessionProps> = ({
          if (queue.length === 0) return;
 
          try {
-             const batch = queue.map((ev: any) => ({
-                 user_id: user.id,
-                 word_id: ev.word_id,
-                 status: ev.status,
-                 swipe_velocity: ev.velocity,
-                 next_review_at: ev.next_review,
-                 known_ows: ev.known_ows !== undefined ? ev.known_ows : true,
-                 updated_at: new Date().toISOString()
-             }));
+             const batch = queue.map((ev: any) => {
+                 const payload: any = {
+                     user_id: user.id,
+                     word_id: ev.word_id,
+                     updated_at: new Date().toISOString()
+                 };
+                 if (ev.status !== undefined) payload.status = ev.status;
+                 if (ev.velocity !== undefined) payload.swipe_velocity = ev.velocity;
+                 if (ev.next_review !== undefined) payload.next_review_at = ev.next_review;
+                 if (ev.known_ows !== undefined) payload.known_ows = ev.known_ows;
+                 return payload;
+             });
 
              const { error } = await supabase
                  .from('user_ows_interactions')

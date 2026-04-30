@@ -111,33 +111,46 @@ export async function getFilteredIdioms(filters: InitialFilters, selectedLetter:
 
     // THE SIEVE (Deck Mode Filter)
     const { data: userData } = await supabase.auth.getUser();
-    if (userData?.user && filters.deckMode && filters.deckMode.length > 0) {
+    const hasDeckFilter = filters.deckMode && filters.deckMode.length > 0;
+    const hasKnownFilter = filters.knownStatus && filters.knownStatus.length > 0;
+
+    if (userData?.user && (hasDeckFilter || hasKnownFilter)) {
         const { data: interactions } = await supabase
             .from('user_idiom_interactions')
-            .select('idiom_id, status, next_review_at')
+            .select('idiom_id, status, next_review_at, known_ows')
             .eq('user_id', userData.user.id);
 
         const interactMap = new Map();
         if (interactions) interactions.forEach(i => interactMap.set(String(i.idiom_id), i));
 
-        const mode = filters.deckMode[0];
+        const mode = hasDeckFilter ? filters.deckMode![0] : null;
 
         parsedData = parsedData.filter(card => {
              const userState = interactMap.get(card.id);
 
-             if (mode === 'Unseen') {
-                 return !userState || !userState.status; // Only cards never interacted with
-             } else if (mode === 'Mastered') {
-                 return userState?.status === 'mastered';
-             } else if (mode === 'Review') {
-                 return userState?.status === 'review';
-             } else if (mode === 'Clueless') {
-                 return userState?.status === 'clueless';
-             } else if (mode === 'Tricky') {
-                 return userState?.status === 'tricky';
+             let matchesDeck = true;
+             if (mode) {
+                 if (mode === 'Unseen') {
+                     matchesDeck = !userState || !userState.status;
+                 } else if (mode === 'Mastered') {
+                     matchesDeck = userState?.status === 'mastered';
+                 } else if (mode === 'Review') {
+                     matchesDeck = userState?.status === 'review';
+                 } else if (mode === 'Clueless') {
+                     matchesDeck = userState?.status === 'clueless';
+                 } else if (mode === 'Tricky') {
+                     matchesDeck = userState?.status === 'tricky';
+                 }
              }
 
-             return true;
+             let matchesKnown = true;
+             if (hasKnownFilter) {
+                 const isKnown = userState?.known_ows === true;
+                 const statusStr = isKnown ? "known" : "unknown";
+                 matchesKnown = filters.knownStatus!.includes(statusStr as "known" | "unknown");
+             }
+
+             return matchesDeck && matchesKnown;
         });
     }
 
