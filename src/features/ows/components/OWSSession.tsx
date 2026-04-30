@@ -334,7 +334,12 @@ export const OWSSession: React.FC<OWSSessionProps> = ({
 
       setIsFlipped(false);
       setSwipeDirection(null);
-      onNext();
+      if (isLast) {
+          onFinish();
+      } else {
+          onNext();
+      }
+
       x.set(0);
       y.set(0);
 

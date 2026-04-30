@@ -337,7 +337,12 @@ export const IdiomSession: React.FC<IdiomSessionProps> = ({
 
       setIsFlipped(false);
       setSwipeDirection(null);
-      onNext();
+      if (isLast) {
+          onFinish();
+      } else {
+          onNext();
+      }
+
       x.set(0);
       y.set(0);
 
