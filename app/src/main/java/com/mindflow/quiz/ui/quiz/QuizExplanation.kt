@@ -22,26 +22,29 @@ import com.mindflow.quiz.data.local.entity.QuestionEntity
 
 @Composable
 fun QuizExplanation(question: QuestionEntity) {
+    val explanation = question.explanation
+    if (explanation == null) return
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (!question.explanationSummary.isNullOrBlank()) {
+        if (!explanation.summary.isNullOrBlank()) {
             ExplanationSection(
                 title = "Answer",
-                content = question.explanationSummary,
+                content = explanation.summary,
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 borderColor = MaterialTheme.colorScheme.primary
             )
         }
 
-        if (!question.explanationAnalysisCorrect.isNullOrBlank()) {
+        if (!explanation.analysisCorrect.isNullOrBlank()) {
             ExplanationSection(
                 title = "Why this is correct",
-                content = question.explanationAnalysisCorrect,
+                content = explanation.analysisCorrect,
                 backgroundColor = Color(0xFFE8F5E9),
                 contentColor = Color(0xFF2E7D32),
                 borderColor = Color(0xFF81C784),
@@ -56,10 +59,10 @@ fun QuizExplanation(question: QuestionEntity) {
             )
         }
 
-        if (!question.explanationAnalysisIncorrect.isNullOrBlank()) {
+        if (!explanation.analysisIncorrect.isNullOrBlank()) {
             ExplanationSection(
                 title = "Why other options are incorrect",
-                content = question.explanationAnalysisIncorrect,
+                content = explanation.analysisIncorrect,
                 backgroundColor = Color(0xFFFFEBEE),
                 contentColor = Color(0xFFC62828),
                 borderColor = Color(0xFFE57373),
@@ -74,10 +77,10 @@ fun QuizExplanation(question: QuestionEntity) {
             )
         }
 
-        if (!question.explanationConclusion.isNullOrBlank()) {
+        if (!explanation.conclusion.isNullOrBlank()) {
             ExplanationSection(
                 title = "Key Takeaway",
-                content = question.explanationConclusion,
+                content = explanation.conclusion,
                 backgroundColor = Color(0xFFE3F2FD),
                 contentColor = Color(0xFF1565C0),
                 borderColor = Color(0xFF64B5F6),
@@ -92,10 +95,10 @@ fun QuizExplanation(question: QuestionEntity) {
             )
         }
 
-        if (!question.explanationFact.isNullOrBlank()) {
+        if (!explanation.fact.isNullOrBlank()) {
             ExplanationSection(
                 title = "Did you know?",
-                content = question.explanationFact,
+                content = explanation.fact,
                 backgroundColor = Color(0xFFFFF8E1),
                 contentColor = Color(0xFFF57F17),
                 borderColor = Color(0xFFFFD54F),
