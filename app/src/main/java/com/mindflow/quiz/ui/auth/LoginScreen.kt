@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
@@ -16,7 +17,11 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     val authState by authViewModel.authState.collectAsState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -31,25 +36,63 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                emailError = null
+            },
             label = { Text("Email") },
+            isError = emailError != null,
             modifier = Modifier.fillMaxWidth()
         )
+        if (emailError != null) {
+            Text(
+                text = emailError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.Start).padding(start = 16.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                passwordError = null
+            },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
+            isError = passwordError != null,
             modifier = Modifier.fillMaxWidth()
         )
+        if (passwordError != null) {
+            Text(
+                text = passwordError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.Start).padding(start = 16.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { authViewModel.signIn(email, password) },
+            onClick = {
+                var hasError = false
+                if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    emailError = "Please enter a valid email address."
+                    hasError = true
+                }
+                if (password.isBlank()) {
+                    passwordError = "Password cannot be empty."
+                    hasError = true
+                }
+
+                if (!hasError) {
+                    authViewModel.signIn(email, password)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = authState != AuthState.Loading
         ) {
@@ -58,6 +101,18 @@ fun LoginScreen(
             } else {
                 Text("Sign In")
             }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = {
+                authViewModel.signInWithGoogle(context)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = authState != AuthState.Loading
+        ) {
+            Text("Sign in with Google")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

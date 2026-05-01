@@ -8,10 +8,14 @@ import androidx.room.TypeConverters
 import com.mindflow.quiz.data.local.converters.RoomConverters
 import com.mindflow.quiz.data.local.dao.IdiomDao
 import com.mindflow.quiz.data.local.dao.OneWordDao
+import com.mindflow.quiz.data.local.dao.InteractionDao
+import com.mindflow.quiz.data.local.dao.BookmarkDao
 import com.mindflow.quiz.data.local.dao.QuestionDao
 import com.mindflow.quiz.data.local.dao.QuizHistoryDao
 import com.mindflow.quiz.data.local.entity.IdiomEntity
 import com.mindflow.quiz.data.local.entity.OneWordEntity
+import com.mindflow.quiz.data.local.entity.InteractionEntity
+import com.mindflow.quiz.data.local.entity.BookmarkEntity
 import com.mindflow.quiz.data.local.entity.QuestionEntity
 import com.mindflow.quiz.data.local.entity.QuizHistoryEntity
 
@@ -20,9 +24,11 @@ import com.mindflow.quiz.data.local.entity.QuizHistoryEntity
         QuestionEntity::class,
         IdiomEntity::class,
         OneWordEntity::class,
+        InteractionEntity::class,
+        BookmarkEntity::class,
         QuizHistoryEntity::class
     ],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(RoomConverters::class)
@@ -31,6 +37,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun questionDao(): QuestionDao
     abstract fun idiomDao(): IdiomDao
     abstract fun oneWordDao(): OneWordDao
+    abstract fun interactionDao(): InteractionDao
+    abstract fun bookmarkDao(): BookmarkDao
     abstract fun quizHistoryDao(): QuizHistoryDao
 
     companion object {

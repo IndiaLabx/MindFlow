@@ -15,6 +15,11 @@ fun SignupScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
 
     val authState by authViewModel.authState.collectAsState()
 
@@ -31,25 +36,91 @@ fun SignupScreen(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                emailError = null
+            },
             label = { Text("Email") },
+            isError = emailError != null,
             modifier = Modifier.fillMaxWidth()
         )
+        if (emailError != null) {
+            Text(
+                text = emailError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.Start).padding(start = 16.dp)
+            )
+        }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                passwordError = null
+            },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
+            isError = passwordError != null,
             modifier = Modifier.fillMaxWidth()
         )
+        if (passwordError != null) {
+            Text(
+                text = passwordError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.Start).padding(start = 16.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+                confirmPasswordError = null
+            },
+            label = { Text("Confirm Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            isError = confirmPasswordError != null,
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (confirmPasswordError != null) {
+            Text(
+                text = confirmPasswordError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.Start).padding(start = 16.dp)
+            )
+        }
+
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { authViewModel.signUp(email, password) },
+            onClick = {
+                var hasError = false
+                if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    emailError = "Please enter a valid email address."
+                    hasError = true
+                }
+                if (password.length < 6) {
+                    passwordError = "Password must be at least 6 characters."
+                    hasError = true
+                }
+                if (password != confirmPassword) {
+                    confirmPasswordError = "Passwords do not match."
+                    hasError = true
+                }
+
+                if (!hasError) {
+                    authViewModel.signUp(email, password)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = authState != AuthState.Loading
         ) {

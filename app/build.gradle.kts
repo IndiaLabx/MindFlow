@@ -76,6 +76,7 @@ dependencies {
     // Supabase
     implementation("io.github.jan-tennert.supabase:postgrest-kt:2.2.3")
     implementation("io.github.jan-tennert.supabase:gotrue-kt:2.2.3")
+    implementation("io.github.jan-tennert.supabase:compose-auth:2.2.3")
     implementation("io.ktor:ktor-client-android:2.3.9")
 
     // Room
@@ -101,4 +102,10 @@ dependencies {
     // Serialization & DataStore
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+}
+
+dependencies {
+    implementation("androidx.credentials:credentials:1.2.2")
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
 }

@@ -27,7 +27,7 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
             val quizRepository = QuizRepository(database.questionDao())
             val savedStateHandle = extras.createSavedStateHandle()
             @Suppress("UNCHECKED_CAST")
-            return QuizViewModel(savedStateHandle, quizRepository) as T
+            return QuizViewModel(quizRepository, database.quizHistoryDao(), savedStateHandle) as T
         }
         if (modelClass.isAssignableFrom(FlashcardViewModel::class.java)) {
             val idiomsRepository = IdiomsRepository(database.idiomDao())
