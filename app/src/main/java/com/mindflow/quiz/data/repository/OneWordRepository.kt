@@ -8,31 +8,28 @@ import com.mindflow.quiz.data.remote.dto.toEntity
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onStart
 
 class OneWordRepository(
     private val oneWordDao: OneWordDao
 ) {
-    fun getAllOneWords(): Flow<List<OneWordEntity>> = flow {
-        // Emit local DB first
-        val localData = oneWordDao.getAllOneWords()
-        if (localData.isNotEmpty()) {
-            emit(localData)
-        }
+    fun observeAllOneWords(): Flow<List<OneWordEntity>> = oneWordDao.observeAllOneWords().onStart {
+        fetchFromRemote()
+    }
 
-        // Fetch fresh data if needed
+    suspend fun fetchFromRemote() {
         try {
             val remoteData = SupabaseClientConfig.client.postgrest["ows"]
                 .select().decodeList<OneWordDto>()
 
             val entities = remoteData.map { it.toEntity() }
             oneWordDao.insertOneWords(entities)
-
-            emit(oneWordDao.getAllOneWords())
         } catch (e: Exception) {
             e.printStackTrace()
-            if (localData.isEmpty()) {
-                emit(emptyList())
-            }
         }
+    }
+
+    suspend fun updateOneWordStatus(id: String, status: String) {
+        oneWordDao.updateStatus(id, status, System.currentTimeMillis(), "PENDING_UPDATE")
     }
 }

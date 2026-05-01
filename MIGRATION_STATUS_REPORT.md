@@ -112,7 +112,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 - [x] **Phase 2: Quiz Engine UI Integration**
   - Connect `QuizScreen` to observe active Flows from `QuizRepository`.
   - Display actual explanations and correct options based on the user's answers.
-- [ ] **Phase 3: Flashcard Spaced Repetition (SRS)**
+- [x] **Phase 3: Flashcard Spaced Repetition (SRS)**
   - Connect `FlashcardScreen` to observe Flows from `IdiomsRepository`/`OWSRepository`.
   - Implement Mastery/Filtering logic via Room queries (e.g., fetching only unread or "review" required cards).
 
