@@ -4,11 +4,14 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +32,23 @@ fun FlashcardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Idioms & Phrases") },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (uiState.deckType == FlashcardDeckType.IDIOMS) "Idioms" else "One Words")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        // Simple toggle for deck type
+                        Button(
+                            onClick = {
+                                val newType = if (uiState.deckType == FlashcardDeckType.IDIOMS) FlashcardDeckType.ONE_WORDS else FlashcardDeckType.IDIOMS
+                                viewModel.setDeckType(newType)
+                            },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.height(30.dp)
+                        ) {
+                            Text("Switch", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.Close, contentDescription = "Exit Flashcards")
@@ -39,14 +58,73 @@ fun FlashcardScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
+        },
+        bottomBar = {
+            if (!uiState.isLoading && uiState.items.isNotEmpty() && uiState.isFlipped) {
+                BottomAppBar(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = { viewModel.markCurrentCard("review") },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer)
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Review", modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Again")
+                        }
+
+                        Button(
+                            onClick = { viewModel.markCurrentCard("familiar") },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = "Good", modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Good")
+                        }
+
+                        Button(
+                            onClick = { viewModel.markCurrentCard("mastered") },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                        ) {
+                            Icon(Icons.Default.Star, contentDescription = "Mastered", modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Mastered")
+                        }
+                    }
+                }
+            } else if (!uiState.isLoading && uiState.items.isNotEmpty() && !uiState.isFlipped) {
+                // Show a simple bottom bar to prompt flip
+                BottomAppBar(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(onClick = { viewModel.flipCard() }, modifier = Modifier.fillMaxWidth()) {
+                            Text("Show Answer")
+                        }
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        } else if (uiState.idioms.isNotEmpty()) {
-            val currentIdiom = uiState.idioms[uiState.currentIndex]
+        } else if (uiState.items.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                Text("No cards left to review! Great job!", style = MaterialTheme.typography.titleMedium)
+            }
+        } else {
+            val currentItem = uiState.items[uiState.currentIndex]
 
             // 3D Flip Animation State
             val rotation by animateFloatAsState(
@@ -62,12 +140,12 @@ fun FlashcardScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${uiState.currentIndex + 1} / ${uiState.idioms.size}",
+                    text = "${uiState.currentIndex + 1} / ${uiState.items.size}",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Box(
                     modifier = Modifier
@@ -77,7 +155,7 @@ fun FlashcardScreen(
                             rotationY = rotation
                             cameraDistance = 12f * density
                         }
-                        .clickable { viewModel.flipCard() }
+                        .clickable { if (!uiState.isFlipped) viewModel.flipCard() }
                 ) {
                     if (rotation <= 90f) {
                         // Front Side
@@ -88,13 +166,22 @@ fun FlashcardScreen(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                         ) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = currentIdiom.phrase,
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(24.dp)
-                                )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = currentItem.title,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(24.dp)
+                                    )
+                                    if (currentItem is FlashcardItem.OneWord) {
+                                        Text(
+                                            text = "[${currentItem.pos}]",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
                             }
                         }
                     } else {
@@ -110,60 +197,71 @@ fun FlashcardScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(24.dp),
+                                    .padding(24.dp)
+                                    .verticalScroll(rememberScrollState()),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = currentIdiom.meaningEnglish,
+                                    text = currentItem.meaningMain,
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.SemiBold,
                                     textAlign = TextAlign.Center
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = currentIdiom.meaningHindi,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
+                                if (!currentItem.meaningSecondary.isNullOrBlank()) {
+                                    Text(
+                                        text = currentItem.meaningSecondary!!,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                }
+
                                 Text(
                                     text = "Example:",
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
-                                    text = currentIdiom.usage,
+                                    text = currentItem.usageExample,
                                     style = MaterialTheme.typography.bodyMedium,
                                     textAlign = TextAlign.Center
                                 )
+
+                                // Extra fields based on type
+                                if (currentItem is FlashcardItem.Idiom && currentItem.mnemonic.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "Mnemonic:",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = currentItem.mnemonic,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        textAlign = TextAlign.Center
+                                    )
+                                } else if (currentItem is FlashcardItem.OneWord) {
+                                    if (currentItem.synonyms.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Text(
+                                            text = "Synonyms: ${currentItem.synonyms.joinToString(", ")}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                    if (currentItem.antonyms.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = "Antonyms: ${currentItem.antonyms.joinToString(", ")}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    IconButton(
-                        onClick = { viewModel.previousCard() },
-                        enabled = uiState.currentIndex > 0
-                    ) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
-                    }
-
-                    Button(onClick = { viewModel.flipCard() }) {
-                        Text(if (uiState.isFlipped) "Show Question" else "Show Answer")
-                    }
-
-                    IconButton(
-                        onClick = { viewModel.nextCard() },
-                        enabled = uiState.currentIndex < uiState.idioms.size - 1
-                    ) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = "Next")
                     }
                 }
             }

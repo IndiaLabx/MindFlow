@@ -30,9 +30,9 @@ fun AppNavigation(
     authViewModel: AuthViewModel = viewModel()
 ) {
     val aiTutorViewModel: AITutorViewModel = viewModel()
-    val flashcardViewModel: FlashcardViewModel = viewModel()
     val context = LocalContext.current
     val quizViewModel: QuizViewModel = viewModel(factory = ViewModelFactory(context))
+    val flashcardViewModel: FlashcardViewModel = viewModel(factory = ViewModelFactory(context))
     val navController = rememberNavController()
     val sessionStatus by authViewModel.sessionStatus.collectAsState(initial = SessionStatus.LoadingFromStorage)
 
@@ -72,6 +72,12 @@ fun AppNavigation(
         }
         composable("dashboard") {
             MainLayoutScreen(authViewModel = authViewModel, rootNavController = navController)
+        }
+        composable("flashcards") {
+            FlashcardScreen(
+                viewModel = flashcardViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(
             "quiz/{subject}",

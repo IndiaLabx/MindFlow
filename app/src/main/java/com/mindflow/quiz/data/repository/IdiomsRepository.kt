@@ -8,31 +8,30 @@ import com.mindflow.quiz.data.remote.dto.toEntity
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onStart
 
 class IdiomsRepository(
     private val idiomDao: IdiomDao
 ) {
-    fun getAllIdioms(): Flow<List<IdiomEntity>> = flow {
-        // Emit local DB first
-        val localData = idiomDao.getAllIdioms()
-        if (localData.isNotEmpty()) {
-            emit(localData)
-        }
+    fun observeAllIdioms(): Flow<List<IdiomEntity>> = idiomDao.observeAllIdioms().onStart {
+        fetchFromRemote()
+    }
 
-        // Fetch fresh data if needed
+    suspend fun fetchFromRemote() {
         try {
             val remoteData = SupabaseClientConfig.client.postgrest["idiom"]
                 .select().decodeList<IdiomDto>()
 
             val entities = remoteData.map { it.toEntity() }
             idiomDao.insertIdioms(entities)
-
-            emit(idiomDao.getAllIdioms())
         } catch (e: Exception) {
             e.printStackTrace()
-            if (localData.isEmpty()) {
-                emit(emptyList())
-            }
         }
+    }
+
+    suspend fun updateIdiomStatus(id: String, status: String) {
+        idiomDao.updateStatus(id, status, System.currentTimeMillis(), "PENDING_UPDATE")
+        // Ideally, we trigger a SyncWorker or attempt a network call here
+        // For now, we update local and mark syncStatus as PENDING_UPDATE
     }
 }
