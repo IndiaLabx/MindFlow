@@ -19,6 +19,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mindflow.quiz.utils.TTSManager
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.graphics.Color
+import com.mindflow.quiz.ui.quiz.QuizExplanation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,12 +74,13 @@ fun QuizScreen(
             val currentQuestion = uiState.activeQuestions[uiState.currentQuestionIndex]
             val selectedAnswer = uiState.answers[currentQuestion.id]
 
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(16.dp)
             ) {
+                item {
                 // Progress Indicator
                 LinearProgressIndicator(
                     progress = (uiState.currentQuestionIndex + 1).toFloat() / uiState.activeQuestions.size,
@@ -132,21 +137,36 @@ Row(verticalAlignment = Alignment.CenterVertically) {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Options List
-                currentQuestion.optionsEn.forEach { option ->
+                }
+
+                items(currentQuestion.optionsEn) { option ->
                     val isSelected = selectedAnswer == option
+                    val isCorrect = currentQuestion.correct == option
+                    val showResult = selectedAnswer != null && uiState.mode == "learning"
+
+                    val backgroundColor = when {
+                        showResult && isCorrect -> Color(0xFFE8F5E9) // Green for correct
+                        showResult && isSelected && !isCorrect -> Color(0xFFFFEBEE) // Red for incorrect selected
+                        isSelected -> MaterialTheme.colorScheme.primaryContainer
+                        else -> MaterialTheme.colorScheme.surface
+                    }
+
+                    val borderColor = when {
+                        showResult && isCorrect -> Color(0xFF4CAF50)
+                        showResult && isSelected && !isCorrect -> Color(0xFFF44336)
+                        isSelected -> MaterialTheme.colorScheme.primary
+                        else -> Color.Transparent
+                    }
 
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
-                            .clickable {
+                            .clickable(enabled = selectedAnswer == null) {
                                 quizViewModel.onEvent(QuizEvent.AnswerQuestion(currentQuestion.id, option, 10)) // Using 10 as dummy time Taken
                             },
-                        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
-                        ),
+                        border = if (borderColor != Color.Transparent) BorderStroke(2.dp, borderColor) else null,
+                        colors = CardDefaults.cardColors(containerColor = backgroundColor),
                         shape = RoundedCornerShape(8.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp)
                     ) {
@@ -156,7 +176,10 @@ Row(verticalAlignment = Alignment.CenterVertically) {
                         ) {
                             RadioButton(
                                 selected = isSelected,
-                                onClick = { quizViewModel.onEvent(QuizEvent.AnswerQuestion(currentQuestion.id, option, 10)) }
+                                onClick = { if(selectedAnswer == null) quizViewModel.onEvent(QuizEvent.AnswerQuestion(currentQuestion.id, option, 10)) },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = if (showResult && isCorrect) Color(0xFF4CAF50) else if (showResult && isSelected && !isCorrect) Color(0xFFF44336) else MaterialTheme.colorScheme.primary
+                                )
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(text = option, style = MaterialTheme.typography.bodyLarge)
@@ -164,15 +187,23 @@ Row(verticalAlignment = Alignment.CenterVertically) {
                     }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                if (selectedAnswer != null && uiState.mode == "learning") {
+                    item {
+                        QuizExplanation(question = currentQuestion)
+                    }
+                }
 
-                Button(
-                    onClick = { quizViewModel.onEvent(QuizEvent.NextQuestion) },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = selectedAnswer != null
-                ) {
-                    val buttonText = if (uiState.currentQuestionIndex == uiState.activeQuestions.size - 1) "Finish Quiz" else "Next"
-                    Text(text = buttonText, modifier = Modifier.padding(8.dp))
+                item {
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        onClick = { quizViewModel.onEvent(QuizEvent.NextQuestion) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = selectedAnswer != null
+                    ) {
+                        val buttonText = if (uiState.currentQuestionIndex == uiState.activeQuestions.size - 1) "Finish Quiz" else "Next"
+                        Text(text = buttonText, modifier = Modifier.padding(8.dp))
+                    }
                 }
             }
         }

@@ -86,7 +86,7 @@ fun MainLayoutScreen(
                 val dashboardViewModel: DashboardViewModel = viewModel(factory = ViewModelFactory(context))
                 DashboardScreen(
                     viewModel = dashboardViewModel,
-                    onNavigateToQuiz = { rootNavController.navigate("quiz") },
+                    onNavigateToQuiz = { rootNavController.navigate("quiz/General Knowledge") },
                     onNavigateToFlashcards = { rootNavController.navigate("flashcards") }
                 )
             }

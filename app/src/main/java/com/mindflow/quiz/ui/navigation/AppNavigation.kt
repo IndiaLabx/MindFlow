@@ -7,6 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.mindflow.quiz.ui.auth.AuthViewModel
 import com.mindflow.quiz.ui.auth.LoginScreen
@@ -20,6 +22,8 @@ import com.mindflow.quiz.ui.flashcards.FlashcardViewModel
 import com.mindflow.quiz.ui.flashcards.FlashcardScreen
 import com.mindflow.quiz.ui.quiz.ResultScreen
 import io.github.jan.supabase.gotrue.SessionStatus
+import androidx.compose.ui.platform.LocalContext
+import com.mindflow.quiz.ui.ViewModelFactory
 
 @Composable
 fun AppNavigation(
@@ -27,7 +31,8 @@ fun AppNavigation(
 ) {
     val aiTutorViewModel: AITutorViewModel = viewModel()
     val flashcardViewModel: FlashcardViewModel = viewModel()
-    val quizViewModel: QuizViewModel = viewModel()
+    val context = LocalContext.current
+    val quizViewModel: QuizViewModel = viewModel(factory = ViewModelFactory(context))
     val navController = rememberNavController()
     val sessionStatus by authViewModel.sessionStatus.collectAsState(initial = SessionStatus.LoadingFromStorage)
 
@@ -68,11 +73,18 @@ fun AppNavigation(
         composable("dashboard") {
             MainLayoutScreen(authViewModel = authViewModel, rootNavController = navController)
         }
-        composable("quiz") {
+        composable(
+            "quiz/{subject}",
+            arguments = listOf(navArgument("subject") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val subject = backStackEntry.arguments?.getString("subject") ?: "General Knowledge"
+            LaunchedEffect(subject) {
+                quizViewModel.startQuizForSubject(subject)
+            }
             QuizScreen(
                 quizViewModel = quizViewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResult = { navController.navigate("result") { popUpTo("quiz") { inclusive = true } } },
+                onNavigateToResult = { navController.navigate("result") { popUpTo("quiz/{subject}") { inclusive = true } } },
                 onNavigateToAI = { navController.navigate("ai_chat") }
             )
         }
