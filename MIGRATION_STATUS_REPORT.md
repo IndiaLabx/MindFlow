@@ -20,7 +20,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 
 | Feature / Component | React (PWA) | Android (Kotlin) | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **Main Layout Wrapper** | `MainLayout.tsx` | `MainLayoutScreen.kt` | [ ] **Incomplete** | Basic scaffold exists, but complex tab routing and settings modal integration are missing. |
+| **Main Layout Wrapper** | `MainLayout.tsx` | `MainLayoutScreen.kt` | [x] **Completed** | Refactored using Material 3 Scaffold, AI FAB, Tab Routing via ViewModel State. |
 | **Dashboard Screen** | `Dashboard.tsx` | `DashboardScreen.kt` | [x] **Completed** | UI scaffold present. Wired up live data integration for Profile Stats. |
 | **Settings Modal** | `SettingsModal.tsx` | *Missing* | [ ] **Todo** | Needs Jetpack Compose equivalent for app preferences (bg animations, sound, etc.). |
 | **Settings Store** | `useSettingsStore.ts` | *Missing* | [ ] **Todo** | Needs `DataStore` or `SharedPreferences` implementation in Android. |
@@ -86,7 +86,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 ## 🚀 Sprint 2: Core Routing, Dashboard, & Settings
 **Goal:** Build out the structural skeleton of the app, ensuring proper multi-screen navigation and persistence of user preferences.
 
-- [ ] **Phase 1: Main Layout & Structural Navigation**
+- [x] **Phase 1: Main Layout & Structural Navigation**
   - Finalize `MainLayoutScreen.kt` to mirror the React `MainLayout.tsx` with complex tab routing and deep linking capabilities.
   - Ensure state resiliency across configuration changes using `SavedStateHandle`.
 - [ ] **Phase 2: Dashboard Real-Data Hydration**

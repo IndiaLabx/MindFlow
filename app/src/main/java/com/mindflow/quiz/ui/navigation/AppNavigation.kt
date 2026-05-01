@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import androidx.navigation.compose.rememberNavController
 import com.mindflow.quiz.ui.auth.AuthViewModel
 import com.mindflow.quiz.ui.auth.LoginScreen
@@ -73,7 +74,10 @@ fun AppNavigation(
         composable("dashboard") {
             MainLayoutScreen(authViewModel = authViewModel, rootNavController = navController)
         }
-        composable("flashcards") {
+        composable(
+            "flashcards",
+            deepLinks = listOf(navDeepLink { uriPattern = "mindflow://flashcards" })
+        ) {
             FlashcardScreen(
                 viewModel = flashcardViewModel,
                 onNavigateBack = { navController.popBackStack() }
@@ -81,7 +85,8 @@ fun AppNavigation(
         }
         composable(
             "quiz/{subject}",
-            arguments = listOf(navArgument("subject") { type = NavType.StringType })
+            arguments = listOf(navArgument("subject") { type = NavType.StringType }),
+            deepLinks = listOf(navDeepLink { uriPattern = "mindflow://quiz/{subject}" })
         ) { backStackEntry ->
             val subject = backStackEntry.arguments?.getString("subject") ?: "General Knowledge"
             LaunchedEffect(subject) {
@@ -94,7 +99,10 @@ fun AppNavigation(
                 onNavigateToAI = { navController.navigate("ai_chat") }
             )
         }
-        composable("ai_chat") {
+        composable(
+            "ai_chat",
+            deepLinks = listOf(navDeepLink { uriPattern = "mindflow://ai_chat" })
+        ) {
             AIChatScreen(
                 viewModel = aiTutorViewModel,
                 onNavigateBack = { navController.popBackStack() }
