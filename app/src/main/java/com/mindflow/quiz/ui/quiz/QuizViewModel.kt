@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.mindflow.quiz.data.local.entity.QuestionEntity
+import com.mindflow.quiz.data.repository.QuizRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,56 +13,31 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 
-class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class QuizViewModel(private val savedStateHandle: SavedStateHandle, private val quizRepository: QuizRepository) : ViewModel() {
 
 private var timerJob: Job? = null
     private val _uiState = MutableStateFlow(savedStateHandle.get<QuizState>("quiz_state") ?: QuizState())
     val uiState: StateFlow<QuizState> = _uiState.asStateFlow()
 
     init {
-        // Only load mock questions if we don't have active ones
-        if (_uiState.value.activeQuestions.isEmpty() && _uiState.value.isLoading) {
-            loadMockQuestions()
-        } else if (_uiState.value.status == "quiz" && !_uiState.value.isPaused) {
+        if (_uiState.value.status == "quiz" && !_uiState.value.isPaused) {
             // Resume timer if we were in the middle of a quiz
             startTimer()
         }
     }
 
-    private fun loadMockQuestions() {
+    fun startQuizForSubject(subject: String, mode: String = "learning") {
         viewModelScope.launch {
-                val newState = _uiState.value.copy(isLoading = true)
-                _uiState.value = newState
-                savedStateHandle["quiz_state"] = newState
-            // Simulate network/database delay
-            delay(1000)
+            val loadingState = _uiState.value.copy(isLoading = true)
+            _uiState.value = loadingState
+            savedStateHandle["quiz_state"] = loadingState
 
-            val mockQuestions = listOf(
-                QuestionEntity(
-                    id = "1", v1Id = null, examName = "SSC", examYear = 2023, examDateShift = null,
-                    subject = "History", topic = "Modern India", subTopic = null, tags = listOf("Independence"),
-                    difficulty = "Medium", questionType = "MCQ", questionEn = "Who was the first Prime Minister of India?",
-                    questionHi = null, optionsEn = listOf("Mahatma Gandhi", "Jawaharlal Nehru", "Sardar Patel", "B.R. Ambedkar"),
-                    optionsHi = null, correct = "Jawaharlal Nehru", explanationSummary = null,
-                    explanationAnalysisCorrect = null, explanationAnalysisIncorrect = null,
-                    explanationConclusion = null, explanationFact = null
-                ),
-                QuestionEntity(
-                    id = "2", v1Id = null, examName = "SSC", examYear = 2023, examDateShift = null,
-                    subject = "Geography", topic = "Solar System", subTopic = null, tags = listOf("Planets"),
-                    difficulty = "Easy", questionType = "MCQ", questionEn = "Which planet is known as the Red Planet?",
-                    questionHi = null, optionsEn = listOf("Earth", "Venus", "Mars", "Jupiter"),
-                    optionsHi = null, correct = "Mars", explanationSummary = null,
-                    explanationAnalysisCorrect = null, explanationAnalysisIncorrect = null,
-                    explanationConclusion = null, explanationFact = null
-                )
-            )
-
-            // Auto-start mock quiz for now to match previous behavior
-            onEvent(QuizEvent.StartQuiz(mockQuestions, "learning"))
-                val newStateMock = _uiState.value.copy(isLoading = false)
-                _uiState.value = newStateMock
-                savedStateHandle["quiz_state"] = newStateMock
+            quizRepository.getQuestionsBySubject(subject).collect { questions ->
+                onEvent(QuizEvent.StartQuiz(questions, mode))
+                val finalState = _uiState.value.copy(isLoading = false)
+                _uiState.value = finalState
+                savedStateHandle["quiz_state"] = finalState
+            }
         }
     }
 

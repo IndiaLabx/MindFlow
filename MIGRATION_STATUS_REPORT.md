@@ -30,8 +30,8 @@ The goal of the migration is **100% feature parity**. The current state shows th
 | Feature / Component | React (PWA) | Android (Kotlin) | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | **Quiz Store / State Management**| `useQuizSessionStore.ts` (Zustand) | `QuizViewModel.kt` | [ ] **Incomplete** | Basic `MutableStateFlow` exists, but lacks advanced features: timers, bookmarks, review marking, 50-50 logic, pause/resume functionality. |
-| **Quiz Layout / Orchestrator** | `QuizLayout.tsx` | `QuizScreen.kt` | [ ] **Incomplete** | Compose UI shows basic questions. Missing Markdown/LaTeX rendering (needs `markwon`), complex timers, and background animations (Fireballs). |
-| **Question Display** | `components/...` | `QuizScreen.kt` | [ ] **Incomplete** | Basic MCQ selection works. Missing explanation displays, review marking, and fifty-fifty UI. |
+| **Quiz Layout / Orchestrator** | `QuizLayout.tsx` | `QuizScreen.kt` | [ ] **Incomplete** | Compose UI shows basic questions. Explanations correctly rendered. Missing Markdown/LaTeX rendering (needs `markwon`), complex timers, and background animations (Fireballs). |
+| **Question Display** | `components/...` | `QuizScreen.kt` | [x] **Completed** | MCQ selection highlights correct options, displays Explanation blocks and integrates core logic. |
 | **Quiz Results** | `patch_results...` | `ResultScreen.kt` | [ ] **Incomplete** | Basic placeholder UI exists. Missing complex score breakdowns, time spent per question, and retry/bookmark sync. |
 | **Engine Core (Plugins/Strategy)**| `quizEngine.ts`, `TestEngineController.ts` | *Missing* | [ ] **Todo** | The extensible plugin architecture for different question types is completely absent in Android. |
 | **Timer Worker** | `timerWorker.ts` | *Missing* | [ ] **Todo** | Needs a robust Coroutine/Flow-based timer implementation that survives configuration changes. |
@@ -109,7 +109,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 - [x] **Phase 1: Dashboard Connectivity**
   - Connect `DashboardScreen` to real statistics from Room DB.
   - Replace hardcoded placeholders with actual user profile and history data.
-- [ ] **Phase 2: Quiz Engine UI Integration**
+- [x] **Phase 2: Quiz Engine UI Integration**
   - Connect `QuizScreen` to observe active Flows from `QuizRepository`.
   - Display actual explanations and correct options based on the user's answers.
 - [ ] **Phase 3: Flashcard Spaced Repetition (SRS)**
