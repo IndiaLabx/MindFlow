@@ -5,10 +5,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -19,8 +23,9 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.mindflow.quiz.ui.auth.AuthViewModel
 import com.mindflow.quiz.ui.ViewModelFactory
+import com.mindflow.quiz.ui.settings.SettingsModal
+import com.mindflow.quiz.ui.auth.AuthViewModel
 
 sealed class BottomNavItem(val route: String, val title: String, val icon: ImageVector) {
     object Home : BottomNavItem("home", "Home", Icons.Default.Home)
@@ -40,6 +45,7 @@ fun MainLayoutScreen(
     val selectedTab by mainViewModel.selectedTab.collectAsState()
 
     val bottomNavController = rememberNavController()
+    var showSettings by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -48,7 +54,16 @@ fun MainLayoutScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                actions = {
+                    IconButton(onClick = { showSettings = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             )
         },
         bottomBar = {
@@ -124,8 +139,19 @@ fun MainLayoutScreen(
                 Text(text = "Flashcards Integration Screen", modifier = Modifier.padding(16.dp))
             }
             composable(BottomNavItem.Profile.route) {
-                Text(text = "Profile Screen", modifier = Modifier.padding(16.dp))
+                // Here we simply use authViewModel to prevent "unused parameter" warnings.
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(text = "Profile Screen")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { authViewModel.signOut() }) {
+                        Text("Sign Out")
+                    }
+                }
             }
+        }
+
+        if (showSettings) {
+            SettingsModal(onDismissRequest = { showSettings = false })
         }
     }
 }

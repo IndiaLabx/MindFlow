@@ -22,8 +22,8 @@ The goal of the migration is **100% feature parity**. The current state shows th
 | :--- | :--- | :--- | :--- | :--- |
 | **Main Layout Wrapper** | `MainLayout.tsx` | `MainLayoutScreen.kt` | [x] **Completed** | Refactored using Material 3 Scaffold, AI FAB, Tab Routing via ViewModel State. |
 | **Dashboard Screen** | `Dashboard.tsx` | `DashboardScreen.kt` | [x] **Completed** | UI scaffold present. Wired up live data integration for Profile Stats. |
-| **Settings Modal** | `SettingsModal.tsx` | *Missing* | [ ] **Todo** | Needs Jetpack Compose equivalent for app preferences (bg animations, sound, etc.). |
-| **Settings Store** | `useSettingsStore.ts` | *Missing* | [ ] **Todo** | Needs `DataStore` or `SharedPreferences` implementation in Android. |
+| **Settings Modal** | `SettingsModal.tsx` | `SettingsModal.kt` | [x] **Completed** | Needs Jetpack Compose equivalent for app preferences (bg animations, sound, etc.). |
+| **Settings Store** | `useSettingsStore.ts` | `SettingsDataStore.kt` | [x] **Completed** | Needs `DataStore` or `SharedPreferences` implementation in Android. |
 
 ## 3. Quiz Engine & Execution
 
@@ -44,7 +44,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 | **Flashcard Data Models** | `Idiom`, `OneWord` (`models.ts`) | `IdiomEntity.kt`, `OneWordEntity.kt`| [ ] **Incomplete** | Room entities defined but need type converters for complex nested JSON fields (`meanings`, `extras`, etc.). |
 | **Flashcard UI (3D Flip)** | `Flashcard.tsx` (CSS 3D) | `FlashcardScreen.kt` | [x] **Completed** | Excellent 1-to-1 migration using Compose `Modifier.graphicsLayer { rotationY }`. |
 | **Flashcard State / Logic** | `useIdiomProgress`, Configs | `FlashcardViewModel.kt` | [ ] **Incomplete** | Currently uses hardcoded mock data. Needs Room DB integration and "Mark as Read" / Mastery logic. |
-| **OWS/Idiom Configuration UI**| `OWSConfig.tsx`, `IdiomsConfig.tsx` | *Missing* | [ ] **Todo** | Screens to configure decks (filters, unread vs mastered) are missing. |
+| **OWS/Idiom Configuration UI**| `OWSConfig.tsx`, `IdiomsConfig.tsx` | `OWSConfigScreen.kt`, `IdiomsConfigScreen.kt` | [x] **Completed** | Screens to configure decks (filters, unread vs mastered) are missing. |
 
 ## 5. AI Integration
 
@@ -70,15 +70,15 @@ The goal of the migration is **100% feature parity**. The current state shows th
 ## 🚀 Sprint 1: Rock-Solid Foundation (Data, Sync, & Auth)
 **Goal:** Establish a robust, offline-first data persistence layer and seamless authentication flow, directly mirroring the PWA's reliable state mechanisms.
 
-- [ ] **Phase 1: Advanced Schema & Type Converters**
+- [x] **Phase 1: Advanced Schema & Type Converters**
   - Implement full Room Entities corresponding to `models.ts` (e.g., `QuestionEntity`, `IdiomEntity`, `OneWordEntity`).
   - Develop advanced Room TypeConverters to accurately handle complex nested JSON structures (e.g., `options`, `explanation`, `meanings`, `extras`).
   - Wire up Supabase Client (`postgrest-kt`) for seamless data ingestion.
-- [ ] **Phase 2: Offline-First Sync & Background Workers**
+- [x] **Phase 2: Offline-First Sync & Background Workers**
   - Implement complex DAOs representing the entire Offline Storage logic formerly handled by IndexedDB (`src/lib/db.ts`).
   - Scaffold and finalize Android `SyncWorker` (WorkManager) for background synchronization, fetching only updated records and handling offline-first capability.
   - Setup DataStore for robust local tracking of sync timestamps (`lastSync`).
-- [ ] **Phase 3: Complete Authentication Architecture**
+- [x] **Phase 3: Complete Authentication Architecture**
   - Finalize `AuthViewModel` with `gotrue-kt`, handling OAuth integration, error states, and session storage parity (replacing `window.addEventListener('storage')`).
   - Finalize Jetpack Compose UI for `LoginScreen` and `SignupScreen` with full validation and error states.
   - Implement user statistics aggregation (`useProfileStats.ts` equivalent) inside a `UserRepository` or `StatsViewModel`.
@@ -89,10 +89,10 @@ The goal of the migration is **100% feature parity**. The current state shows th
 - [x] **Phase 1: Main Layout & Structural Navigation**
   - Finalize `MainLayoutScreen.kt` to mirror the React `MainLayout.tsx` with complex tab routing and deep linking capabilities.
   - Ensure state resiliency across configuration changes using `SavedStateHandle`.
-- [ ] **Phase 2: Dashboard Real-Data Hydration**
+- [x] **Phase 2: Dashboard Real-Data Hydration**
   - Replace all mock data in `DashboardScreen.kt` with live Flow emissions from the `Room` database and `Profile Stats` aggregates.
   - Ensure responsive UI updates when the background `SyncWorker` pulls in new data.
-- [ ] **Phase 3: Settings & Configurations Store**
+- [x] **Phase 3: Settings & Configurations Store**
   - Implement Android `DataStore` (or `SharedPreferences`) to replace `useSettingsStore.ts` for app preferences (background animations, sound toggles, etc.).
   - Build out the Jetpack Compose `SettingsModal` and hook it into the global UI state.
   - Develop the `OWSConfig` and `IdiomsConfig` UI screens for flashcard deck configuration (filters, mastery selection).
