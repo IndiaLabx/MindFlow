@@ -116,13 +116,3 @@ The goal of the migration is **100% feature parity**. The current state shows th
   - Connect `FlashcardScreen` to observe Flows from `IdiomsRepository`/`OWSRepository`.
   - Implement Mastery/Filtering logic via Room queries (e.g., fetching only unread or "review" required cards).
 
-## 🚀 Sprint 4: Enhancements (AI Context & Polish)
-**Goal:** Exceed the React PWA's capabilities with native integrations.
-
-- [ ] **Phase 1: Advanced AI Context Injection**
-  - Upgrade `AITutorViewModel` to inject specific question context (Question text, Options, User Answer) into the Gemini prompt dynamically from `QuizScreen`.
-- [ ] **Phase 2: Rich Text Rendering**
-  - Integrate `Markwon` library for robust Markdown and LaTeX rendering in Quiz questions and explanations.
-- [ ] **Phase 3: Native Enhancements & Final Polish**
-  - Finalize and polish native Text-To-Speech (TTS) integrations across the app for the "Talk" mode.
-  - Add missing animations and Jetpack Compose equivalent preferences (Settings screen).
