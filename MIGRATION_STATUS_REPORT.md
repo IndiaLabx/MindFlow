@@ -67,52 +67,60 @@ The goal of the migration is **100% feature parity**. The current state shows th
 
 # Sprint Execution Roadmap (Phase-wise)
 
-## 🚀 Sprint 1: Foundation (Data Layer & Sync)
-**Goal:** Establish the heartbeat of the app. Ensure data can flow from Supabase -> Room -> Repository.
+## 🚀 Sprint 1: Rock-Solid Foundation (Data, Sync, & Auth)
+**Goal:** Establish a robust, offline-first data persistence layer and seamless authentication flow, directly mirroring the PWA's reliable state mechanisms.
 
-- [x] **Phase 1: Question Sync Architecture**
-  - Add `kotlinx.serialization` and `DataStore` dependencies.
-  - Update `QuestionEntity` with `updatedAt` and `syncStatus` sync tracking fields.
-  - Create `QuestionDto` matching Supabase schema and define a mapper (`toEntity`).
-  - Implement `SyncDataStore` to persist the timestamp of the last successful question sync.
-  - Implement `SyncWorker` offline-first logic for `questions` to fetch only updated/new records.
-  - Refactor `QuizRepository` to utilize `QuestionDto` mapping and implement local DB source of truth logic.
-- [x] **Phase 2: Idioms & One Word Substitution (OWS) Sync Integration**
-  - Update `IdiomEntity` and `OneWordEntity` with sync tracking fields.
-  - Create `IdiomDto` and `OneWordDto` with their respective mappers.
-  - Update `SyncDataStore` to track `lastSync` for idioms and OWS separately.
-  - Expand `SyncWorker` to fetch and sync `idioms` and `ows` tables from Supabase to Room.
-  - Establish Repositories for Idioms and OWS with Flow emissions identical to `QuizRepository`.
-- [x] **Phase 3: Robust TypeConverters & Room Integration**
-  - Implement and verify complex `TypeConverters` for Room handling arrays and JSON objects (e.g., options, usage sentences, meaning objects).
-  - Verify database schema generation.
-- [x] **Phase 4: Sync Orchestration & Bootstrapping**
-  - Implement the UI or App startup logic to schedule `SyncWorker` periodically (e.g., via WorkManager).
-  - Add initial loading states (bootstrapping) to ensure crucial data is pulled before first-time offline use.
+- [ ] **Phase 1: Advanced Schema & Type Converters**
+  - Implement full Room Entities corresponding to `models.ts` (e.g., `QuestionEntity`, `IdiomEntity`, `OneWordEntity`).
+  - Develop advanced Room TypeConverters to accurately handle complex nested JSON structures (e.g., `options`, `explanation`, `meanings`, `extras`).
+  - Wire up Supabase Client (`postgrest-kt`) for seamless data ingestion.
+- [ ] **Phase 2: Offline-First Sync & Background Workers**
+  - Implement complex DAOs representing the entire Offline Storage logic formerly handled by IndexedDB (`src/lib/db.ts`).
+  - Scaffold and finalize Android `SyncWorker` (WorkManager) for background synchronization, fetching only updated records and handling offline-first capability.
+  - Setup DataStore for robust local tracking of sync timestamps (`lastSync`).
+- [ ] **Phase 3: Complete Authentication Architecture**
+  - Finalize `AuthViewModel` with `gotrue-kt`, handling OAuth integration, error states, and session storage parity (replacing `window.addEventListener('storage')`).
+  - Finalize Jetpack Compose UI for `LoginScreen` and `SignupScreen` with full validation and error states.
+  - Implement user statistics aggregation (`useProfileStats.ts` equivalent) inside a `UserRepository` or `StatsViewModel`.
 
-## 🚀 Sprint 2: Core Engine (The State Machine)
-**Goal:** Make the Quiz Engine as robust as the React `quizReducer.ts`.
+## 🚀 Sprint 2: Core Routing, Dashboard, & Settings
+**Goal:** Build out the structural skeleton of the app, ensuring proper multi-screen navigation and persistence of user preferences.
 
-- [x] **Phase 1: State Machine Setup**
-  - Refactor `QuizViewModel.kt` using Sealed Classes for intents/events (`Next`, `Prev`, `Answer`, `FiftyFifty`).
-  - Implement the core state class representing the current quiz session.
-- [x] **Phase 2: Timer and Mode Implementations**
-  - Integrate a robust coroutine/Flow-based timer logic surviving configuration changes.
-  - Implement mode toggles handling (Learning Mode, Mock Mode, God Mode logic).
-- [x] **Phase 3: Advanced Features & State Resiliency**
-  - Implement "Mark for Review" and bookmarking session logic.
-  - Ensure the state is perfectly serialized/saved across Activity death using `SavedStateHandle` or DataStore.
+- [ ] **Phase 1: Main Layout & Structural Navigation**
+  - Finalize `MainLayoutScreen.kt` to mirror the React `MainLayout.tsx` with complex tab routing and deep linking capabilities.
+  - Ensure state resiliency across configuration changes using `SavedStateHandle`.
+- [ ] **Phase 2: Dashboard Real-Data Hydration**
+  - Replace all mock data in `DashboardScreen.kt` with live Flow emissions from the `Room` database and `Profile Stats` aggregates.
+  - Ensure responsive UI updates when the background `SyncWorker` pulls in new data.
+- [ ] **Phase 3: Settings & Configurations Store**
+  - Implement Android `DataStore` (or `SharedPreferences`) to replace `useSettingsStore.ts` for app preferences (background animations, sound toggles, etc.).
+  - Build out the Jetpack Compose `SettingsModal` and hook it into the global UI state.
+  - Develop the `OWSConfig` and `IdiomsConfig` UI screens for flashcard deck configuration (filters, mastery selection).
 
-## 🚀 Sprint 3: Data Integration (Removing the Illusions)
-**Goal:** Wire the UI to the actual Data Layer. Eliminate all mock data.
+## 🚀 Sprint 3: The Ultimate Quiz Engine
+**Goal:** Translate the complex React state-machine (`useQuizSessionStore.ts`) and Plugin Architecture into a highly performant, resilient Android ViewModel.
 
-- [x] **Phase 1: Dashboard Connectivity**
-  - Connect `DashboardScreen` to real statistics from Room DB.
-  - Replace hardcoded placeholders with actual user profile and history data.
-- [x] **Phase 2: Quiz Engine UI Integration**
-  - Connect `QuizScreen` to observe active Flows from `QuizRepository`.
-  - Display actual explanations and correct options based on the user's answers.
-- [x] **Phase 3: Flashcard Spaced Repetition (SRS)**
-  - Connect `FlashcardScreen` to observe Flows from `IdiomsRepository`/`OWSRepository`.
-  - Implement Mastery/Filtering logic via Room queries (e.g., fetching only unread or "review" required cards).
+- [ ] **Phase 1: State Machine & Engine Core**
+  - Port the `quizEngine.ts` and `TestEngineController.ts` plugin architecture into Kotlin domain use-cases.
+  - Finalize `QuizViewModel.kt` utilizing `MutableStateFlow`, completely supporting timers, bookmarks, review marking, 50-50 lifelines, and pause/resume logic.
+- [ ] **Phase 2: Advanced Quiz Layout & Background Workers**
+  - Implement a highly accurate Coroutine/Flow-based `TimerWorker` that survives Activity death and configuration changes.
+  - Upgrade `QuizScreen.kt` to support Markdown/LaTeX rendering (via `markwon`) and rich UI animations (like background fireballs).
+- [ ] **Phase 3: Deep Analytics & Quiz Results**
+  - Completely build out `ResultScreen.kt` replacing placeholders with detailed score breakdowns and time spent per question.
+  - Implement retry mechanisms and two-way sync for bookmarks and post-quiz review states back to Room/Supabase.
 
+## 🚀 Sprint 4: Flashcards Mastery & AI Integration
+**Goal:** Polish the learning experience with spaced repetition algorithms and native Gemini AI integration.
+
+- [ ] **Phase 1: Flashcard State & Spaced Repetition (SRS)**
+  - Wire up `FlashcardViewModel.kt` to the real Room DB, replacing hardcoded mock data.
+  - Implement "Mark as Read", mastery logic, and Spaced Repetition filters identical to `useIdiomProgress` hooks.
+- [ ] **Phase 2: AI Context Passing & Advanced Chat**
+  - Upgrade `AIChatScreen.kt` with advanced UI rendering, smooth typing indicators, and markdown chat bubbles.
+  - Implement `useQuota.ts` logic into Android to enforce and manage Gemini API usage limits.
+  - Completely wire up AI Context passing: seamlessly transmit current question contexts and user selections from the `QuizScreen` directly to the `AITutorViewModel`.
+- [ ] **Phase 3: System Optimization & Quality Assurance**
+  - Conduct full end-to-end memory profiling to ensure `Flow` collections do not leak.
+  - Verify offline parity: Ensure the app boots, fetches local data, allows quiz execution, and queues results without internet access.
+  - Final UI pass ensuring 100% Jetpack Compose and Material 3 design consistency across all screen sizes.
