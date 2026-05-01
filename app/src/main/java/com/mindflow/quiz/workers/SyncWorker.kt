@@ -11,6 +11,9 @@ import com.mindflow.quiz.data.remote.dto.IdiomDto
 import com.mindflow.quiz.data.remote.dto.OneWordDto
 import com.mindflow.quiz.data.remote.dto.QuestionDto
 import com.mindflow.quiz.data.remote.dto.toEntity
+import com.mindflow.quiz.data.remote.dto.InteractionDto
+import com.mindflow.quiz.data.remote.dto.BookmarkDto
+import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -32,6 +35,8 @@ class SyncWorker(
             val questionDao = database.questionDao()
             val idiomDao = database.idiomDao()
             val oneWordDao = database.oneWordDao()
+            val interactionDao = database.interactionDao()
+            val bookmarkDao = database.bookmarkDao()
             val syncDataStore = SyncDataStore(applicationContext)
 
             val now = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
@@ -76,6 +81,44 @@ class SyncWorker(
             if (remoteOws.isNotEmpty()) {
                 oneWordDao.insertOneWords(remoteOws.map { it.toEntity() })
                 syncDataStore.saveLastSyncOws(now)
+            }
+
+            // --- 4. Push Local User Data (Interactions & Bookmarks) if Authenticated ---
+            val user = SupabaseClientConfig.client.auth.currentUserOrNull()
+            if (user != null) {
+                // Push Unsynced Interactions
+                val unsyncedInteractions = interactionDao.getUnsyncedInteractions()
+                if (unsyncedInteractions.isNotEmpty()) {
+                    val interactionDtos = unsyncedInteractions.map {
+                        InteractionDto(
+                            itemId = it.itemId,
+                            type = it.type,
+                            isRead = it.isRead,
+                            lastInteractedAt = it.lastInteractedAt
+                        )
+                    }
+                    // Basic last-write-wins: upsert interactions
+                    SupabaseClientConfig.client.postgrest["interactions"]
+                        .upsert(interactionDtos)
+
+                    interactionDao.markAsSynced(unsyncedInteractions.map { it.itemId })
+                }
+
+                // Push Unsynced Bookmarks
+                val unsyncedBookmarks = bookmarkDao.getUnsyncedBookmarks()
+                if (unsyncedBookmarks.isNotEmpty()) {
+                    val bookmarkDtos = unsyncedBookmarks.map {
+                        BookmarkDto(
+                            questionId = it.questionId,
+                            bookmarkedAt = it.bookmarkedAt
+                        )
+                    }
+                    // Upsert bookmarks
+                    SupabaseClientConfig.client.postgrest["bookmarks"]
+                        .upsert(bookmarkDtos)
+
+                    bookmarkDao.markAsSynced(unsyncedBookmarks.map { it.questionId })
+                }
             }
 
             Log.d("SyncWorker", "Background sync completed successfully.")

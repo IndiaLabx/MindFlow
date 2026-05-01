@@ -14,5 +14,6 @@ data class QuizHistoryEntity(
     val totalTimeSpent: Int,
     val overallAccuracy: Double,
     val difficulty: String,
-    val subjectStats: Map<String, SubjectStats>
+    val subjectStats: Map<String, SubjectStats>,
+    val isSynced: Boolean = false
 )

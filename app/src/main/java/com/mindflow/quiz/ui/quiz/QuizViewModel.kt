@@ -1,70 +1,85 @@
 package com.mindflow.quiz.ui.quiz
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mindflow.quiz.data.local.entity.QuestionEntity
+import com.mindflow.quiz.data.local.dao.QuizHistoryDao
+import com.mindflow.quiz.data.local.entity.QuizHistoryEntity
+import com.mindflow.quiz.data.local.entity.SubjectStats
 import com.mindflow.quiz.data.repository.QuizRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import java.util.UUID
 
-class QuizViewModel(private val savedStateHandle: SavedStateHandle, private val quizRepository: QuizRepository) : ViewModel() {
+class QuizViewModel(
+    private val repository: QuizRepository,
+    private val quizHistoryDao: QuizHistoryDao,
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
-private var timerJob: Job? = null
-    private val _uiState = MutableStateFlow(savedStateHandle.get<QuizState>("quiz_state") ?: QuizState())
+    private val _uiState = MutableStateFlow(
+        savedStateHandle.get<QuizState>("quiz_state") ?: QuizState()
+    )
     val uiState: StateFlow<QuizState> = _uiState.asStateFlow()
 
+    private var timerJob: Job? = null
+
     init {
-        if (_uiState.value.status == "quiz" && !_uiState.value.isPaused) {
-            // Resume timer if we were in the middle of a quiz
+        val state = _uiState.value
+        if (state.status == "quiz" && !state.isPaused) {
             startTimer()
         }
     }
 
-    fun startQuizForSubject(subject: String, mode: String = "learning") {
+    fun startQuizForSubject(subject: String) {
         viewModelScope.launch {
-            val loadingState = _uiState.value.copy(isLoading = true)
-            _uiState.value = loadingState
-            savedStateHandle["quiz_state"] = loadingState
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            // Get first emission from Flow
+            val questions = repository.getQuestionsBySubject(subject).firstOrNull() ?: emptyList()
 
-            quizRepository.getQuestionsBySubject(subject).collect { questions ->
-                onEvent(QuizEvent.StartQuiz(questions, mode))
-                val finalState = _uiState.value.copy(isLoading = false)
-                _uiState.value = finalState
-                savedStateHandle["quiz_state"] = finalState
-            }
+            val newState = QuizState(
+                status = "quiz",
+                activeQuestions = questions,
+                isLoading = false,
+                quizTimeRemaining = questions.size * 60 // 1 min per question default
+            )
+            _uiState.value = newState
+            savedStateHandle["quiz_state"] = newState
+            startTimer()
         }
     }
 
     fun onEvent(event: QuizEvent) {
         val currentState = _uiState.value
-
         when (event) {
             is QuizEvent.StartQuiz -> {
-                val globalTime = if (event.mode == "mock" || event.mode == "god") {
-                    // Default to 60s per question for global time
-                    event.questions.size * 60
-                } else 0
-
+                val questions = event.questions
                 val remainingTimes = if (event.mode == "learning") {
-                    event.questions.associate { it.id to 60 }
-                } else emptyMap()
+                    questions.associate { it.id to 60 } // Default 60s per question in learning
+                } else {
+                    emptyMap()
+                }
+
+                val globalTime = if (event.mode == "mock" || event.mode == "god") {
+                    questions.size * 60 // 1 min per question
+                } else 0
 
                 val newState = currentState.copy(
                     status = "quiz",
                     mode = event.mode,
-                    activeQuestions = event.questions,
-                    quizTimeRemaining = globalTime,
-                    remainingTimes = remainingTimes,
+                    activeQuestions = questions,
                     currentQuestionIndex = 0,
                     score = 0,
                     answers = emptyMap(),
                     timeTaken = emptyMap(),
+                    quizTimeRemaining = globalTime,
+                    remainingTimes = remainingTimes,
                     bookmarks = emptyList(),
                     markedForReview = emptyList(),
                     hiddenOptions = emptyMap(),
@@ -124,10 +139,7 @@ private var timerJob: Job? = null
             is QuizEvent.NextQuestion -> {
                 val nextIndex = currentState.currentQuestionIndex + 1
                 if (nextIndex >= currentState.activeQuestions.size) {
-                    val newState = currentState.copy(status = "result")
-                    _uiState.value = newState
-                    savedStateHandle["quiz_state"] = newState
-                    stopTimer()
+                    finishQuiz(currentState)
                 } else {
                     val newState = currentState.copy(currentQuestionIndex = nextIndex)
                     _uiState.value = newState
@@ -192,10 +204,7 @@ private var timerJob: Job? = null
                 savedStateHandle["quiz_state"] = newState
             }
             is QuizEvent.FinishQuiz -> {
-                stopTimer()
-                val newState = currentState.copy(status = "result")
-                _uiState.value = newState
-                savedStateHandle["quiz_state"] = newState
+                finishQuiz(currentState)
             }
             is QuizEvent.RestartQuiz -> {
                 val globalTime = if (currentState.mode == "mock" || currentState.mode == "god") {
@@ -225,6 +234,61 @@ private var timerJob: Job? = null
             }
         }
     }
+
+    private fun finishQuiz(currentState: QuizState) {
+        stopTimer()
+        val newState = currentState.copy(status = "result")
+        _uiState.value = newState
+        savedStateHandle["quiz_state"] = newState
+
+        // Save History
+        viewModelScope.launch {
+            val totalQuestions = currentState.activeQuestions.size
+            val totalCorrect = currentState.score
+            val totalAnswered = currentState.answers.size
+            val totalIncorrect = totalAnswered - totalCorrect
+            val totalSkipped = totalQuestions - totalAnswered
+            val totalTimeSpent = currentState.timeTaken.values.sum()
+            val overallAccuracy = if (totalAnswered > 0) totalCorrect.toDouble() / totalAnswered else 0.0
+
+            val subjectStatsMap = mutableMapOf<String, SubjectStats>()
+            currentState.activeQuestions.forEach { q ->
+                val answer = currentState.answers[q.id]
+                val currentStats = subjectStatsMap[q.subject] ?: SubjectStats(0, 0, 0, 0, 0.0)
+
+                val updatedStats = if (answer != null) {
+                    if (answer == q.correct) {
+                        currentStats.copy(correct = currentStats.correct + 1, attempted = currentStats.attempted + 1)
+                    } else {
+                        currentStats.copy(incorrect = currentStats.incorrect + 1, attempted = currentStats.attempted + 1)
+                    }
+                } else {
+                    currentStats.copy(skipped = currentStats.skipped + 1)
+                }
+
+                // Recalculate accuracy for the subject
+                val accuracy = if (updatedStats.attempted > 0) updatedStats.correct.toDouble() / updatedStats.attempted else 0.0
+                subjectStatsMap[q.subject] = updatedStats.copy(accuracy = accuracy)
+            }
+
+            val historyEntry = QuizHistoryEntity(
+                id = UUID.randomUUID().toString(),
+                date = System.currentTimeMillis(),
+                totalQuestions = totalQuestions,
+                totalCorrect = totalCorrect,
+                totalIncorrect = totalIncorrect,
+                totalSkipped = totalSkipped,
+                totalTimeSpent = totalTimeSpent,
+                overallAccuracy = overallAccuracy,
+                difficulty = "Mixed", // Basic implementation
+                subjectStats = subjectStatsMap,
+                isSynced = false // We need to sync this to server later
+            )
+
+            quizHistoryDao.insertHistory(historyEntry)
+        }
+    }
+
 
     private fun startTimer() {
         stopTimer()
