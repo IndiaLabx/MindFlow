@@ -1,6 +1,7 @@
 package com.mindflow.quiz.data.local.converters
 
 import androidx.room.TypeConverter
+import com.mindflow.quiz.data.local.entity.QuestionExplanation
 import com.mindflow.quiz.data.local.entity.SubjectStats
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -36,6 +37,22 @@ class RoomConverters {
             Json.decodeFromString<Map<String, SubjectStats>>(value)
         } catch (e: Exception) {
             emptyMap()
+        }
+    }
+
+    @TypeConverter
+    fun fromQuestionExplanation(value: QuestionExplanation?): String? {
+        if (value == null) return null
+        return Json.encodeToString(value)
+    }
+
+    @TypeConverter
+    fun toQuestionExplanation(value: String?): QuestionExplanation? {
+        if (value == null) return null
+        return try {
+            Json.decodeFromString<QuestionExplanation>(value)
+        } catch (e: Exception) {
+            null
         }
     }
 }

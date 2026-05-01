@@ -124,14 +124,14 @@ private var timerJob: Job? = null
             is QuizEvent.NextQuestion -> {
                 val nextIndex = currentState.currentQuestionIndex + 1
                 if (nextIndex >= currentState.activeQuestions.size) {
-                val newState = currentState.copy(status = "result")
-                _uiState.value = newState
-                savedStateHandle["quiz_state"] = newState
+                    val newState = currentState.copy(status = "result")
+                    _uiState.value = newState
+                    savedStateHandle["quiz_state"] = newState
                     stopTimer()
                 } else {
-                val newState = currentState.copy(currentQuestionIndex = nextIndex)
-                _uiState.value = newState
-                savedStateHandle["quiz_state"] = newState
+                    val newState = currentState.copy(currentQuestionIndex = nextIndex)
+                    _uiState.value = newState
+                    savedStateHandle["quiz_state"] = newState
                 }
             }
             is QuizEvent.PrevQuestion -> {

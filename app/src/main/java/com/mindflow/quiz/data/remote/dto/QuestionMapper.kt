@@ -1,6 +1,7 @@
 package com.mindflow.quiz.data.remote.dto
 
 import com.mindflow.quiz.data.local.entity.QuestionEntity
+import com.mindflow.quiz.data.local.entity.QuestionExplanation
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -25,11 +26,17 @@ fun QuestionDto.toEntity(): QuestionEntity {
         optionsHi = optionsHi,
         correct = correct ?: "",
 
-        explanationSummary = explanationObj?.get("summary")?.jsonPrimitive?.content,
-        explanationAnalysisCorrect = explanationObj?.get("analysisCorrect")?.jsonPrimitive?.content,
-        explanationAnalysisIncorrect = explanationObj?.get("analysisIncorrect")?.jsonPrimitive?.content,
-        explanationConclusion = explanationObj?.get("conclusion")?.jsonPrimitive?.content,
-        explanationFact = explanationObj?.get("fact")?.jsonPrimitive?.content,
+        explanation = if (explanationObj != null) {
+            QuestionExplanation(
+                summary = explanationObj["summary"]?.jsonPrimitive?.content,
+                analysisCorrect = explanationObj["analysis_correct"]?.jsonPrimitive?.content,
+                analysisIncorrect = explanationObj["analysis_incorrect"]?.jsonPrimitive?.content,
+                conclusion = explanationObj["conclusion"]?.jsonPrimitive?.content,
+                fact = explanationObj["fact"]?.jsonPrimitive?.content
+            )
+        } else {
+            null
+        },
 
         updatedAt = System.currentTimeMillis(), // We could parse `createdAt` but System time works for simple sync.
         syncStatus = "SYNCED"

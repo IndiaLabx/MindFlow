@@ -24,11 +24,7 @@ data class QuestionEntity(
     val optionsEn: List<String>,
     val optionsHi: List<String>?,
     val correct: String,
-    val explanationSummary: String?,
-    val explanationAnalysisCorrect: String?,
-    val explanationAnalysisIncorrect: String?,
-    val explanationConclusion: String?,
-    val explanationFact: String?,
+    val explanation: QuestionExplanation?,
 
     // Sync fields
     val updatedAt: Long = System.currentTimeMillis(),
