@@ -10,6 +10,7 @@ import com.mindflow.quiz.data.repository.ProfileStatsRepository
 import com.mindflow.quiz.data.repository.QuizRepository
 import com.mindflow.quiz.data.repository.IdiomsRepository
 import com.mindflow.quiz.data.repository.OneWordRepository
+import com.mindflow.quiz.ui.dashboard.MainViewModel
 import com.mindflow.quiz.ui.dashboard.DashboardViewModel
 import com.mindflow.quiz.ui.quiz.QuizViewModel
 import com.mindflow.quiz.ui.flashcards.FlashcardViewModel
@@ -34,6 +35,11 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
             val oneWordRepository = OneWordRepository(database.oneWordDao())
             @Suppress("UNCHECKED_CAST")
             return FlashcardViewModel(idiomsRepository, oneWordRepository) as T
+        }
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            val savedStateHandle = extras.createSavedStateHandle()
+            @Suppress("UNCHECKED_CAST")
+            return MainViewModel(savedStateHandle) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
