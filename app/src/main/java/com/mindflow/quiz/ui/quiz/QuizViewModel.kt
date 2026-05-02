@@ -9,6 +9,7 @@ import com.mindflow.quiz.data.local.entity.SubjectStats
 import com.mindflow.quiz.data.repository.QuizRepository
 import com.mindflow.quiz.domain.engine.QuizEngine
 import com.mindflow.quiz.domain.engine.QuizEvent
+import com.mindflow.quiz.domain.engine.InitialFilters
 import com.mindflow.quiz.domain.engine.QuizMode
 import com.mindflow.quiz.domain.engine.QuizState
 import com.mindflow.quiz.domain.engine.plugins.McqPlugin
@@ -17,6 +18,8 @@ import com.mindflow.quiz.domain.engine.plugins.SynonymPlugin
 import com.mindflow.quiz.domain.mapper.toDomainModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.isActive
@@ -53,6 +56,7 @@ class QuizViewModel(
                     is QuizState.Finished -> {
                         stopTimer()
                         saveQuizHistory(state)
+                        clearSavedSession()
                     }
                     is QuizState.Loading -> {
                         stopTimer()
@@ -60,6 +64,26 @@ class QuizViewModel(
                 }
             }
         }
+
+        // Auto-Save: Debounce state updates to avoid thrashing
+        viewModelScope.launch {
+            @OptIn(kotlinx.coroutines.FlowPreview::class)
+            uiState.debounce(1000L).collect { state ->
+                if (state is QuizState.Active) {
+                    // Simulate auto-saving to local storage / DataStore
+                    // In real implementation, you'd serialize 'state' and write to Room/DataStore
+                    println("Auto-saved active session: progress=${state.progress.currentIndex}, score=${state.progress.score}")
+                }
+            }
+        }
+
+        // Recover Session (if available) - mocked for demonstration
+        // loadSavedSession()
+    }
+
+    private fun clearSavedSession() {
+        // Clear auto-saved data from DataStore/Room when submitted
+        println("Cleared saved session data")
     }
 
     fun startQuizForSubject(subject: String, mode: QuizMode = QuizMode.LEARNING) {
@@ -68,7 +92,8 @@ class QuizViewModel(
             val questions = repository.getQuestionsBySubject(subject).firstOrNull() ?: emptyList()
             val domainQuestions = questions.map { it.toDomainModel() }
 
-            engine.dispatch(QuizEvent.StartQuiz(domainQuestions, mode))
+            val filters = InitialFilters(subject = subject)
+            engine.dispatch(QuizEvent.StartQuiz(domainQuestions, filters, mode))
         }
     }
 
@@ -98,7 +123,7 @@ class QuizViewModel(
             val totalAnswered = state.progress.answers.size
             val totalIncorrect = totalAnswered - totalCorrect
             val totalSkipped = totalQuestions - totalAnswered
-            val totalTimeSpent = 0 // Needs to be calculated from timer metrics realistically
+            val totalTimeSpent = state.progress.timeTaken.values.sum()
             val overallAccuracy = if (totalAnswered > 0) totalCorrect.toDouble() / totalAnswered else 0.0
 
             val subjectStatsMap = mutableMapOf<String, SubjectStats>()

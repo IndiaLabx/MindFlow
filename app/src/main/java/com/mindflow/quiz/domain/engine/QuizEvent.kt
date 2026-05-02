@@ -7,7 +7,7 @@ sealed class AnswerPayload {
 }
 
 sealed class QuizEvent {
-    data class StartQuiz(val questions: List<Question>, val mode: QuizMode = QuizMode.LEARNING) : QuizEvent()
+    data class StartQuiz(val questions: List<Question>, val filters: InitialFilters? = null, val mode: QuizMode = QuizMode.LEARNING) : QuizEvent()
     data class AnswerQuestion(val questionId: String, val answer: AnswerPayload) : QuizEvent()
     data object NextQuestion : QuizEvent()
     data object PrevQuestion : QuizEvent()
@@ -20,4 +20,6 @@ sealed class QuizEvent {
     data object FinishQuiz : QuizEvent()
     data object RestartQuiz : QuizEvent()
     data class TimerTick(val deltaSeconds: Int = 1) : QuizEvent()
+    data class WindowFocusChanged(val hasFocus: Boolean) : QuizEvent()
+    data class LoadSavedQuiz(val state: QuizState.Active) : QuizEvent()
 }

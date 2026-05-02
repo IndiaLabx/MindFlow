@@ -100,7 +100,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 ## 🚀 Sprint 3: The Ultimate Quiz Engine
 **Goal:** Translate the complex React state-machine (`useQuizSessionStore.ts`) and Plugin Architecture into a highly performant, resilient Android ViewModel.
 
-- [x] **Phase 1: State Machine [ ] **Phase 1: State Machine & Engine Core** Engine Core**
+- [x] **Phase 1: State Machine & Engine Core**
   - Port the `quizEngine.ts` and `TestEngineController.ts` plugin architecture into Kotlin domain use-cases.
   - Finalize `QuizViewModel.kt` utilizing `MutableStateFlow`, completely supporting timers, bookmarks, review marking, 50-50 lifelines, and pause/resume logic.
 - [ ] **Phase 2: Advanced Quiz Layout & Background Workers**
