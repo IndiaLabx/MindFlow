@@ -29,7 +29,7 @@ const emptyFilters: InitialFilters = {
     examDateShift: [],
     tags: [],
     knownStatus: [],
-    deckMode: ['Unseen']
+    reviewModeStatus: ['Unseen']
 };
 
 export const OWSConfig: React.FC<OWSConfigProps> = ({ onStart, onBack }) => {
@@ -274,32 +274,34 @@ export const OWSConfig: React.FC<OWSConfigProps> = ({ onStart, onBack }) => {
                     {sessionMode === 'review' && (
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-teal-100 border-l-4 border-l-teal-400 shadow-sm relative">
                             <div className="flex items-center gap-2 mb-4 text-teal-800 font-bold text-sm uppercase tracking-wider">
-                                <CheckCircle className="w-4 h-4" /> Deck Mode (Spatial Engine)
+                                <CheckCircle className="w-4 h-4" /> Review Mode Status
                             </div>
                             <SegmentedControl
                                 options={['Unseen', 'Mastered', 'Review', 'Clueless', 'Tricky']}
-                                selectedOptions={filters.deckMode || ['Unseen']}
-                                onOptionToggle={(opt) => setFilters(prev => ({ ...prev, deckMode: [opt as "Unseen" | "Mastered" | "Review" | "Clueless" | "Tricky"] }))}
-                                counts={filterCounts.deckMode || {}}
+                                selectedOptions={filters.reviewModeStatus || ['Unseen']}
+                                onOptionToggle={(opt) => setFilters(prev => ({ ...prev, reviewModeStatus: [opt as "Unseen" | "Mastered" | "Review" | "Clueless" | "Tricky"] }))}
+                                counts={filterCounts.reviewModeStatus || {}}
                             />
                         </div>
                     )}
 
                     {/* Known Status Card */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-teal-100 border-l-4 border-l-teal-400 shadow-sm relative">
-                        <div className="flex items-center gap-2 mb-4 text-teal-800 font-bold text-sm uppercase tracking-wider">
-                            <CheckCircle className="w-4 h-4" /> Known Status
+                    {sessionMode === 'basic' && (
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-teal-100 border-l-4 border-l-teal-400 shadow-sm relative">
+                            <div className="flex items-center gap-2 mb-4 text-teal-800 font-bold text-sm uppercase tracking-wider">
+                                <CheckCircle className="w-4 h-4" /> Known Status
+                            </div>
+                            <SegmentedControl
+                                options={['known', 'unknown']}
+                                selectedOptions={filters.knownStatus || []}
+                                onOptionToggle={(opt) => setFilters(prev => {
+                                    const current = prev.knownStatus || [];
+                                    return { ...prev, knownStatus: current.includes(opt as any) ? current.filter(i => i !== opt) : [...current, opt as any] };
+                                })}
+                                counts={filterCounts.knownStatus || {}}
+                            />
                         </div>
-                        <SegmentedControl
-                            options={['known', 'unknown']}
-                            selectedOptions={filters.knownStatus || []}
-                            onOptionToggle={(opt) => setFilters(prev => {
-                                const current = prev.knownStatus || [];
-                                return { ...prev, knownStatus: current.includes(opt as any) ? current.filter(i => i !== opt) : [...current, opt as any] };
-                            })}
-                            counts={filterCounts.knownStatus || {}}
-                        />
-                    </div>
+                    )}
 
                     {/* Difficulty Card */}
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-teal-100 border-l-4 border-l-teal-400 shadow-sm relative">

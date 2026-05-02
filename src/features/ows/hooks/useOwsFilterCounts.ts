@@ -10,11 +10,11 @@ export type OwsMetadata = {
     knownStatus: string;
     status?: string;
     next_review_at?: string;
-    deckMode?: string;
+    reviewModeStatus?: string;
 };
 
-type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'knownStatus' | 'deckMode';
-const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'knownStatus', 'deckMode'];
+type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'knownStatus' | 'reviewModeStatus';
+const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'knownStatus', 'reviewModeStatus'];
 
 
 export function useOwsQuestionIndex(metadata: OwsMetadata[]) {
@@ -41,14 +41,14 @@ export function useOwsQuestionIndex(metadata: OwsMetadata[]) {
                 itemDeckModes = ['Tricky'];
             }
 
-            // Assign dynamically computed deckModes so the Set algorithm picks them up
+            // Assign dynamically computed reviewModeStatuss so the Set algorithm picks them up
             itemDeckModes.forEach(mode => {
-                if (!index['deckMode'][mode]) index['deckMode'][mode] = new Set();
-                index['deckMode'][mode].add(item.id);
+                if (!index['reviewModeStatus'][mode]) index['reviewModeStatus'][mode] = new Set();
+                index['reviewModeStatus'][mode].add(item.id);
             });
 
             filterKeys.forEach(key => {
-                if (key === 'deckMode') return; // Handled above
+                if (key === 'reviewModeStatus') return; // Handled above
                 const value = item[key as keyof OwsMetadata] as string;
                 if (!value) return;
 

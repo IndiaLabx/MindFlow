@@ -154,8 +154,8 @@ export async function getFilteredOws(
   // THE SIEVE (Deck Mode Filter & Known Status Filter)
   const { data: userData } = await supabase.auth.getUser();
 
-  // We only need to apply interactions if user exists AND they have deckMode or knownStatus filters
-  const hasDeckFilter = sessionMode === 'review' && filters.deckMode && filters.deckMode.length > 0;
+  // We only need to apply interactions if user exists AND they have reviewModeStatus or knownStatus filters
+  const hasDeckFilter = sessionMode === 'review' && filters.reviewModeStatus && filters.reviewModeStatus.length > 0;
   const hasKnownFilter = filters.knownStatus && filters.knownStatus.length > 0;
 
   if (userData?.user && (hasDeckFilter || hasKnownFilter)) {
@@ -187,7 +187,7 @@ export async function getFilteredOws(
       console.error('Failed to merge local queue for OWS filter', e);
     }
 
-    const mode = hasDeckFilter ? filters.deckMode![0] : null;
+    const mode = hasDeckFilter ? filters.reviewModeStatus![0] : null;
 
     parsedData = parsedData.filter((card) => {
       // interactMap is keyed by word_id

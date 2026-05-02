@@ -186,7 +186,7 @@ export interface InitialFilters {
   examDateShift: string[];
   tags: string[];
     knownStatus?: ('known' | 'unknown')[];
-  deckMode?: ('Unseen' | 'Mastered' | 'Review' | 'Clueless' | 'Tricky')[];
+  reviewModeStatus?: ('Unseen' | 'Mastered' | 'Review' | 'Clueless' | 'Tricky')[];
 }
 
 // --- Future Proofing for Auth & History ---

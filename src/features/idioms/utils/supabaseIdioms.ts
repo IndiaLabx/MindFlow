@@ -129,7 +129,7 @@ export async function getFilteredIdioms(filters: InitialFilters, selectedLetter:
 
     // THE SIEVE (Deck Mode Filter)
     const { data: userData } = await supabase.auth.getUser();
-    const hasDeckFilter = sessionMode === 'review' && filters.deckMode && filters.deckMode.length > 0;
+    const hasDeckFilter = sessionMode === 'review' && filters.reviewModeStatus && filters.reviewModeStatus.length > 0;
     const hasKnownFilter = filters.knownStatus && filters.knownStatus.length > 0;
 
     if (userData?.user && (hasDeckFilter || hasKnownFilter)) {
@@ -160,7 +160,7 @@ export async function getFilteredIdioms(filters: InitialFilters, selectedLetter:
             console.error('Failed to merge local queue for Idiom filter', e);
         }
 
-        const mode = hasDeckFilter ? filters.deckMode![0] : null;
+        const mode = hasDeckFilter ? filters.reviewModeStatus![0] : null;
 
         parsedData = parsedData.filter(card => {
              const userState = interactMap.get(card.id);
