@@ -9,11 +9,11 @@ export type IdiomMetadata = {
     difficulty: string;
     knownStatus: string;
     status?: string;
-    deckMode?: string;
+    reviewModeStatus?: string;
 };
 
-type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'knownStatus' | 'deckMode';
-const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'knownStatus', 'deckMode'];
+type FilterKeys = 'alphabet' | 'examName' | 'examYear' | 'difficulty' | 'knownStatus' | 'reviewModeStatus';
+const filterKeys: FilterKeys[] = ['alphabet', 'examName', 'examYear', 'difficulty', 'knownStatus', 'reviewModeStatus'];
 
 export function useIdiomQuestionIndex(metadata: IdiomMetadata[]) {
     return useMemo(() => {
@@ -25,7 +25,7 @@ export function useIdiomQuestionIndex(metadata: IdiomMetadata[]) {
 
         metadata.forEach(item => {
             filterKeys.forEach(key => {
-                if (key === 'deckMode') return; // Handled below dynamically
+                if (key === 'reviewModeStatus') return; // Handled below dynamically
 
                 const value = item[key as keyof IdiomMetadata];
                 if (!value) return;
@@ -36,11 +36,11 @@ export function useIdiomQuestionIndex(metadata: IdiomMetadata[]) {
                 index[key][value as string].add(item.id);
             });
 
-            // Assign dynamically computed deckModes so the Set algorithm picks them up
+            // Assign dynamically computed reviewModeStatuss so the Set algorithm picks them up
             const itemModes = determineDeckModes(item.status);
             itemModes.forEach(mode => {
-                if (!index['deckMode'][mode]) index['deckMode'][mode] = new Set();
-                index['deckMode'][mode].add(item.id);
+                if (!index['reviewModeStatus'][mode]) index['reviewModeStatus'][mode] = new Set();
+                index['reviewModeStatus'][mode].add(item.id);
             });
         });
 
