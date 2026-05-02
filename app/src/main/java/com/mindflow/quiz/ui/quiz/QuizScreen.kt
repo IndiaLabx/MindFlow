@@ -18,6 +18,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import android.widget.TextView
+import androidx.compose.ui.viewinterop.AndroidView
+import io.noties.markwon.Markwon
+import io.noties.markwon.ext.latex.JLatexMathPlugin
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import io.noties.markwon.ext.tables.TablePlugin
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import kotlin.random.Random
+
 import com.mindflow.quiz.utils.TTSManager
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -167,10 +180,25 @@ fun QuizScreen(
                                 Text("Quiz Paused", style = MaterialTheme.typography.headlineMedium)
                             }
                         } else {
-                            Text(
-                                text = currentQuestion.text,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold
+                            val context = androidx.compose.ui.platform.LocalContext.current
+                            val markwon = remember(context) {
+                                Markwon.builder(context)
+                                    .usePlugin(JLatexMathPlugin.create(20f))
+                                    .usePlugin(StrikethroughPlugin.create())
+                                    .usePlugin(TablePlugin.create(context))
+                                    .build()
+                            }
+
+                            AndroidView(
+                                factory = { ctx ->
+                                    TextView(ctx).apply {
+                                        textSize = 20f
+                                    }
+                                },
+                                update = { textView ->
+                                    markwon.setMarkdown(textView, currentQuestion.text)
+                                },
+                                modifier = Modifier.fillMaxWidth()
                             )
 
                             Spacer(modifier = Modifier.height(32.dp))
@@ -262,6 +290,39 @@ fun QuizScreen(
                     // Handled by LaunchedEffect
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun FireballBackground() {
+    val infiniteTransition = rememberInfiniteTransition(label = "fireballs")
+    val offsetY by infiniteTransition.animateFloat(
+        initialValue = 1000f,
+        targetValue = -200f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "fireball_y"
+    )
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val random = Random(42) // Fixed seed for deterministic behavior in recompositions
+        for (i in 0 until 5) {
+            val x = random.nextFloat() * size.width
+            val sizeRadius = random.nextFloat() * 20f + 10f
+            // Staggering based on index to create a parallax effect
+            val yOffset = offsetY + (i * 200f)
+
+            // Re-wrap to bottom if it goes completely off screen to simulate continuous stream
+            val finalY = if (yOffset < -50f) yOffset + size.height + 250f else yOffset
+
+            drawCircle(
+                color = Color(0xFFFF9800).copy(alpha = 0.3f),
+                radius = sizeRadius,
+                center = Offset(x, finalY)
+            )
         }
     }
 }

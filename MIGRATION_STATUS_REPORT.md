@@ -30,11 +30,11 @@ The goal of the migration is **100% feature parity**. The current state shows th
 | Feature / Component | React (PWA) | Android (Kotlin) | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | **Quiz Store / State Management**| `useQuizSessionStore.ts` (Zustand) | `QuizViewModel.kt` | [x] **Completed** | Full Kotlin domain engine implemented supporting timers, bookmarks, review marking, 50-50 logic, and pause/resume. |
-| **Quiz Layout / Orchestrator** | `QuizLayout.tsx` | `QuizScreen.kt` | [ ] **Incomplete** | Compose UI shows basic questions. Explanations correctly rendered. Missing Markdown/LaTeX rendering (needs `markwon`), complex timers, and background animations (Fireballs). |
+| **Quiz Layout / Orchestrator** | `QuizLayout.tsx` | `QuizScreen.kt` | [x] **Completed** | Compose UI shows questions. Explanations correctly rendered. Integrated Markdown/LaTeX rendering (`markwon`), complex state timers, and background animations (Fireballs). |
 | **Question Display** | `components/...` | `QuizScreen.kt` | [x] **Completed** | MCQ selection highlights correct options, displays Explanation blocks and integrates core logic. |
 | **Quiz Results** | `patch_results...` | `ResultScreen.kt` | [ ] **Incomplete** | Basic placeholder UI exists. Missing complex score breakdowns, time spent per question, and retry/bookmark sync. |
 | **Engine Core (Plugins/Strategy)**| `quizEngine.ts`, `TestEngineController.ts` | *Missing* | [x] **Completed** | Core QuizPlugin architecture ported (MCQ, Synonym plugins added) via PluginRegistry. |
-| **Timer Worker** | `timerWorker.ts` | *Missing* | [ ] **Todo** | Needs a robust Coroutine/Flow-based timer implementation that survives configuration changes. |
+| **Timer Worker** | `timerWorker.ts` | `QuizViewModel.kt` | [x] **Completed** | Robust Coroutine/Flow-based timer implementation utilizing `System.currentTimeMillis()` diffs that survives thread pauses. |
 | **Text-to-Speech (TTS)** | Custom Hook | `TTSManager.kt` | [x] **Completed** | Basic TTS implemented using Android's native `TextToSpeech` API. |
 
 ## 4. Flashcards (Idioms & OWS)
@@ -103,7 +103,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 - [x] **Phase 1: State Machine & Engine Core**
   - Port the `quizEngine.ts` and `TestEngineController.ts` plugin architecture into Kotlin domain use-cases.
   - Finalize `QuizViewModel.kt` utilizing `MutableStateFlow`, completely supporting timers, bookmarks, review marking, 50-50 lifelines, and pause/resume logic.
-- [ ] **Phase 2: Advanced Quiz Layout & Background Workers**
+- [x] **Phase 2: Advanced Quiz Layout & Background Workers**
   - Implement a highly accurate Coroutine/Flow-based `TimerWorker` that survives Activity death and configuration changes.
   - Upgrade `QuizScreen.kt` to support Markdown/LaTeX rendering (via `markwon`) and rich UI animations (like background fireballs).
 - [ ] **Phase 3: Deep Analytics & Quiz Results**

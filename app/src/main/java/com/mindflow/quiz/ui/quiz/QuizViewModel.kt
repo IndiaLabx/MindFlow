@@ -104,9 +104,17 @@ class QuizViewModel(
     private fun startTimer() {
         stopTimer()
         timerJob = viewModelScope.launch {
+            var lastTickTime = System.currentTimeMillis()
             while (isActive) {
                 delay(1000)
-                engine.dispatch(QuizEvent.TimerTick(1))
+                val currentTime = System.currentTimeMillis()
+                val deltaMillis = currentTime - lastTickTime
+                val deltaSeconds = (deltaMillis / 1000).toInt()
+
+                if (deltaSeconds > 0) {
+                    engine.dispatch(QuizEvent.TimerTick(deltaSeconds))
+                    lastTickTime = currentTime
+                }
             }
         }
     }
