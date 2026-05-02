@@ -32,10 +32,27 @@ class McqPlugin : QuizPlugin {
         if (event.questionId != currentQuestion.id) return state
 
         val newAnswers = state.progress.answers.toMutableMap()
+        val previousAnswer = newAnswers[currentQuestion.id]
         newAnswers[currentQuestion.id] = event.answer
 
+        val newAnswerPayload = event.answer
+        var newScore = state.progress.score
+
+        val isNowCorrect = newAnswerPayload is AnswerPayload.Single && newAnswerPayload.option == currentQuestion.correctAnswer
+        val wasCorrect = previousAnswer is AnswerPayload.Single && previousAnswer.option == currentQuestion.correctAnswer
+
+        if (previousAnswer == null) {
+            if (isNowCorrect) newScore++
+        } else {
+            if (wasCorrect && !isNowCorrect) newScore--
+            if (!wasCorrect && isNowCorrect) newScore++
+        }
+
         return state.copy(
-            progress = state.progress.copy(answers = newAnswers)
+            progress = state.progress.copy(
+                answers = newAnswers,
+                score = newScore
+            )
         )
     }
 
