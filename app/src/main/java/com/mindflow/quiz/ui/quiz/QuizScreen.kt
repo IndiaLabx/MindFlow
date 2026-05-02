@@ -22,7 +22,10 @@ import com.mindflow.quiz.utils.TTSManager
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.graphics.Color
-import com.mindflow.quiz.ui.quiz.QuizExplanation
+import com.mindflow.quiz.domain.engine.QuizState
+import com.mindflow.quiz.domain.engine.QuizEvent
+import com.mindflow.quiz.domain.engine.QuizMode
+import com.mindflow.quiz.domain.engine.AnswerPayload
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +43,8 @@ fun QuizScreen(
         onDispose { ttsManager.shutdown() }
     }
 
-    LaunchedEffect(uiState.status) {
-        if (uiState.status == "result") {
+    LaunchedEffect(uiState) {
+        if (uiState is QuizState.Finished) {
             onNavigateToResult()
         }
     }
@@ -49,161 +52,214 @@ fun QuizScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (uiState.mode == "learning") "Learning Mode" else "Mock Quiz") },
+                title = {
+                    val titleText = when (val state = uiState) {
+                        is QuizState.Active -> if (state.mode == QuizMode.LEARNING) "Learning Mode" else "Mock Quiz"
+                        else -> "Quiz"
+                    }
+                    Text(titleText)
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.Close, contentDescription = "Exit Quiz")
+                        Icon(Icons.Default.Close, contentDescription = "Close")
                     }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToAI) {
-                        Icon(Icons.Default.Star, contentDescription = "Ask AI")
+                        Icon(Icons.Default.Star, contentDescription = "AI Tutor") // Using Star as a placeholder for AI
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                }
             )
         }
     ) { innerPadding ->
-        if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (uiState.activeQuestions.isNotEmpty() && uiState.status == "quiz") {
-            val currentQuestion = uiState.activeQuestions[uiState.currentQuestionIndex]
-            val selectedAnswer = uiState.answers[currentQuestion.id]
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp)
-            ) {
-                item {
-                // Progress Indicator
-                LinearProgressIndicator(
-                    progress = (uiState.currentQuestionIndex + 1).toFloat() / uiState.activeQuestions.size,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Question ${uiState.currentQuestionIndex + 1} of ${uiState.activeQuestions.size}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = currentQuestion.questionEn,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(onClick = { ttsManager.speak(currentQuestion.questionEn) }) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Read Question aloud")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            when (val state = uiState) {
+                is QuizState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
                     }
                 }
+                is QuizState.Active -> {
+                    if (state.questions.isNotEmpty()) {
+                        val currentQuestion = state.questions[state.progress.currentIndex]
+                        val selectedAnswer = state.progress.answers[currentQuestion.id]
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    val isBookmarked = uiState.bookmarks.contains(currentQuestion.id)
-                    val isMarkedForReview = uiState.markedForReview.contains(currentQuestion.id)
-
-                    IconButton(onClick = { quizViewModel.onEvent(QuizEvent.ToggleReview(currentQuestion.id)) }) {
-                        Icon(
-                            imageVector = if (isMarkedForReview) Icons.Filled.Warning else Icons.Outlined.Warning,
-                            contentDescription = "Mark for Review",
-                            tint = if (isMarkedForReview) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    IconButton(onClick = { quizViewModel.onEvent(QuizEvent.ToggleBookmark(currentQuestion.id)) }) {
-                        Icon(
-                            imageVector = if (isBookmarked) Icons.Filled.Star else Icons.Outlined.Star,
-                            contentDescription = "Bookmark Question",
-                            tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                }
-
-                items(currentQuestion.optionsEn) { option ->
-                    val isSelected = selectedAnswer == option
-                    val isCorrect = currentQuestion.correct == option
-                    val showResult = selectedAnswer != null && uiState.mode == "learning"
-
-                    val backgroundColor = when {
-                        showResult && isCorrect -> Color(0xFFE8F5E9) // Green for correct
-                        showResult && isSelected && !isCorrect -> Color(0xFFFFEBEE) // Red for incorrect selected
-                        isSelected -> MaterialTheme.colorScheme.primaryContainer
-                        else -> MaterialTheme.colorScheme.surface
-                    }
-
-                    val borderColor = when {
-                        showResult && isCorrect -> Color(0xFF4CAF50)
-                        showResult && isSelected && !isCorrect -> Color(0xFFF44336)
-                        isSelected -> MaterialTheme.colorScheme.primary
-                        else -> Color.Transparent
-                    }
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .clickable(enabled = selectedAnswer == null) {
-                                quizViewModel.onEvent(QuizEvent.AnswerQuestion(currentQuestion.id, option, 10)) // Using 10 as dummy time Taken
-                            },
-                        border = if (borderColor != Color.Transparent) BorderStroke(2.dp, borderColor) else null,
-                        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-                        shape = RoundedCornerShape(8.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp)
-                    ) {
+                        // Header (Timer, Progress)
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(
-                                selected = isSelected,
-                                onClick = { if(selectedAnswer == null) quizViewModel.onEvent(QuizEvent.AnswerQuestion(currentQuestion.id, option, 10)) },
-                                colors = RadioButtonDefaults.colors(
-                                    selectedColor = if (showResult && isCorrect) Color(0xFF4CAF50) else if (showResult && isSelected && !isCorrect) Color(0xFFF44336) else MaterialTheme.colorScheme.primary
-                                )
+                            val timeText = if (state.mode == QuizMode.LEARNING) {
+                                val remaining = state.timer.questionTime[currentQuestion.id] ?: 60
+                                "Time: ${remaining}s"
+                            } else {
+                                "Time: ${state.timer.quizTimeRemaining / 60}:${(state.timer.quizTimeRemaining % 60).toString().padStart(2, '0')}"
+                            }
+                            Text(text = timeText, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+                            LinearProgressIndicator(
+                                progress = (state.progress.currentIndex + 1).toFloat() / state.questions.size,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 16.dp)
                             )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = option, style = MaterialTheme.typography.bodyLarge)
+
+                            Text(
+                                text = "Question ${state.progress.currentIndex + 1} of ${state.questions.size}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Actions (TTS, 50-50, Bookmark, Review)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            if (state.timer.isPaused) {
+                                IconButton(onClick = { quizViewModel.onEvent(QuizEvent.ResumeQuiz) }) {
+                                    Icon(Icons.Default.PlayArrow, contentDescription = "Resume")
+                                }
+                            } else {
+                                IconButton(onClick = { ttsManager.speak(currentQuestion.text) }) {
+                                    Icon(Icons.Default.PlayArrow, contentDescription = "TTS")
+                                }
+
+                                if (state.mode == QuizMode.LEARNING && !state.lifelines.usedFiftyFifty.contains(currentQuestion.id)) {
+                                    TextButton(onClick = { quizViewModel.onEvent(QuizEvent.UseFiftyFifty(currentQuestion.id)) }) {
+                                        Text("50-50")
+                                    }
+                                }
+
+                                val isBookmarked = state.progress.bookmarks.contains(currentQuestion.id)
+                                val isMarkedForReview = state.progress.markedForReview.contains(currentQuestion.id)
+
+                                IconButton(onClick = { quizViewModel.onEvent(QuizEvent.ToggleBookmark(currentQuestion.id)) }) {
+                                    Icon(
+                                        imageVector = if (isBookmarked) Icons.Filled.Star else Icons.Outlined.Star,
+                                        contentDescription = "Bookmark",
+                                        tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                IconButton(onClick = { quizViewModel.onEvent(QuizEvent.ToggleReview(currentQuestion.id)) }) {
+                                    Icon(
+                                        imageVector = if (isMarkedForReview) Icons.Filled.Warning else Icons.Outlined.Warning,
+                                        contentDescription = "Review",
+                                        tint = if (isMarkedForReview) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Question Area
+                        if (state.timer.isPaused) {
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                Text("Quiz Paused", style = MaterialTheme.typography.headlineMedium)
+                            }
+                        } else {
+                            Text(
+                                text = currentQuestion.text,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            Spacer(modifier = Modifier.height(32.dp))
+
+                            val hiddenOptions = state.lifelines.hiddenOptions[currentQuestion.id] ?: emptyList()
+                            val showResult = selectedAnswer != null && state.mode == QuizMode.LEARNING
+                            val selectedSingleOption = (selectedAnswer as? AnswerPayload.Single)?.option
+
+                            LazyColumn(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(currentQuestion.options) { option ->
+                                    if (!hiddenOptions.contains(option)) {
+                                        val isSelected = option == selectedSingleOption
+                                        val isCorrect = option == currentQuestion.correctAnswer
+
+                                        val containerColor = if (showResult) {
+                                            if (isCorrect) Color(0xFFE8F5E9) else if (isSelected) Color(0xFFFFEBEE) else MaterialTheme.colorScheme.surfaceVariant
+                                        } else {
+                                            if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                                        }
+
+                                        val borderColor = if (showResult) {
+                                            if (isCorrect) Color(0xFF4CAF50) else if (isSelected) Color(0xFFF44336) else Color.Transparent
+                                        } else {
+                                            if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+                                        }
+
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable(enabled = !showResult) {
+                                                    quizViewModel.onEvent(QuizEvent.AnswerQuestion(currentQuestion.id, AnswerPayload.Single(option)))
+                                                },
+                                            shape = RoundedCornerShape(12.dp),
+                                            colors = CardDefaults.cardColors(containerColor = containerColor),
+                                            border = BorderStroke(1.dp, borderColor)
+                                        ) {
+                                            Text(
+                                                text = option,
+                                                modifier = Modifier.padding(16.dp),
+                                                style = MaterialTheme.typography.bodyLarge
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (selectedAnswer != null && state.mode == QuizMode.LEARNING) {
+                                    item {
+                                        QuizExplanation(question = currentQuestion)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Bottom Navigation
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(
+                                onClick = { quizViewModel.onEvent(QuizEvent.PrevQuestion) },
+                                enabled = state.progress.currentIndex > 0
+                            ) {
+                                Text("Previous")
+                            }
+
+                            Button(
+                                onClick = {
+                                    if (state.progress.currentIndex == state.questions.size - 1) {
+                                        quizViewModel.onEvent(QuizEvent.FinishQuiz)
+                                    } else {
+                                        quizViewModel.onEvent(QuizEvent.NextQuestion)
+                                    }
+                                }
+                            ) {
+                                val buttonText = if (state.progress.currentIndex == state.questions.size - 1) "Finish Quiz" else "Next"
+                                Text(buttonText)
+                            }
+                        }
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No questions found.")
                         }
                     }
                 }
-
-                if (selectedAnswer != null && uiState.mode == "learning") {
-                    item {
-                        QuizExplanation(question = currentQuestion)
-                    }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    Button(
-                        onClick = { quizViewModel.onEvent(QuizEvent.NextQuestion) },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = selectedAnswer != null
-                    ) {
-                        val buttonText = if (uiState.currentQuestionIndex == uiState.activeQuestions.size - 1) "Finish Quiz" else "Next"
-                        Text(text = buttonText, modifier = Modifier.padding(8.dp))
-                    }
+                is QuizState.Finished -> {
+                    // Handled by LaunchedEffect
                 }
             }
         }

@@ -111,9 +111,9 @@ fun AppNavigation(
         composable("result") {
             ResultScreen(
                 quizViewModel = quizViewModel,
-                onNavigateHome = { navController.navigate("dashboard") { popUpTo(0) } }
+                onNavigateHome = { navController.navigate("dashboard") { popUpTo(0) } },
+                onRestartQuiz = { navController.popBackStack() }
             )
-
         }
     }
 }
