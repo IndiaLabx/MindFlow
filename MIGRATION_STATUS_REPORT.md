@@ -29,11 +29,11 @@ The goal of the migration is **100% feature parity**. The current state shows th
 
 | Feature / Component | React (PWA) | Android (Kotlin) | Status | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **Quiz Store / State Management**| `useQuizSessionStore.ts` (Zustand) | `QuizViewModel.kt` | [ ] **Incomplete** | Basic `MutableStateFlow` exists, but lacks advanced features: timers, bookmarks, review marking, 50-50 logic, pause/resume functionality. |
+| **Quiz Store / State Management**| `useQuizSessionStore.ts` (Zustand) | `QuizViewModel.kt` | [x] **Completed** | Full Kotlin domain engine implemented supporting timers, bookmarks, review marking, 50-50 logic, and pause/resume. |
 | **Quiz Layout / Orchestrator** | `QuizLayout.tsx` | `QuizScreen.kt` | [ ] **Incomplete** | Compose UI shows basic questions. Explanations correctly rendered. Missing Markdown/LaTeX rendering (needs `markwon`), complex timers, and background animations (Fireballs). |
 | **Question Display** | `components/...` | `QuizScreen.kt` | [x] **Completed** | MCQ selection highlights correct options, displays Explanation blocks and integrates core logic. |
 | **Quiz Results** | `patch_results...` | `ResultScreen.kt` | [ ] **Incomplete** | Basic placeholder UI exists. Missing complex score breakdowns, time spent per question, and retry/bookmark sync. |
-| **Engine Core (Plugins/Strategy)**| `quizEngine.ts`, `TestEngineController.ts` | *Missing* | [ ] **Todo** | The extensible plugin architecture for different question types is completely absent in Android. |
+| **Engine Core (Plugins/Strategy)**| `quizEngine.ts`, `TestEngineController.ts` | *Missing* | [x] **Completed** | Core QuizPlugin architecture ported (MCQ, Synonym plugins added) via PluginRegistry. |
 | **Timer Worker** | `timerWorker.ts` | *Missing* | [ ] **Todo** | Needs a robust Coroutine/Flow-based timer implementation that survives configuration changes. |
 | **Text-to-Speech (TTS)** | Custom Hook | `TTSManager.kt` | [x] **Completed** | Basic TTS implemented using Android's native `TextToSpeech` API. |
 
@@ -100,7 +100,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 ## 🚀 Sprint 3: The Ultimate Quiz Engine
 **Goal:** Translate the complex React state-machine (`useQuizSessionStore.ts`) and Plugin Architecture into a highly performant, resilient Android ViewModel.
 
-- [ ] **Phase 1: State Machine & Engine Core**
+- [x] **Phase 1: State Machine [ ] **Phase 1: State Machine & Engine Core** Engine Core**
   - Port the `quizEngine.ts` and `TestEngineController.ts` plugin architecture into Kotlin domain use-cases.
   - Finalize `QuizViewModel.kt` utilizing `MutableStateFlow`, completely supporting timers, bookmarks, review marking, 50-50 lifelines, and pause/resume logic.
 - [ ] **Phase 2: Advanced Quiz Layout & Background Workers**
