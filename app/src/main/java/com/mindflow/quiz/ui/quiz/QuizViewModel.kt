@@ -17,7 +17,6 @@ import com.mindflow.quiz.domain.engine.plugins.PluginRegistry
 import com.mindflow.quiz.domain.engine.plugins.SynonymPlugin
 import com.mindflow.quiz.domain.mapper.toDomainModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.StateFlow
@@ -39,7 +38,7 @@ class QuizViewModel(
 
     val uiState: StateFlow<QuizState> = engine.stateFlow
 
-    private var timerJob: Job? = null
+    private val timerWorker = TimerWorker(savedStateHandle)
 
     init {
         // Collect state changes to drive side-effects (like tracking history on finish)
@@ -47,9 +46,9 @@ class QuizViewModel(
             uiState.collect { state ->
                 when (state) {
                     is QuizState.Active -> {
-                        if (!state.timer.isPaused && timerJob == null) {
+                        if (!state.timer.isPaused && savedStateHandle.get<Boolean>("timer_is_running") != true) {
                             startTimer()
-                        } else if (state.timer.isPaused && timerJob != null) {
+                        } else if (state.timer.isPaused && savedStateHandle.get<Boolean>("timer_is_running") == true) {
                             stopTimer()
                         }
                     }
@@ -102,18 +101,13 @@ class QuizViewModel(
     }
 
     private fun startTimer() {
-        stopTimer()
-        timerJob = viewModelScope.launch {
-            while (isActive) {
-                delay(1000)
-                engine.dispatch(QuizEvent.TimerTick(1))
-            }
+        timerWorker.start(viewModelScope) { ticks ->
+            engine.dispatch(QuizEvent.TimerTick(ticks))
         }
     }
 
     private fun stopTimer() {
-        timerJob?.cancel()
-        timerJob = null
+        timerWorker.stop()
     }
 
     private fun saveQuizHistory(state: QuizState.Finished) {

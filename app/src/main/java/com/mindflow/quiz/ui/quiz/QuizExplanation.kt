@@ -17,6 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.viewinterop.AndroidView
+import io.noties.markwon.Markwon
+import android.widget.TextView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import com.mindflow.quiz.domain.engine.Question
 
@@ -73,10 +78,18 @@ fun ExplanationSection(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = content,
-                style = MaterialTheme.typography.bodyMedium,
-                color = contentColor.copy(alpha = 0.8f)
+            val context = LocalContext.current
+            val markwon = remember(context) { Markwon.create(context) }
+            AndroidView(
+                factory = { ctx ->
+                    TextView(ctx).apply {
+                        setTextColor(android.graphics.Color.DKGRAY) // Fallback, better to map to contentColor
+                        setTextAppearance(android.R.style.TextAppearance_Material_Body1)
+                    }
+                },
+                update = { textView ->
+                    markwon.setMarkdown(textView, content)
+                }
             )
         }
     }

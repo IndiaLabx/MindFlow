@@ -22,6 +22,10 @@ import com.mindflow.quiz.utils.TTSManager
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.viewinterop.AndroidView
+import io.noties.markwon.Markwon
+import android.widget.TextView
+import androidx.compose.ui.platform.LocalContext
 import com.mindflow.quiz.domain.engine.QuizState
 import com.mindflow.quiz.domain.engine.QuizEvent
 import com.mindflow.quiz.domain.engine.QuizMode
@@ -167,10 +171,17 @@ fun QuizScreen(
                                 Text("Quiz Paused", style = MaterialTheme.typography.headlineMedium)
                             }
                         } else {
-                            Text(
-                                text = currentQuestion.text,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold
+                            val context = LocalContext.current
+                            val markwon = remember(context) { Markwon.create(context) }
+                            AndroidView(
+                                factory = { ctx ->
+                                    TextView(ctx).apply {
+                                        setTextAppearance(android.R.style.TextAppearance_Material_Headline)
+                                    }
+                                },
+                                update = { textView ->
+                                    markwon.setMarkdown(textView, currentQuestion.text)
+                                }
                             )
 
                             Spacer(modifier = Modifier.height(32.dp))
@@ -262,6 +273,6 @@ fun QuizScreen(
                     // Handled by LaunchedEffect
                 }
             }
-        }
+        } // End of Box
     }
 }
