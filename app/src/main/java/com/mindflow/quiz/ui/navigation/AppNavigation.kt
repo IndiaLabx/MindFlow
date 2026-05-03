@@ -14,6 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import com.mindflow.quiz.ui.auth.AuthViewModel
 import com.mindflow.quiz.ui.auth.LoginScreen
 import com.mindflow.quiz.ui.auth.SignupScreen
+import com.mindflow.quiz.ui.auth.SubscriptionScreen
+import com.mindflow.quiz.ui.auth.SupportScreen
+
 import com.mindflow.quiz.ui.dashboard.MainLayoutScreen
 import com.mindflow.quiz.ui.ai.AIChatScreen
 import com.mindflow.quiz.ui.ai.AITutorViewModel
@@ -69,6 +72,17 @@ fun AppNavigation(
             SignupScreen(
                 authViewModel = authViewModel,
                 onNavigateToLogin = { navController.popBackStack() }
+            )
+        }
+
+        composable("subscription") {
+            SubscriptionScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable("support") {
+            SupportScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable("dashboard") {
