@@ -26,6 +26,8 @@ import androidx.navigation.compose.rememberNavController
 import com.mindflow.quiz.ui.ViewModelFactory
 import com.mindflow.quiz.ui.settings.SettingsModal
 import com.mindflow.quiz.ui.auth.AuthViewModel
+import com.mindflow.quiz.ui.auth.ProfileScreen
+
 
 sealed class BottomNavItem(val route: String, val title: String, val icon: ImageVector) {
     object Home : BottomNavItem("home", "Home", Icons.Default.Home)
@@ -139,14 +141,12 @@ fun MainLayoutScreen(
                 Text(text = "Flashcards Integration Screen", modifier = Modifier.padding(16.dp))
             }
             composable(BottomNavItem.Profile.route) {
-                // Here we simply use authViewModel to prevent "unused parameter" warnings.
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Profile Screen")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { authViewModel.signOut() }) {
-                        Text("Sign Out")
-                    }
-                }
+                ProfileScreen(
+                    authViewModel = authViewModel,
+                    onNavigateToSettings = { showSettings = true },
+                    onNavigateToSubscription = { rootNavController.navigate("subscription") },
+                    onNavigateToSupport = { rootNavController.navigate("support") }
+                )
             }
         }
 
