@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -202,6 +204,23 @@ fun FlashcardScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    OutlinedButton(
+                                        onClick = { viewModel.toggleReadStatusCurrentCard() }
+                                    ) {
+                                        Icon(
+                                            imageVector = if (uiState.isCurrentCardRead) androidx.compose.material.icons.Icons.Default.CheckCircle else androidx.compose.material.icons.Icons.Default.AddCircle,
+                                            contentDescription = "Read Status",
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(if (uiState.isCurrentCardRead) "Marked as Read" else "Mark as Read")
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
                                 Text(
                                     text = currentItem.meaningMain,
                                     style = MaterialTheme.typography.titleLarge,
