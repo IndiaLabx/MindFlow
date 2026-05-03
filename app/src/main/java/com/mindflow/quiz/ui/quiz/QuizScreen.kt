@@ -13,6 +13,11 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mindflow.quiz.ui.ai.AITutorViewModel
+import com.mindflow.quiz.ui.ai.AiExplanationResponse
+import androidx.compose.material.icons.filled.Star
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -42,6 +47,13 @@ fun QuizScreen(
     val uiState by quizViewModel.uiState.collectAsState()
     val context = LocalContext.current
     val ttsManager = remember { TTSManager(context) }
+
+    var showAiExplanation by remember { mutableStateOf(false) }
+    var aiExplanationData by remember { mutableStateOf<AiExplanationResponse?>(null) }
+    var isAiLoading by remember { mutableStateOf(false) }
+    var aiError by remember { mutableStateOf<String?>(null) }
+    val aiTutorViewModel: AITutorViewModel = viewModel(factory = com.mindflow.quiz.ui.ViewModelFactory(LocalContext.current.applicationContext))
+
 
     DisposableEffect(Unit) {
         onDispose { ttsManager.shutdown() }
@@ -232,7 +244,36 @@ fun QuizScreen(
 
                                 if (selectedAnswer != null && state.mode == QuizMode.LEARNING) {
                                     item {
-                                        QuizExplanation(question = currentQuestion)
+                                        Column {
+                                            QuizExplanation(question = currentQuestion)
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Button(
+                                                onClick = {
+                                                    showAiExplanation = true
+                                                    if (aiExplanationData == null) {
+                                                        isAiLoading = true
+                                                        aiError = null
+                                                        aiTutorViewModel.generateStructuredExplanation(
+                                                            question = currentQuestion,
+                                                            onResult = { result ->
+                                                                isAiLoading = false
+                                                                aiExplanationData = result
+                                                            },
+                                                            onError = { error ->
+                                                                isAiLoading = false
+                                                                aiError = error
+                                                            }
+                                                        )
+                                                    }
+                                                },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                                            ) {
+                                                Icon(Icons.Default.Star, contentDescription = "AI")
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text("Ask AI Tutor")
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -274,5 +315,32 @@ fun QuizScreen(
                 }
             }
         } // End of Box
+    }
+
+    if (showAiExplanation) {
+        AiExplanationModal(
+            explanationData = aiExplanationData,
+            isLoading = isAiLoading,
+            error = aiError,
+            onDismiss = { showAiExplanation = false },
+            onRetry = {
+                isAiLoading = true
+                aiError = null
+                val currentQuestion = (quizViewModel.uiState.value as? QuizState.Active)?.questions?.get((quizViewModel.uiState.value as? QuizState.Active)?.progress?.currentIndex ?: 0)
+                if (currentQuestion != null) {
+                    aiTutorViewModel.generateStructuredExplanation(
+                        question = currentQuestion,
+                        onResult = { result ->
+                            isAiLoading = false
+                            aiExplanationData = result
+                        },
+                        onError = { error ->
+                            isAiLoading = false
+                            aiError = error
+                        }
+                    )
+                }
+            }
+        )
     }
 }

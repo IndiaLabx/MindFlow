@@ -1,5 +1,9 @@
 package com.mindflow.quiz.ui.ai
 
+import android.content.Context
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import com.mindflow.quiz.domain.engine.Question
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.GenerativeModel
@@ -9,6 +13,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+
+@Serializable
+data class AiExplanationResponse(
+    val correct_answer: String? = null,
+    val reasoning: String? = null,
+    val exam_facts: List<String>? = null,
+    val recent_news: String? = null,
+    val interesting_facts: List<String>? = null,
+    val fun_fact: String? = null
+)
 
 data class ChatMessage(
     val id: String,
@@ -22,7 +37,8 @@ data class AITutorState(
     val isLoading: Boolean = false
 )
 
-class AITutorViewModel : ViewModel() {
+class AITutorViewModel(private val context: Context) : ViewModel() {
+    private val quotaManager = QuotaManager(context)
 
     private val _uiState = MutableStateFlow(AITutorState())
     val uiState: StateFlow<AITutorState> = _uiState.asStateFlow()
@@ -70,6 +86,12 @@ class AITutorViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
+                val quotaCheck = quotaManager.checkCanRequest()
+                if (quotaCheck.isFailure) {
+                    throw Exception(quotaCheck.exceptionOrNull()?.message ?: "Quota exceeded")
+                }
+                quotaManager.trackRequest()
+
                 // Prepend context data to the prompt if provided (e.g. from the Quiz engine)
                 val fullPrompt = if (contextData != null) {
                     "Context: \$contextData\n\nQuestion: \$userMessage"
@@ -101,6 +123,52 @@ class AITutorViewModel : ViewModel() {
                     messages = _uiState.value.messages + errorResponse,
                     isLoading = false
                 )
+            }
+        }
+    }
+
+    private val jsonFormatter = Json { ignoreUnknownKeys = true }
+
+    fun generateStructuredExplanation(question: Question, onResult: (AiExplanationResponse?) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val quotaCheck = quotaManager.checkCanRequest()
+                if (quotaCheck.isFailure) {
+                    onError(quotaCheck.exceptionOrNull()?.message ?: "Quota exceeded")
+                    return@launch
+                }
+                quotaManager.trackRequest()
+
+                val prompt = """
+You are a knowledgeable and helpful tutor. Analyze this multiple-choice question and provide a detailed explanation.
+Output must be strictly valid JSON.
+
+Question: "\${question.text}"
+Options: \${question.options}
+Correct Answer: "\${question.correctAnswer}"
+
+JSON Schema:
+{
+  "correct_answer": "The exact correct answer text",
+  "reasoning": "Detailed explanation of why the answer is correct and why others are wrong. Use markdown for formatting (bullet points, bold, math equations if any).",
+  "exam_facts": ["PYQ Fact 1 based on SSC CGL/UPSC/NDA/CDS etc.", "Fact 2"],
+  "recent_news": "A short summary of recent news related to the topic. If none, write null.",
+  "interesting_facts": ["Fact 1", "Fact 2"],
+  "fun_fact": "A short fun fact related to the topic"
+}
+"""
+
+                val response = generativeModel.generateContent(prompt)
+
+                // Parse the response text which should be JSON
+                val responseText = response.text ?: ""
+                val jsonString = responseText.replace("```json", "").replace("```", "").trim()
+
+                val explanationResponse = jsonFormatter.decodeFromString<AiExplanationResponse>(jsonString)
+                onResult(explanationResponse)
+
+            } catch (e: Exception) {
+                onError("Failed to fetch explanation: \${e.localizedMessage}")
             }
         }
     }

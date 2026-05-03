@@ -116,7 +116,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 - [x] **Completed**: Phase 1: Flashcard State & Spaced Repetition (SRS)
   - Wire up `FlashcardViewModel.kt` to the real Room DB, replacing hardcoded mock data.
   - Implement "Mark as Read", mastery logic, and Spaced Repetition filters identical to `useIdiomProgress` hooks.
-- [ ] **Phase 2: AI Context Passing & Advanced Chat**
+- [x] **Phase 2: AI Context Passing & Advanced Chat**
   - Upgrade `AIChatScreen.kt` with advanced UI rendering, smooth typing indicators, and markdown chat bubbles.
   - Implement `useQuota.ts` logic into Android to enforce and manage Gemini API usage limits.
   - Completely wire up AI Context passing: seamlessly transmit current question contexts and user selections from the `QuizScreen` directly to the `AITutorViewModel`.
