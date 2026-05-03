@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.flashcards
 
 import androidx.compose.foundation.layout.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,7 +17,7 @@ fun IdiomsConfigScreen(
     onNavigateBack: () -> Unit,
     onStartFlashcards: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var showMastered by remember { mutableStateOf(uiState.filters.includeMastered) }
 

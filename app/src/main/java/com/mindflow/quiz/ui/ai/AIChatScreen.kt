@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.ai
 
 import androidx.compose.foundation.background
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,7 +28,7 @@ fun AIChatScreen(
     viewModel: AITutorViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
@@ -44,10 +48,41 @@ fun AIChatScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
+                actions = {
+                    var showSettings by remember { mutableStateOf(false) }
+                    IconButton(onClick = { showSettings = true }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+
+                    if (showSettings) {
+                        DropdownMenu(
+                            expanded = showSettings,
+                            onDismissRequest = { showSettings = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Model: ${uiState.activeModel.displayName}") },
+                                onClick = {
+                                    // Toggle model (simple implementation)
+                                    val nextModel = if (uiState.activeModel == ModelConfigs.GEMINI_2_5_FLASH) ModelConfigs.GEMINI_2_5_FLASH_LITE else ModelConfigs.GEMINI_2_5_FLASH
+                                    viewModel.setModel(nextModel)
+                                    showSettings = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Grounding: ${if (uiState.groundingEnabled) "ON" else "OFF"}") },
+                                onClick = {
+                                    viewModel.setGrounding(!uiState.groundingEnabled)
+                                    showSettings = false
+                                }
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }

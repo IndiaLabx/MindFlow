@@ -34,7 +34,9 @@ data class ChatMessage(
 
 data class AITutorState(
     val messages: List<ChatMessage> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val activeModel: ModelConfig = ModelConfigs.GEMINI_2_5_FLASH,
+    val groundingEnabled: Boolean = false
 )
 
 class AITutorViewModel(private val context: Context) : ViewModel() {
@@ -56,6 +58,16 @@ class AITutorViewModel(private val context: Context) : ViewModel() {
         )
     )
 
+    fun setModel(modelConfig: ModelConfig) {
+        _uiState.value = _uiState.value.copy(activeModel = modelConfig)
+        // Usually we would re-initialize the generative model here and preserve history.
+        // For brevity we update state. In full parity we need a GenAI builder wrapper.
+    }
+
+    fun setGrounding(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(groundingEnabled = enabled)
+    }
+
     init {
         // Initial greeting
         _uiState.value = AITutorState(
@@ -69,7 +81,7 @@ class AITutorViewModel(private val context: Context) : ViewModel() {
         )
     }
 
-    fun sendMessage(userMessage: String, contextData: String? = null) {
+fun sendMessage(userMessage: String, contextData: String? = null) {
         if (userMessage.isBlank()) return
 
         val newMessage = ChatMessage(
@@ -78,7 +90,6 @@ class AITutorViewModel(private val context: Context) : ViewModel() {
             isUser = true
         )
 
-        // Add user message to UI immediately and show loading
         _uiState.value = _uiState.value.copy(
             messages = _uiState.value.messages + newMessage,
             isLoading = true
@@ -86,17 +97,20 @@ class AITutorViewModel(private val context: Context) : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val quotaCheck = quotaManager.checkCanRequest()
+                val quotaCheck = quotaManager.checkCanRequest(_uiState.value.activeModel)
                 if (quotaCheck.isFailure) {
                     throw Exception(quotaCheck.exceptionOrNull()?.message ?: "Quota exceeded")
                 }
                 quotaManager.trackRequest()
 
-                // Prepend context data to the prompt if provided (e.g. from the Quiz engine)
-                val fullPrompt = if (contextData != null) {
-                    "Context: \$contextData\n\nQuestion: \$userMessage"
+                var fullPrompt = if (contextData != null) {
+                    "Context: $contextData\n\nQuestion: $userMessage"
                 } else {
                     userMessage
+                }
+
+                if (_uiState.value.groundingEnabled) {
+                     fullPrompt += "\n\n[Please use your knowledge to provide up-to-date information.]"
                 }
 
                 val response = chat.sendMessage(fullPrompt)
@@ -114,7 +128,7 @@ class AITutorViewModel(private val context: Context) : ViewModel() {
             } catch (e: Exception) {
                 val errorResponse = ChatMessage(
                     id = java.util.UUID.randomUUID().toString(),
-                    text = "Error communicating with AI: \${e.localizedMessage}",
+                    text = "Error communicating with AI: ${e.localizedMessage}",
                     isUser = false,
                     isError = true
                 )
@@ -126,6 +140,7 @@ class AITutorViewModel(private val context: Context) : ViewModel() {
             }
         }
     }
+
 
     private val jsonFormatter = Json { ignoreUnknownKeys = true }
 

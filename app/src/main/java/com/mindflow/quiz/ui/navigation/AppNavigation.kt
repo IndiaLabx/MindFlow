@@ -1,8 +1,9 @@
 package com.mindflow.quiz.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -40,7 +41,7 @@ fun AppNavigation(
     val quizViewModel: QuizViewModel = viewModel(factory = ViewModelFactory(context))
     val flashcardViewModel: FlashcardViewModel = viewModel(factory = ViewModelFactory(context))
     val navController = rememberNavController()
-    val sessionStatus by authViewModel.sessionStatus.collectAsState(initial = SessionStatus.LoadingFromStorage)
+    val sessionStatus by authViewModel.sessionStatus.collectAsStateWithLifecycle(initialValue = SessionStatus.LoadingFromStorage)
 
     LaunchedEffect(sessionStatus) {
         when (sessionStatus) {
@@ -134,7 +135,13 @@ fun AppNavigation(
                 quizViewModel = quizViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResult = { navController.navigate("result") { popUpTo("quiz/{subject}") { inclusive = true } } },
-                onNavigateToAI = { navController.navigate("ai_chat") }
+                onNavigateToAI = { contextData ->
+                    // Set context on the view model before navigating
+                    if (contextData.isNotEmpty()) {
+                        aiTutorViewModel.sendMessage("Can you explain this question to me?", contextData)
+                    }
+                    navController.navigate("ai_chat")
+                }
             )
         }
         composable(
