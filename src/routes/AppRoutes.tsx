@@ -173,10 +173,10 @@ const AppRoutesContent: React.FC = () => {
                         />
                     } />
 
-                    <Route path="/quiz/saved" element={<ProtectedRoute><SavedQuizzes /></ProtectedRoute>} />
-                    <Route path="/quiz/attempted" element={<ProtectedRoute><AttemptedQuizzes /></ProtectedRoute>} />
-                    <Route path="/quiz/analytics" element={<ProtectedRoute><PerformanceAnalytics /></ProtectedRoute>} />
-                    <Route path="/quiz/bookmarks" element={<ProtectedRoute><BookmarksPage /></ProtectedRoute>} />
+                    <Route path="/quiz/saved" element={<SavedQuizzes />} />
+                    <Route path="/quiz/attempted" element={<AttemptedQuizzes />} />
+                    <Route path="/quiz/analytics" element={<PerformanceAnalytics />} />
+                    <Route path="/quiz/bookmarks" element={<BookmarksPage />} />
 
 
 
