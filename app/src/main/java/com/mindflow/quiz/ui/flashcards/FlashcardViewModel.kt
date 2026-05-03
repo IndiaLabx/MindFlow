@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mindflow.quiz.data.repository.IdiomsRepository
 import com.mindflow.quiz.data.repository.OneWordRepository
+import com.mindflow.quiz.data.repository.InteractionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,17 +16,26 @@ enum class FlashcardDeckType {
     IDIOMS, ONE_WORDS
 }
 
+data class FlashcardFilters(
+    val includeMastered: Boolean = false,
+    val readStatus: List<String> = emptyList(), // "read", "unread"
+    val difficulty: List<String> = emptyList() // "Easy", "Medium", "Hard"
+)
+
 data class FlashcardState(
     val deckType: FlashcardDeckType = FlashcardDeckType.IDIOMS,
     val items: List<FlashcardItem> = emptyList(),
     val currentIndex: Int = 0,
     val isFlipped: Boolean = false,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val filters: FlashcardFilters = FlashcardFilters(),
+    val isCurrentCardRead: Boolean = false
 )
 
 class FlashcardViewModel(
     private val idiomsRepository: IdiomsRepository,
-    private val oneWordRepository: OneWordRepository
+    private val oneWordRepository: OneWordRepository,
+    private val interactionRepository: InteractionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FlashcardState())
@@ -42,25 +52,47 @@ class FlashcardViewModel(
             combine(
                 idiomsRepository.observeAllIdioms(),
                 oneWordRepository.observeAllOneWords(),
+                interactionRepository.observeInteractionsByType("idiom"),
+                interactionRepository.observeInteractionsByType("ows"),
                 _uiState
-            ) { idioms, oneWords, state ->
+            ) { idioms, oneWords, idiomInteractions, owsInteractions, state ->
+                val idiomInteractionsMap = idiomInteractions.associateBy { it.itemId }
+                val owsInteractionsMap = owsInteractions.associateBy { it.itemId }
+
                 val items = when (state.deckType) {
                     FlashcardDeckType.IDIOMS -> idioms
-                        .filter { it.status != "mastered" } // Filter out mastered items
+                        .filter {
+                            (state.filters.includeMastered || it.status != "mastered") &&
+                            (state.filters.difficulty.isEmpty() || state.filters.difficulty.contains(it.difficulty)) &&
+                            (state.filters.readStatus.isEmpty() || state.filters.readStatus.contains(if (idiomInteractionsMap[it.id]?.isRead == true) "read" else "unread"))
+                        }
                         .map { FlashcardItem.Idiom(it) }
                     FlashcardDeckType.ONE_WORDS -> oneWords
-                        .filter { it.status != "mastered" } // Filter out mastered items
+                        .filter {
+                            (state.filters.includeMastered || it.status != "mastered") &&
+                            (state.filters.difficulty.isEmpty() || state.filters.difficulty.contains(it.difficulty)) &&
+                            (state.filters.readStatus.isEmpty() || state.filters.readStatus.contains(if (owsInteractionsMap[it.id]?.isRead == true) "read" else "unread"))
+                        }
                         .map { FlashcardItem.OneWord(it) }
                 }
 
-                // Adjust currentIndex if it's now out of bounds
                 val newIndex = if (items.isEmpty()) 0 else minOf(state.currentIndex, items.size - 1)
+
+                var isRead = false
+                if (items.isNotEmpty()) {
+                    val currentItem = items[newIndex]
+                    isRead = when (currentItem) {
+                        is FlashcardItem.Idiom -> idiomInteractionsMap[currentItem.id]?.isRead == true
+                        is FlashcardItem.OneWord -> owsInteractionsMap[currentItem.id]?.isRead == true
+                    }
+                }
 
                 state.copy(
                     items = items,
                     currentIndex = newIndex,
                     isLoading = false,
-                    isFlipped = false // reset flip state on data update
+                    isFlipped = state.isFlipped, // preserve flip state on data update
+                    isCurrentCardRead = isRead
                 )
             }.collectLatest { newState ->
                 _uiState.value = newState
@@ -74,9 +106,18 @@ class FlashcardViewModel(
                 deckType = deckType,
                 currentIndex = 0,
                 isFlipped = false,
-                isLoading = true // will be cleared by combine flow
+                isLoading = true
             )
         }
+    }
+
+    fun setFilters(filters: FlashcardFilters) {
+        _uiState.value = _uiState.value.copy(
+            filters = filters,
+            currentIndex = 0,
+            isFlipped = false,
+            isLoading = true
+        )
     }
 
     fun flipCard() {
@@ -103,6 +144,21 @@ class FlashcardViewModel(
         }
     }
 
+    fun toggleReadStatusCurrentCard() {
+        val currentState = _uiState.value
+        if (currentState.items.isEmpty()) return
+
+        val currentItem = currentState.items[currentState.currentIndex]
+        val currentReadStatus = currentState.isCurrentCardRead
+
+        viewModelScope.launch {
+            when (currentItem) {
+                is FlashcardItem.Idiom -> interactionRepository.toggleReadStatus(currentItem.id, "idiom", currentReadStatus)
+                is FlashcardItem.OneWord -> interactionRepository.toggleReadStatus(currentItem.id, "ows", currentReadStatus)
+            }
+        }
+    }
+
     fun markCurrentCard(newStatus: String) {
         val currentState = _uiState.value
         if (currentState.items.isEmpty()) return
@@ -115,14 +171,6 @@ class FlashcardViewModel(
                 is FlashcardItem.OneWord -> oneWordRepository.updateOneWordStatus(currentItem.id, newStatus)
             }
 
-            // Note: The UI state will automatically update because we are observing the flows in combine()
-            // However, we might want to manually advance to the next card if they marked it.
-            // When the flow emits, if the item was mastered it will be removed, and the index might shift.
-            // If we just want to advance without waiting for the DB flow:
-            // nextCard() -> actually we let the combine flow handle it. If an item is removed from the list,
-            // the combine block adjust the index. But if it's just marked as "familiar", it might stay in the list.
-
-            // If it's not filtered out, we should advance manually
             if (newStatus != "mastered") {
                  if (currentState.currentIndex < currentState.items.size - 1) {
                      _uiState.value = currentState.copy(

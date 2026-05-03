@@ -43,7 +43,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 | :--- | :--- | :--- | :--- | :--- |
 | **Flashcard Data Models** | `Idiom`, `OneWord` (`models.ts`) | `IdiomEntity.kt`, `OneWordEntity.kt`| [ ] **Incomplete** | Room entities defined but need type converters for complex nested JSON fields (`meanings`, `extras`, etc.). |
 | **Flashcard UI (3D Flip)** | `Flashcard.tsx` (CSS 3D) | `FlashcardScreen.kt` | [x] **Completed** | Excellent 1-to-1 migration using Compose `Modifier.graphicsLayer { rotationY }`. |
-| **Flashcard State / Logic** | `useIdiomProgress`, Configs | `FlashcardViewModel.kt` | [ ] **Incomplete** | Currently uses hardcoded mock data. Needs Room DB integration and "Mark as Read" / Mastery logic. |
+| **Flashcard State / Logic** | `useIdiomProgress`, Configs | `FlashcardViewModel.kt` | [x] **Completed** | Connected to Room DB with full Spaced Repetition (SRS) / Mastery / Read Status filters using InteractionRepository. |
 | **OWS/Idiom Configuration UI**| `OWSConfig.tsx`, `IdiomsConfig.tsx` | `OWSConfigScreen.kt`, `IdiomsConfigScreen.kt` | [x] **Completed** | Screens to configure decks (filters, unread vs mastered) are missing. |
 
 ## 5. AI Integration
@@ -113,7 +113,7 @@ The goal of the migration is **100% feature parity**. The current state shows th
 ## 🚀 Sprint 4: Flashcards Mastery & AI Integration
 **Goal:** Polish the learning experience with spaced repetition algorithms and native Gemini AI integration.
 
-- [ ] **Phase 1: Flashcard State & Spaced Repetition (SRS)**
+- [x] **Completed**: Phase 1: Flashcard State & Spaced Repetition (SRS)
   - Wire up `FlashcardViewModel.kt` to the real Room DB, replacing hardcoded mock data.
   - Implement "Mark as Read", mastery logic, and Spaced Repetition filters identical to `useIdiomProgress` hooks.
 - [ ] **Phase 2: AI Context Passing & Advanced Chat**

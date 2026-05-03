@@ -24,6 +24,8 @@ import com.mindflow.quiz.ui.quiz.QuizViewModel
 import com.mindflow.quiz.ui.quiz.QuizScreen
 import com.mindflow.quiz.ui.flashcards.FlashcardViewModel
 import com.mindflow.quiz.ui.flashcards.FlashcardScreen
+import com.mindflow.quiz.ui.flashcards.IdiomsConfigScreen
+import com.mindflow.quiz.ui.flashcards.OWSConfigScreen
 import com.mindflow.quiz.ui.quiz.ResultScreen
 import io.github.jan.supabase.gotrue.SessionStatus
 import androidx.compose.ui.platform.LocalContext
@@ -95,6 +97,28 @@ fun AppNavigation(
             FlashcardScreen(
                 viewModel = flashcardViewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable("idioms_config") {
+            IdiomsConfigScreen(
+                viewModel = flashcardViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onStartFlashcards = {
+                    navController.navigate("flashcards") {
+                        popUpTo("idioms_config") { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable("ows_config") {
+            OWSConfigScreen(
+                viewModel = flashcardViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onStartFlashcards = {
+                    navController.navigate("flashcards") {
+                        popUpTo("ows_config") { inclusive = true }
+                    }
+                }
             )
         }
         composable(

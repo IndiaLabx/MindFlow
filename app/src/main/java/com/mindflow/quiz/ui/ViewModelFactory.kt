@@ -34,7 +34,8 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
             val idiomsRepository = IdiomsRepository(database.idiomDao())
             val oneWordRepository = OneWordRepository(database.oneWordDao())
             @Suppress("UNCHECKED_CAST")
-            return FlashcardViewModel(idiomsRepository, oneWordRepository) as T
+            val interactionRepository = com.mindflow.quiz.data.repository.InteractionRepository(database.interactionDao())
+            return FlashcardViewModel(idiomsRepository, oneWordRepository, interactionRepository) as T
         }
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
             val savedStateHandle = extras.createSavedStateHandle()

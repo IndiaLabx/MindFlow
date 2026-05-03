@@ -138,7 +138,21 @@ fun MainLayoutScreen(
                 )
             }
             composable(BottomNavItem.Flashcards.route) {
-                Text(text = "Flashcards Integration Screen", modifier = Modifier.padding(16.dp))
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text("Select a Deck", style = MaterialTheme.typography.headlineMedium)
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(onClick = { rootNavController.navigate("idioms_config") }, modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)) {
+                        Text("Idioms")
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { rootNavController.navigate("ows_config") }, modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)) {
+                        Text("One Word Substitution (OWS)")
+                    }
+                }
             }
             composable(BottomNavItem.Profile.route) {
                 ProfileScreen(
