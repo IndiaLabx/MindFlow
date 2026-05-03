@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,10 +78,7 @@ fun AIChatScreen(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            TypingIndicator()
                         }
                     }
                 }
@@ -169,12 +167,29 @@ fun ChatBubble(message: ChatMessage) {
             ),
             modifier = Modifier.widthIn(max = 280.dp)
         ) {
-            Text(
-                text = message.text,
-                modifier = Modifier.padding(12.dp),
-                color = textColor,
-                style = MaterialTheme.typography.bodyLarge
-            )
+            if (message.isUser || message.isError) {
+                androidx.compose.material3.Text(
+                    text = message.text,
+                    modifier = Modifier.padding(12.dp),
+                    color = textColor,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            } else {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val markwon = remember(context) { io.noties.markwon.Markwon.create(context) }
+                androidx.compose.ui.viewinterop.AndroidView(
+                    modifier = Modifier.padding(12.dp),
+                    factory = { ctx ->
+                        android.widget.TextView(ctx).apply {
+                            setTextColor(textColor.toArgb())
+                            setTextAppearance(android.R.style.TextAppearance_Material_Body1)
+                        }
+                    },
+                    update = { textView ->
+                        markwon.setMarkdown(textView, message.text)
+                    }
+                )
+            }
         }
     }
 }
