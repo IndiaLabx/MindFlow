@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Save, Home, PlusCircle, CheckCircle, ArrowLeft, Mic } from 'lucide-react';
+import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Save, Home, PlusCircle, CheckCircle, ArrowLeft, Mic, LayoutGrid, List } from 'lucide-react';
 import { db } from '../../../lib/db';
 import { SavedQuiz } from '../types';
 import { useQuizContext } from '../context/QuizContext';
@@ -28,6 +28,8 @@ export const SavedQuizzes: React.FC = () => {
     const [isSyncing, setIsSyncing] = useState(syncService.getIsSyncing());
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
+    const [sortMethod, setSortMethod] = useState<'date-desc' | 'date-asc' | 'name-asc' | 'name-desc'>('date-desc');
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
     useEffect(() => {
         loadQuizzes();
@@ -136,6 +138,24 @@ export const SavedQuizzes: React.FC = () => {
     };
 
     /** Helper to determine if "Start" or "Resume" label should be shown. */
+    const sortedQuizzes = useMemo(() => {
+        return [...quizzes].sort((a, b) => {
+            switch (sortMethod) {
+                case 'date-desc':
+                    return b.createdAt - a.createdAt;
+                case 'date-asc':
+                    return a.createdAt - b.createdAt;
+                case 'name-asc':
+                    return (a.name || 'Untitled Quiz').localeCompare(b.name || 'Untitled Quiz');
+                case 'name-desc':
+                    return (b.name || 'Untitled Quiz').localeCompare(a.name || 'Untitled Quiz');
+                default:
+                    return 0;
+            }
+        });
+    }, [quizzes, sortMethod]);
+
+    /** Helper to determine if "Start" or "Resume" label should be shown. */
     const isQuizStarted = (quiz: SavedQuiz) => {
         return quiz.state.currentQuestionIndex > 0 || Object.keys(quiz.state.answers).length > 0;
     };
@@ -214,7 +234,7 @@ export const SavedQuizzes: React.FC = () => {
                 </div>
             </div>
 
-                {quizzes.length === 0 ? (
+                {sortedQuizzes.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -261,23 +281,54 @@ export const SavedQuizzes: React.FC = () => {
                         variants={containerVariants}
                         initial="hidden"
                         animate="visible"
-                        className="grid gap-4 sm:gap-6"
+                        className="flex flex-col gap-6"
                     >
-                        {quizzes.map(quiz => (
+                        {/* Top Info Bar */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/50 border border-indigo-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 shadow-sm">
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-300 font-medium">Total Quizzes:</span>
+                                <span className="px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
+                                    {sortedQuizzes.length}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <select
+                                    value={sortMethod}
+                                    onChange={(e) => setSortMethod(e.target.value as any)}
+                                    className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
+                                >
+                                    <option value="date-desc">Date (Newest)</option>
+                                    <option value="date-asc">Date (Oldest)</option>
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                </select>
+                                <div className="flex items-center p-1 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+                                    <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`} title="List View">
+                                        <List className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`} title="Grid View">
+                                        <LayoutGrid className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={`grid gap-4 sm:gap-6 z-20 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+                        {sortedQuizzes.map((quiz, index) => (
                             <motion.div
                                 variants={itemVariants}
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 key={quiz.id}
                                 onClick={() => handleResume(quiz)}
-                                className="relative group cursor-pointer p-[1px] rounded-3xl overflow-hidden"
+                                className="relative group cursor-pointer p-[1px] rounded-3xl overflow-visible shadow-sm hover:shadow-md transition-shadow duration-300 ml-3 mt-3"
                             >
                                 {/* Glow Background Layer */}
-                                <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl transition-colors duration-300 z-0" />
+                                <div className="absolute inset-0 rounded-3xl bg-indigo-50/90 dark:bg-slate-800/90 backdrop-blur-xl transition-colors duration-300 z-0 overflow-hidden" />
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0" />
 
                                 {/* Interactive Inner Shadow / Border */}
-                                <div className="absolute inset-0 rounded-3xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-hover:border-indigo-300 dark:group-hover:border-indigo-500" />
+                                <div className="absolute inset-0 rounded-3xl border-[2px] border-black dark:border-gray-400 z-10 transition-all duration-300 group-hover:border-indigo-500 dark:group-hover:border-indigo-400 pointer-events-none" />
 
                                 {/* Centered Subtle Glow */}
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] rounded-full blur-[80px] opacity-0 group-hover:opacity-40 transition-opacity duration-500 z-0 bg-indigo-500/50" />
@@ -376,6 +427,7 @@ export const SavedQuizzes: React.FC = () => {
                                 </div>
                             </motion.div>
                         ))}
+                        </div>
                     </motion.div>
                 )}
             </div>
