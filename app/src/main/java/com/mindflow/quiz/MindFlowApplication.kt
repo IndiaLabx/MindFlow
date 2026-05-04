@@ -2,24 +2,16 @@ package com.mindflow.quiz
 
 import android.app.Application
 import android.util.Log
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import com.mindflow.quiz.workers.SyncWorker
-import java.util.concurrent.TimeUnit
 
 class MindFlowApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d("MindFlowApplication", "Application started. Initializing background sync.")
-        setupSyncWorker()
+        Log.d("MindFlowApplication", "Application started. Sync worker disabled for UI-first MVP phase.")
+        // setupSyncWorker() // Commented out for MVP UI dev
     }
 
+    /*
     private fun setupSyncWorker() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -50,4 +42,5 @@ class MindFlowApplication : Application() {
             immediateSyncRequest
         )
     }
+    */
 }

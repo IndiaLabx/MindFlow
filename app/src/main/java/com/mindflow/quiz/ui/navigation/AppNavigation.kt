@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.mindflow.quiz.ui.auth.AuthViewModel
 import com.mindflow.quiz.ui.auth.LoginScreen
 import com.mindflow.quiz.ui.auth.SignupScreen
+import com.mindflow.quiz.ui.auth.SplashScreen
 import com.mindflow.quiz.ui.auth.SubscriptionScreen
 import com.mindflow.quiz.ui.auth.SupportScreen
 
@@ -41,30 +42,29 @@ fun AppNavigation(
     val quizViewModel: QuizViewModel = viewModel(factory = ViewModelFactory(context))
     val flashcardViewModel: FlashcardViewModel = viewModel(factory = ViewModelFactory(context))
     val navController = rememberNavController()
-    val sessionStatus by authViewModel.sessionStatus.collectAsStateWithLifecycle(initialValue = SessionStatus.LoadingFromStorage)
 
-    LaunchedEffect(sessionStatus) {
-        when (sessionStatus) {
-            is SessionStatus.Authenticated -> {
-                navController.navigate("dashboard") {
-                    popUpTo("login") { inclusive = true }
-                }
-            }
-            is SessionStatus.NotAuthenticated -> {
-                navController.navigate("login") {
-                    popUpTo(0) { inclusive = true }
-                }
-            }
-            else -> {
-                // Loading or Network Error state handling could go here.
-            }
-        }
-    }
+    // We no longer use LaunchedEffect here to observe sessionStatus.
+    // That responsibility is now handled by the SplashScreen.
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "splash"
     ) {
+        composable("splash") {
+            SplashScreen(
+                authViewModel = authViewModel,
+                onNavigateToDashboard = {
+                    navController.navigate("dashboard") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate("login") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            )
+        }
         composable("login") {
             LoginScreen(
                 authViewModel = authViewModel,
