@@ -174,6 +174,41 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
              <button onClick={() => setIsSignUp(false)} className={`w-1/2 pb-3 font-bold ${!isSignUp ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-text-secondary hover:text-text-main transition-colors'}`}>Sign In</button>
              <button onClick={() => setIsSignUp(true)} className={`w-1/2 pb-3 font-semibold ${isSignUp ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-text-secondary hover:text-text-main transition-colors'}`}>Sign Up</button>
            </div>
+
+           {/* Primary: Google Button */}
+           <div className="mb-6">
+             <button
+               type="button"
+               onClick={handleGoogleSignIn}
+               disabled={isEmailLoading || isGoogleLoading}
+               className={`w-full group relative flex justify-center items-center gap-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-semibold py-3 px-4 rounded-xl border-2 border-indigo-500/50 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-all duration-300 shadow-sm overflow-hidden ${isEmailLoading ? 'opacity-50 cursor-not-allowed' : (isGoogleLoading ? 'cursor-wait' : '')}`}
+             >
+               {isGoogleLoading ? (
+                 <>
+                   <Loader2 className="w-5 h-5 animate-spin relative z-10 text-indigo-600 dark:text-indigo-400" />
+                   <span className="relative z-10 font-bold">Connecting...</span>
+                 </>
+               ) : (
+                 <>
+                   <motion.div
+                     initial={{ rotate: 0 }}
+                     whileHover={{ rotate: 10, scale: 1.1 }}
+                     transition={{ type: "spring", stiffness: 300 }}
+                     className="relative z-10 flex items-center justify-center bg-transparent p-1 rounded-full"
+                   >
+                     <svg className="w-6 h-6" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" fill="#FFC107"></path><path d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" fill="#FF3D00"></path><path d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.657-3.356-11.303-7.962l-6.571,4.819C9.656,39.663,16.318,44,24,44z" fill="#4CAF50"></path><path d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C41.38,34.464,44,29.561,44,24C44,22.659,43.862,21.35,43.611,20.083z" fill="#1976D2"></path></svg>
+                   </motion.div>
+                   <span className="relative z-10 font-bold tracking-wide">Continue with Google</span>
+                 </>
+               )}
+             </button>
+           </div>
+
+           <div className="relative mb-6">
+             <div aria-hidden="true" className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-gray-700"></div></div>
+             <div className="relative flex justify-center text-sm"><span className="px-4 bg-white dark:bg-gray-900 text-gray-500">Or continue with email</span></div>
+           </div>
+
            <form onSubmit={handleAuthAction} className="space-y-4 md:space-y-6">
              {isSignUp && (
                <div>
@@ -285,7 +320,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                <button
                  type="submit"
                  disabled={isEmailLoading || isGoogleLoading}
-                 className={`w-full group relative flex justify-center items-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-bold py-3 px-4 rounded-xl hover:from-indigo-700 hover:to-indigo-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white transition-all duration-300 shadow-lg overflow-hidden ${isGoogleLoading ? 'opacity-50 cursor-not-allowed' : (isEmailLoading ? 'cursor-wait' : '')}`}
+                 className={`w-full group relative flex justify-center items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-all duration-300 shadow-sm overflow-hidden ${isGoogleLoading ? 'opacity-50 cursor-not-allowed' : (isEmailLoading ? 'cursor-wait' : '')}`}
                >
                  <div className="absolute inset-0 bg-white/20 group-hover:bg-transparent transition-colors duration-300 z-0 pointer-events-none"></div>
                  {isEmailLoading ? (
@@ -312,52 +347,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                </button>
              </div>
            </form>
-           <div className="relative my-5 md:my-6">
-             <div aria-hidden="true" className="absolute inset-0 flex items-center"><div className="w-full border-t border-border-color"></div></div>
-             <div className="relative flex justify-center text-sm"><span className="px-2 bg-white dark:bg-gray-800/0 text-text-secondary">Or</span></div>
-           </div>
-           <div>
-             <button
-               type="button"
-               onClick={handleGoogleSignIn}
-               disabled={isEmailLoading || isGoogleLoading}
-               className={`w-full group relative flex justify-center items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm text-gray-900 dark:text-white font-semibold py-3 px-4 rounded-xl border border-white/40 dark:border-gray-700/50 hover:bg-white/80 dark:hover:bg-gray-700/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 focus:ring-offset-white transition-all duration-300 shadow-sm overflow-hidden ${isEmailLoading ? 'opacity-50 cursor-not-allowed' : (isGoogleLoading ? 'cursor-wait' : '')}`}
-             >
-               {isGoogleLoading ? (
-                 <>
-                   <Loader2 className="w-5 h-5 animate-spin relative z-10" />
-                   <span className="relative z-10 font-bold">Connecting...</span>
-                 </>
-               ) : (
-                 <>
-                   <motion.div
-                     initial={{ rotate: 0 }}
-                     whileHover={{ rotate: 10, scale: 1.1 }}
-                     transition={{ type: "spring", stiffness: 300 }}
-                     className="relative z-10 flex items-center justify-center bg-white p-1 rounded-full shadow-sm"
-                   >
-                     <svg className="w-5 h-5" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" fill="#FFC107"></path><path d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" fill="#FF3D00"></path><path d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.657-3.356-11.303-7.962l-6.571,4.819C9.656,39.663,16.318,44,24,44z" fill="#4CAF50"></path><path d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C41.38,34.464,44,29.561,44,24C44,22.659,43.862,21.35,43.611,20.083z" fill="#1976D2"></path></svg>
-                   </motion.div>
-                   <span className="relative z-10 font-bold">Continue with Google</span>
-                 </>
-               )}
-             </button>
-           </div>
-           <div className="mt-6 text-center text-sm text-text-secondary">
-             Are you Admin?{" "}
-             <button
-               type="button"
-               onClick={() => {
-                 setEmail("admin@mindflow.com");
-                 setPassword("");
-               }}
-               className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
-             >
-               Click here
-             </button>
-           </div>
-           <div className="mt-2 text-center text-sm text-text-secondary">
-             Are you guest user?{" "}
+
+           {/* Tertiary: Guest Login Button */}
+           <div className="mt-6">
              <button
                type="button"
                onClick={async () => {
@@ -381,11 +373,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
                    setIsEmailLoading(false);
                  }
                }}
-               className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline focus:outline-none dark:text-indigo-400 dark:hover:text-indigo-300"
+               disabled={isEmailLoading || isGoogleLoading}
+               className={`w-full group flex justify-center items-center gap-2 bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 font-medium py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 dark:focus:ring-gray-700 transition-all duration-300 ${(isEmailLoading || isGoogleLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
              >
-               Click here
+               <span>Continue as Guest</span>
+               <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1">Click Here</span>
              </button>
            </div>
+
+
+
+
          </div>
          </div>
        </div>
