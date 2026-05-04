@@ -37,8 +37,8 @@ import com.mindflow.quiz.ui.ViewModelFactory
 fun AppNavigation(
     authViewModel: AuthViewModel = viewModel()
 ) {
-    val aiTutorViewModel: AITutorViewModel = viewModel()
     val context = LocalContext.current
+    val aiTutorViewModel: AITutorViewModel = viewModel(factory = ViewModelFactory(context))
     val quizViewModel: QuizViewModel = viewModel(factory = ViewModelFactory(context))
     val flashcardViewModel: FlashcardViewModel = viewModel(factory = ViewModelFactory(context))
     val navController = rememberNavController()

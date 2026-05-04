@@ -14,6 +14,7 @@ import com.mindflow.quiz.ui.dashboard.MainViewModel
 import com.mindflow.quiz.ui.dashboard.DashboardViewModel
 import com.mindflow.quiz.ui.quiz.QuizViewModel
 import com.mindflow.quiz.ui.flashcards.FlashcardViewModel
+import com.mindflow.quiz.ui.ai.AITutorViewModel
 
 class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
@@ -41,6 +42,10 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
             val savedStateHandle = extras.createSavedStateHandle()
             @Suppress("UNCHECKED_CAST")
             return MainViewModel(savedStateHandle) as T
+        }
+        if (modelClass.isAssignableFrom(AITutorViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return AITutorViewModel(context) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
