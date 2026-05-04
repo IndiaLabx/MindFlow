@@ -3,7 +3,6 @@ package com.mindflow.quiz.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.LaunchedEffect
-
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -16,6 +15,7 @@ import com.mindflow.quiz.ui.auth.AuthViewModel
 import com.mindflow.quiz.ui.auth.LoginScreen
 import com.mindflow.quiz.ui.auth.SignupScreen
 import com.mindflow.quiz.ui.auth.SplashScreen
+import com.mindflow.quiz.ui.auth.LandingScreen
 import com.mindflow.quiz.ui.auth.SubscriptionScreen
 import com.mindflow.quiz.ui.auth.SupportScreen
 
@@ -43,9 +43,6 @@ fun AppNavigation(
     val flashcardViewModel: FlashcardViewModel = viewModel(factory = ViewModelFactory(context))
     val navController = rememberNavController()
 
-    // We no longer use LaunchedEffect here to observe sessionStatus.
-    // That responsibility is now handled by the SplashScreen.
-
     NavHost(
         navController = navController,
         startDestination = "splash"
@@ -58,23 +55,29 @@ fun AppNavigation(
                         popUpTo("splash") { inclusive = true }
                     }
                 },
-                onNavigateToLogin = {
-                    navController.navigate("login") {
+                onNavigateToLanding = {
+                    navController.navigate("landing") {
                         popUpTo("splash") { inclusive = true }
                     }
                 }
             )
         }
+        composable("landing") {
+            LandingScreen(
+                onNavigateToLogin = { navController.navigate("login") },
+                onNavigateToSignup = { navController.navigate("signup") }
+            )
+        }
         composable("login") {
             LoginScreen(
                 authViewModel = authViewModel,
-                onNavigateToSignup = { navController.navigate("signup") }
+                onNavigateToSignup = { navController.navigate("signup") { popUpTo("login") { inclusive = true } } }
             )
         }
         composable("signup") {
             SignupScreen(
                 authViewModel = authViewModel,
-                onNavigateToLogin = { navController.popBackStack() }
+                onNavigateToLogin = { navController.navigate("login") { popUpTo("signup") { inclusive = true } } }
             )
         }
 

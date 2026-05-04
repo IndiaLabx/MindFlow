@@ -7,15 +7,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-data class DashboardFeature(val title: String, val icon: ImageVector, val description: String)
+data class DashboardFeature(val id: String, val title: String, val icon: ImageVector, val description: String)
 
 @Composable
 fun DashboardScreen(
@@ -34,9 +27,14 @@ fun DashboardScreen(
     val stats by viewModel.profileStats.collectAsStateWithLifecycle()
 
     val features = listOf(
-        DashboardFeature("Create Quiz", Icons.Default.Edit, "Customize subjects and topics"),
-        DashboardFeature("English Zone", Icons.Default.Star, "Vocab, Idioms, & OWS"),
-        DashboardFeature("Saved Quizzes", Icons.Default.Favorite, "Review your past attempts")
+        DashboardFeature("card-mcqs", "Create Quiz", DashboardSVGs.CreateQuizSVG, "Customize subjects and topics"),
+        DashboardFeature("card-3", "Vocab Master", DashboardSVGs.EnglishZoneSVG, "Synonyms & Antonyms"),
+        DashboardFeature("card-4", "Grammar Hub", DashboardSVGs.GrammarQuizSVG, "English Grammar Tests"),
+        DashboardFeature("card-5", "Mock Tests", DashboardSVGs.EnglishMockSVG, "Full length mocks"),
+        DashboardFeature("card-6", "Saved Quizzes", DashboardSVGs.SavedQuizzesSVG, "Review your past attempts"),
+        DashboardFeature("card-admin", "Admin Room", DashboardSVGs.AdminSVG, "Broadcast & Upload"),
+        DashboardFeature("card-download", "Download", DashboardSVGs.DownloadSVG, "Get study materials & PDFs"),
+        DashboardFeature("card-7", "About Us", DashboardSVGs.AboutSVG, "Developer info, Privacy Policy & Terms")
     )
 
     Column(
@@ -67,26 +65,6 @@ fun DashboardScreen(
             StatCard(modifier = Modifier.weight(1f), title = "Time Spent", value = stats.totalTimeSpentFormatted)
         }
 
-        if (stats.weakTopics.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(imageVector = Icons.Default.Warning, contentDescription = "Weak Topics", tint = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(text = "Needs Focus", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onErrorContainer)
-                        Text(text = stats.weakTopics.joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onErrorContainer)
-                    }
-                }
-            }
-        }
-
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
@@ -105,7 +83,8 @@ fun DashboardScreen(
         ) {
             items(features) { feature ->
                 FeatureCard(feature = feature) {
-                    if (feature.title == "Create Quiz") onNavigateToQuiz() else if (feature.title == "English Zone") onNavigateToFlashcards()
+                    if (feature.id == "card-mcqs") onNavigateToQuiz()
+                    else if (feature.id == "card-3") onNavigateToFlashcards()
                 }
             }
         }
@@ -134,24 +113,26 @@ fun FeatureCard(feature: DashboardFeature, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = feature.icon,
                 contentDescription = feature.title,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant // Or use Color.Unspecified if relying on SVG fills
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = feature.title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
