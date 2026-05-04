@@ -21,8 +21,11 @@ class DashboardViewModel(
         )
 
     init {
+        // Disabled data fetching for MVP UI Development
+        /*
         viewModelScope.launch {
             profileStatsRepository.fetchAndSyncHistoryFromSupabase()
         }
+        */
     }
 }
