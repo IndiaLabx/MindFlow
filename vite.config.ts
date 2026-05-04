@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
     const isProduction = mode === 'production';
 
     // Set base path: '/MindFlow/' for GitHub Pages production deploy, '/' for local development
-    const base = isProduction ? '/MindFlow/' : '/';
+    const base = process.env.VITE_BASE_URL || (isProduction ? '/MindFlow/' : '/');
 
     return {
       // Sets the base path for production to /MindFlow/ (Repo Name) and / for local dev
