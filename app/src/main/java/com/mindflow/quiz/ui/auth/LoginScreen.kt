@@ -125,6 +125,10 @@ fun LoginScreen(
             Text("Don't have an account? Sign up")
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Admin login: admin@mindflow.com")
+        Text("Guest login: mindflow@user.com")
+
         if (authState is AuthState.Error) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(

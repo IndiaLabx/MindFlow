@@ -24,7 +24,7 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     authViewModel: AuthViewModel,
     onNavigateToDashboard: () -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLanding: () -> Unit
 ) {
     val sessionStatus by authViewModel.sessionStatus.collectAsStateWithLifecycle(initialValue = SessionStatus.LoadingFromStorage)
     val alpha = remember { Animatable(0f) }
@@ -46,7 +46,7 @@ fun SplashScreen(
                     break
                 }
                 is SessionStatus.NotAuthenticated, is SessionStatus.NetworkError -> {
-                    onNavigateToLogin()
+                    onNavigateToLanding()
                     break
                 }
                 else -> {

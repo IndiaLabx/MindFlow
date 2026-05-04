@@ -1,0 +1,94 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+  <!-- Background: Rounded Squircle -->
+  <path
+      android:pathData="M128,0 L384,0 A128,128 0,0 1,512 128 L512,384 A128,128 0,0 1,384 512 L128,512 A128,128 0,0 1,0 384 L0,128 A128,128 0,0 1,128 0 Z"
+      android:fillColor="#4338ca"/>
+
+  <group
+      android:translateX="106"
+      android:translateY="106"
+      android:scaleX="0.6"
+      android:scaleY="0.6">
+
+      <!-- Left Hemisphere -->
+      <path
+          android:pathData="M125 200c0-50 30-90 80-90s80 40 80 90c0 20-10 40-25 55"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+      <path
+          android:pathData="M100 280c-30 0-60-20-60-70 0-40 30-80 70-80"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+      <path
+          android:pathData="M120 350c-40 0-70-30-70-70"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+      <path
+          android:pathData="M205 380c-50 0-85-30-85-80"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+
+      <!-- Right Hemisphere -->
+      <path
+          android:pathData="M375 200c0-50-30-90-80-90s-80 40-80 90c0 20 10 40 25 55"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+      <path
+          android:pathData="M400 280c30 0 60-20 60-70 0-40-30-80-70-80"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+      <path
+          android:pathData="M380 350c40 0 70-30 70-70"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+      <path
+          android:pathData="M295 380c50 0 85-30 85-80"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="40"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+
+      <!-- Central Connections (Synapses) -->
+      <path
+          android:pathData="M270,150 a20,20 0 1,0 -40,0 a20,20 0 1,0 40,0"
+          android:fillColor="#FFFFFF" />
+      <path
+          android:pathData="M270,250 a20,20 0 1,0 -40,0 a20,20 0 1,0 40,0"
+          android:fillColor="#FFFFFF" />
+      <path
+          android:pathData="M270,350 a20,20 0 1,0 -40,0 a20,20 0 1,0 40,0"
+          android:fillColor="#FFFFFF" />
+
+      <!-- Electric Spark Details -->
+      <path
+          android:pathData="M250 150 L250 100"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="30"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+      <path
+          android:pathData="M250 380 L250 420"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="30"
+          android:strokeLineCap="round"
+          android:strokeLineJoin="round" />
+  </group>
+</vector>

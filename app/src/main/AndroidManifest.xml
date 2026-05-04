@@ -8,6 +8,8 @@
         android:allowBackup="true"
 
         android:label="@string/app_name"
+        android:icon="@drawable/ic_mindflow_logo"
+        android:roundIcon="@drawable/ic_mindflow_logo"
 
         android:supportsRtl="true"
         android:theme="@style/Theme.MindFlowQuiz">
@@ -15,6 +17,8 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+        android:icon="@drawable/ic_mindflow_logo"
+        android:roundIcon="@drawable/ic_mindflow_logo"
             android:theme="@style/Theme.MindFlowQuiz">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
