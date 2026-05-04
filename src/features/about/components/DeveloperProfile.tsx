@@ -102,7 +102,8 @@ export const DeveloperProfile: React.FC = () => {
                                 variants={itemVariants}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="relative group cursor-default aspect-square sm:aspect-square min-h-[160px] rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                                className="relative group cursor-pointer aspect-square sm:aspect-square min-h-[160px] rounded-[32px] sm:rounded-[40px] p-[1px] overflow-hidden"
+                                onClick={() => navigate(`/about/developer-profile/${role.name.split(' ')[0].toLowerCase()}`)}
                             >
                                 <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0"></div>

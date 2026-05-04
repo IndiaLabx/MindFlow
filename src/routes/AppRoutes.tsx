@@ -47,6 +47,9 @@ const GodQuizResult = lazy(() => import('../features/quiz/components/GodQuizResu
 const FlashcardSummary = lazy(() => import('../features/flashcards/components/FlashcardSummary').then(m => ({ default: m.FlashcardSummary })));
 const AboutUs = lazy(() => import('../features/about/components/AboutUs').then(m => ({ default: m.AboutUs })));
 const DeveloperProfile = lazy(() => import('../features/about/components/DeveloperProfile').then(m => ({ default: m.DeveloperProfile })));
+const AalokProfile = lazy(() => import('../features/about/components/AalokProfile').then(m => ({ default: m.AalokProfile })));
+const TeamMemberProfile = lazy(() => import('../features/about/components/TeamMemberProfile').then(m => ({ default: m.TeamMemberProfile })));
+
 const TermsOfUse = lazy(() => import('../pages/TermsOfUse').then(m => ({ default: m.TermsOfUse })));
 const PrivacyPolicy = lazy(() => import('../pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 const ToolsHome = lazy(() => import('../features/tools/ToolsHome'));
@@ -149,6 +152,17 @@ const AppRoutesContent: React.FC = () => {
                             <DeveloperProfile />
                         </Suspense>
                     } />
+                    <Route path="/about/developer-profile/aalok" element={
+                        <Suspense fallback={<SynapticLoader />}>
+                            <AalokProfile />
+                        </Suspense>
+                    } />
+                    <Route path="/about/developer-profile/:id" element={
+                        <Suspense fallback={<SynapticLoader />}>
+                            <TeamMemberProfile />
+                        </Suspense>
+                    } />
+
                     <Route path="/about/terms-of-use" element={
                         <Suspense fallback={<SynapticLoader />}>
                             <TermsOfUse />
