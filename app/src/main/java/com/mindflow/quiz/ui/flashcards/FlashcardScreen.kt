@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.flashcards
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,7 +30,7 @@ fun FlashcardScreen(
     viewModel: FlashcardViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {

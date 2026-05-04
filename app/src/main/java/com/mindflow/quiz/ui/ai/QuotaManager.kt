@@ -24,6 +24,13 @@ data class ModelConfig(
 )
 
 object ModelConfigs {
+    val GEMINI_3_1_FLASH_LITE_PREVIEW = ModelConfig(
+        id = "gemini-3.1-flash-lite-preview",
+        displayName = "Fast 3x",
+        rpm = 15,
+        tpm = 250000,
+        rpd = 500
+    )
     val GEMINI_2_5_FLASH_LITE = ModelConfig(
         id = "gemini-2.5-flash-lite",
         displayName = "Fast 2x",
@@ -31,6 +38,22 @@ object ModelConfigs {
         tpm = 250000,
         rpd = 20
     )
+    val GEMINI_2_5_FLASH = ModelConfig(
+        id = "gemini-2.5-flash",
+        displayName = "Fast",
+        rpm = 5,
+        tpm = 250000,
+        rpd = 20
+    )
+    val GEMINI_3_FLASH_PREVIEW = ModelConfig(
+        id = "gemini-3-flash-preview",
+        displayName = "Pro model",
+        rpm = 5,
+        tpm = 250000,
+        rpd = 20
+    )
+
+    val allModels = listOf(GEMINI_3_1_FLASH_LITE_PREVIEW, GEMINI_2_5_FLASH_LITE, GEMINI_2_5_FLASH, GEMINI_3_FLASH_PREVIEW)
 }
 
 class QuotaManager(private val context: Context) {

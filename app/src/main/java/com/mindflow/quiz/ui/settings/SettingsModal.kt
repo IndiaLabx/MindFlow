@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.settings
 
 import androidx.compose.foundation.layout.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,9 +15,9 @@ fun SettingsModal(
     onDismissRequest: () -> Unit,
     viewModel: SettingsViewModel = viewModel()
 ) {
-    val isBgAnimationsEnabled by viewModel.isBgAnimationsEnabled.collectAsState()
-    val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
-    val isDarkModeEnabled by viewModel.isDarkModeEnabled.collectAsState()
+    val isBgAnimationsEnabled by viewModel.isBgAnimationsEnabled.collectAsStateWithLifecycle()
+    val isSoundEnabled by viewModel.isSoundEnabled.collectAsStateWithLifecycle()
+    val isDarkModeEnabled by viewModel.isDarkModeEnabled.collectAsStateWithLifecycle()
 
     ModalBottomSheet(onDismissRequest = onDismissRequest) {
         Column(

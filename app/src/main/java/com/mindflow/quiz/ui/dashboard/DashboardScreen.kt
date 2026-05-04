@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.dashboard
 
 import androidx.compose.foundation.clickable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -14,7 +15,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +31,7 @@ fun DashboardScreen(
     onNavigateToQuiz: () -> Unit = {},
     onNavigateToFlashcards: () -> Unit = {}
 ) {
-    val stats by viewModel.profileStats.collectAsState()
+    val stats by viewModel.profileStats.collectAsStateWithLifecycle()
 
     val features = listOf(
         DashboardFeature("Create Quiz", Icons.Default.Edit, "Customize subjects and topics"),

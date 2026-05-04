@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.dashboard
 
 import androidx.compose.foundation.layout.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -8,7 +9,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +45,7 @@ fun MainLayoutScreen(
 ) {
     val context = LocalContext.current
     val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(context))
-    val selectedTab by mainViewModel.selectedTab.collectAsState()
+    val selectedTab by mainViewModel.selectedTab.collectAsStateWithLifecycle()
 
     val bottomNavController = rememberNavController()
     var showSettings by remember { mutableStateOf(false) }

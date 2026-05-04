@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.auth
 
 import androidx.compose.foundation.background
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -34,7 +35,7 @@ fun ProfileScreen(
     onNavigateToSubscription: () -> Unit,
     onNavigateToSupport: () -> Unit
 ) {
-    val sessionStatus by authViewModel.sessionStatus.collectAsState(initial = SessionStatus.LoadingFromStorage)
+    val sessionStatus by authViewModel.sessionStatus.collectAsStateWithLifecycle(initialValue = SessionStatus.LoadingFromStorage)
     val coroutineScope = rememberCoroutineScope()
 
     var userName by remember { mutableStateOf("Student") }

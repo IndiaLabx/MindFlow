@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.quiz
 
 import androidx.compose.foundation.background
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,7 +36,7 @@ fun ResultScreen(
     onNavigateHome: () -> Unit,
     onRestartQuiz: () -> Unit
 ) {
-    val uiState by quizViewModel.uiState.collectAsState()
+    val uiState by quizViewModel.uiState.collectAsStateWithLifecycle()
 
     if (uiState !is QuizState.Finished) {
          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

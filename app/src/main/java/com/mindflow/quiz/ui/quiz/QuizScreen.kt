@@ -1,6 +1,7 @@
 package com.mindflow.quiz.ui.quiz
 
 import androidx.compose.foundation.BorderStroke
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,9 +43,9 @@ fun QuizScreen(
     quizViewModel: QuizViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToResult: () -> Unit,
-    onNavigateToAI: () -> Unit = {}
+    onNavigateToAI: (String) -> Unit = {}
 ) {
-    val uiState by quizViewModel.uiState.collectAsState()
+    val uiState by quizViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val ttsManager = remember { TTSManager(context) }
 
@@ -81,7 +82,15 @@ fun QuizScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToAI) {
+                    IconButton(onClick = {
+                        val currentQ = (uiState as? QuizState.Active)?.questions?.getOrNull((uiState as? QuizState.Active)?.progress?.currentIndex ?: 0)
+                        if (currentQ != null) {
+                            val contextJson = "{ \"question\": \"${currentQ.text}\", \"options\": \"${currentQ.options}\" }"
+                            onNavigateToAI(contextJson)
+                        } else {
+                            onNavigateToAI("")
+                        }
+                    }) {
                         Icon(Icons.Default.Star, contentDescription = "AI Tutor") // Using Star as a placeholder for AI
                     }
                 }
