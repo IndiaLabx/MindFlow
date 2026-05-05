@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, ArrowLeft, BarChart2, PlusCircle } from 'lucide-react';
+import { BookOpen, PlusCircle, CheckCircle, ArrowLeft, BarChart2, LayoutGrid, List } from 'lucide-react';
 import { db } from '../../../lib/db';
 import { SavedQuiz } from '../types';
+import { AttemptedQuizCard } from './AttemptedQuizCard';
 import { useQuizContext } from '../context/QuizContext';
+import { syncService } from '../../../lib/syncService';
 import { SynapticLoader } from '../../../components/ui/SynapticLoader';
+import { motion } from 'framer-motion';
 
 /**
  * Screen for managing attempted (completed) quizzes.
@@ -14,7 +17,7 @@ import { SynapticLoader } from '../../../components/ui/SynapticLoader';
  * - Allows viewing results of a completed quiz.
  * - Supports renaming completed quizzes.
  * - Allows deleting quizzes.
- * - Sorts by creation date (newest first).
+ * - Sorts by creation date, name, or score.
  *
  * @returns {JSX.Element} The rendered Attempted Quizzes screen.
  */
@@ -23,19 +26,31 @@ export const AttemptedQuizzes: React.FC = () => {
     const { loadSavedQuiz } = useQuizContext();
     const [quizzes, setQuizzes] = useState<SavedQuiz[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(syncService.getIsSyncing());
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
+    const [sortMethod, setSortMethod] = useState<'date-desc' | 'date-asc' | 'name-asc' | 'name-desc' | 'score-desc' | 'score-asc'>('date-desc');
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
     useEffect(() => {
         loadQuizzes();
 
-        // Listen for sync completion to refresh data and avoid stale cache
-        const handleSyncComplete = () => {
-            loadQuizzes();
+        const handleSyncStart = () => {
+            setIsSyncing(true);
         };
+
+        const handleSyncComplete = () => {
+            setTimeout(async () => {
+                await loadQuizzes();
+                setIsSyncing(false);
+            }, 100);
+        };
+
+        window.addEventListener('mindflow-sync-start', handleSyncStart);
         window.addEventListener('mindflow-sync-complete', handleSyncComplete);
 
         return () => {
+            window.removeEventListener('mindflow-sync-start', handleSyncStart);
             window.removeEventListener('mindflow-sync-complete', handleSyncComplete);
         };
     }, []);
@@ -43,8 +58,8 @@ export const AttemptedQuizzes: React.FC = () => {
     const loadQuizzes = async () => {
         try {
             const data = await db.getQuizzes();
-            // Filter only completed quizzes and sort by createdAt descending (newest first)
-            setQuizzes(data.filter(q => q.state.status === 'result').sort((a, b) => b.createdAt - a.createdAt));
+            // Filter only completed quizzes
+            setQuizzes(data.filter(q => q.state.status === 'result'));
         } catch (error) {
             console.error("Failed to load quizzes:", error);
         } finally {
@@ -72,46 +87,74 @@ export const AttemptedQuizzes: React.FC = () => {
         }
     };
 
-    /** Enters edit mode for renaming a quiz. */
-    const startEditing = (quiz: SavedQuiz, e: React.MouseEvent) => {
-        e.stopPropagation();
-        setEditingId(quiz.id);
-        setEditName(quiz.name);
-    };
-
-    /** Saves the new name for the quiz. */
-    const saveEdit = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (editingId && editName.trim()) {
-            try {
-                await db.updateQuizName(editingId, editName.trim());
-                setQuizzes(prev => prev.map(q => q.id === editingId ? { ...q, name: editName.trim() } : q));
-                setEditingId(null);
-            } catch (error) {
-                console.error("Failed to update quiz name:", error);
-            }
+    const saveEditCard = async (id: string, newName: string) => {
+        try {
+            await db.updateQuizName(id, newName);
+            setQuizzes(prev => prev.map(q => q.id === id ? { ...q, name: newName } : q));
+        } catch (error) {
+            console.error("Failed to update quiz name:", error);
         }
     };
 
-    /** Cancels renaming. */
-    const cancelEdit = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setEditingId(null);
-        setEditName('');
+    const sortedQuizzes = useMemo(() => {
+        return [...quizzes].sort((a, b) => {
+            switch (sortMethod) {
+                case 'date-desc': return b.createdAt - a.createdAt;
+                case 'date-asc': return a.createdAt - b.createdAt;
+                case 'name-asc': return (a.name || '').localeCompare(b.name || '');
+                case 'name-desc': return (b.name || '').localeCompare(a.name || '');
+                case 'score-desc': return (b.state.score || 0) - (a.state.score || 0);
+                case 'score-asc': return (a.state.score || 0) - (b.state.score || 0);
+                default: return b.createdAt - a.createdAt;
+            }
+        });
+    }, [quizzes, sortMethod]);
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.05 }
+        }
     };
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
                 <SynapticLoader size="lg" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="mb-6">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 relative overflow-hidden font-sans">
+            {/* Sync Overlay Indicator */}
+            {isSyncing && (
+                <div className="absolute top-0 left-0 w-full h-1 bg-indigo-100 dark:bg-indigo-900/30 overflow-hidden z-50">
+                    <div className="h-full bg-indigo-500 animate-[shimmer_1.5s_infinite] w-1/3" />
+                </div>
+            )}
+
+            {/* Premium Animated Background */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                {/* Grid Texture Overlay */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] mix-blend-multiply" />
+
+                {/* MOBILE BACKGROUND: Lightweight Static Gradient with Hue Rotate Animation */}
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-purple-50/50 to-white md:hidden animate-hue-slow" />
+
+                {/* DESKTOP BACKGROUND: Heavy Animated Blobs (High Fidelity) */}
+                <div className="hidden md:block">
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-300/40 mix-blend-multiply filter blur-[120px] animate-blob" />
+                    <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-300/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
+                    <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] rounded-full bg-pink-200/40 mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
+                </div>
+            </div>
+
+            <div className="w-full max-w-7xl mx-auto relative z-10 animate-fade-in py-4 space-y-6 px-4 md:px-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+                {/* Header Title & Back Button */}
+                <div className="flex flex-col gap-2">
                     <button
                         onClick={() => navigate('/mcqs')}
                         className="self-start mb-4 z-20 flex items-center justify-center p-2 rounded-full bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-700/80 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition-all shadow-sm backdrop-blur-sm border border-white/20 dark:border-gray-700/30"
@@ -119,117 +162,166 @@ export const AttemptedQuizzes: React.FC = () => {
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
-                </div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white flex items-center gap-2">
-                        <BarChart2 className="w-6 h-6 text-indigo-600" />
+                    <h1 className="text-3xl sm:text-5xl font-black text-gray-900 dark:text-white leading-tight drop-shadow-sm flex items-center gap-3">
+                        <BarChart2 className="w-8 h-8 sm:w-10 sm:h-10 text-indigo-600" />
                         Attempted Quizzes
                     </h1>
                 </div>
 
-                {quizzes.length === 0 ? (
-                    <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
-                        <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white dark:text-white mb-2">No Attempted Quizzes</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6">Complete a quiz to see your results here!</p>
-                        <button
-                            onClick={() => navigate('/quiz/config')}
-                            className="px-6 py-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 font-bold rounded-xl border border-indigo-200 dark:border-indigo-900/40 border-b-4 border-b-indigo-300 dark:border-b-indigo-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 active:translate-y-1 active:border-b transition-all shadow-sm flex items-center gap-2 mx-auto"
-                        >
-                            <PlusCircle className="w-5 h-5" />
-                            Create New Quiz
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid gap-4">
-                        {quizzes.map(quiz => (
-                            <div
-                                key={quiz.id}
-                                onClick={() => handleViewResults(quiz)}
-                                className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer group"
+                {/* Top Action Button */}
+                <div className="flex shrink-0">
+                    <button
+                        onClick={() => navigate('/quiz/saved')}
+                        className="relative group overflow-hidden px-5 py-3 rounded-2xl bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute bottom-0 left-0 h-[3px] w-full bg-gradient-to-r from-indigo-400 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+
+                        <motion.div whileHover={{ scale: 1.2, rotate: 15 }} transition={{ type: "spring", stiffness: 300 }}><BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /></motion.div>
+                        <span className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-indigo-900 dark:from-indigo-300 dark:to-indigo-100">
+                            View Created
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+                {sortedQuizzes.length === 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative group p-[1px] rounded-3xl overflow-hidden max-w-lg mx-auto mt-12"
+                    >
+                        {/* Glow Background Layer */}
+                        <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl transition-colors duration-300 z-0" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10 dark:from-white/10 dark:to-transparent z-0" />
+
+                        {/* Interactive Inner Shadow / Border */}
+                        <div className="absolute inset-0 rounded-3xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] z-10 transition-all duration-300 group-hover:border-indigo-300 dark:group-hover:border-indigo-500" />
+
+                        {/* Centered Subtle Glow */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 z-0 bg-indigo-500/20" />
+
+                        <div className="relative z-20 text-center py-16 px-6">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50 shadow-inner">
+                                <BookOpen className="w-10 h-10 text-indigo-400 dark:text-indigo-500 drop-shadow-sm" />
+                            </div>
+
+                            <h3 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 mb-3 drop-shadow-sm">
+                                No Attempted Quizzes
+                            </h3>
+
+                            <p className="text-slate-500 dark:text-slate-400 font-medium mb-8 max-w-sm mx-auto">
+                                You haven't finished any quizzes yet. Complete a quiz to see your results here!
+                            </p>
+
+                            <button
+                                onClick={() => navigate('/quiz/config')}
+                                className="relative group/btn overflow-hidden px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 border border-indigo-500 dark:border-indigo-400 shadow-lg hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-300 flex items-center gap-3 mx-auto"
                             >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1 mr-4">
-                                        {/* Name / Edit Mode */}
-                                        {editingId === quiz.id ? (
-                                            <div className="flex items-center gap-2 mb-2" onClick={e => e.stopPropagation()}>
-                                                <input
-                                                    type="text"
-                                                    value={editName}
-                                                    onChange={(e) => setEditName(e.target.value)}
-                                                    className="flex-1 px-2 py-1 border border-indigo-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                    autoFocus
-                                                />
-                                                <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded">
-                                                    <Check className="w-4 h-4" />
-                                                </button>
-                                                <button onClick={cancelEdit} className="p-1 text-red-600 hover:bg-red-50 rounded">
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-white group-hover:text-indigo-600 transition-colors">
-                                                    {quiz.name || 'Untitled Quiz'}
-                                                </h3>
-                                                <button
-                                                    onClick={(e) => startEditing(quiz, e)}
-                                                    className="p-1 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    title="Edit Name"
-                                                >
-                                                    <Edit2 className="w-3 h-3" />
-                                                </button>
-                                            </div>
-                                        )}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
 
-                                        {/* Metadata */}
-                                        <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                            <div className="flex items-center gap-1">
-                                                <BookOpen className="w-4 h-4" />
-                                                <span>{quiz.filters.subject}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Clock className="w-4 h-4" />
-                                                <span>{new Date(quiz.createdAt).toLocaleDateString()}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${quiz.mode === 'mock' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'
-                                                    }`}>
-                                                    {quiz.mode === 'mock' ? 'Mock Test' : 'Learning Mode'}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <span className="font-medium text-green-600">
-                                                    Score: {quiz.state.score} / {quiz.questions.length}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={(e) => handleViewResults(quiz)}
-                                            className="flex items-center gap-1 px-3 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors font-medium text-sm"
-                                            title="View Results"
-                                        >
-                                            <Play className="w-4 h-4" />
-                                            View Results
-                                        </button>
-                                        <button
-                                            onClick={(e) => handleDelete(quiz.id, e)}
-                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Delete Quiz"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
-                                    </div>
+                                <motion.div whileHover={{ scale: 1.2, rotate: 90 }} transition={{ type: "spring", stiffness: 200 }}><PlusCircle className="w-5 h-5 text-indigo-50" /></motion.div>
+                                <span className="font-bold text-white tracking-wide">
+                                    Create New Quiz
+                                </span>
+                            </button>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="flex flex-col gap-6"
+                    >
+                        {/* Top Info Bar */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/50 border border-indigo-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 shadow-sm">
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-300 font-medium">Attempted:</span>
+                                <span className="px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
+                                    {sortedQuizzes.length}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <select
+                                    value={sortMethod}
+                                    onChange={(e) => setSortMethod(e.target.value as any)}
+                                    className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
+                                >
+                                    <option value="date-desc">Date (Newest)</option>
+                                    <option value="date-asc">Date (Oldest)</option>
+                                    <option value="score-desc">Score (High-Low)</option>
+                                    <option value="score-asc">Score (Low-High)</option>
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                </select>
+                                <div className="hidden sm:flex items-center p-1 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+                                    <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`} title="List View">
+                                        <List className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`} title="Grid View">
+                                        <LayoutGrid className="w-4 h-4" />
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className={`grid gap-4 sm:gap-6 z-20 ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+                        {sortedQuizzes.map((quiz, index) => (
+                            <AttemptedQuizCard
+                                key={quiz.id}
+                                quiz={quiz}
+                                index={index}
+                                onViewResults={handleViewResults}
+                                onDelete={handleDelete}
+                                onEditName={(id, newName) => {
+                                    setEditingId(id);
+                                    setEditName(newName);
+                                    saveEditCard(id, newName);
+                                }}
+                            />
                         ))}
-                    </div>
+                        </div>
+                    </motion.div>
                 )}
             </div>
+
+            {/* --- CSS Keyframes & Accessibility --- */}
+            <style>{`
+                @keyframes blob {
+                    0% { transform: translate(0px, 0px) scale(1); }
+                    33% { transform: translate(30px, -50px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
+                    100% { transform: translate(0px, 0px) scale(1); }
+                }
+                .animate-blob {
+                    animation: blob 10s infinite;
+                }
+
+                @keyframes hue-slow {
+                    0% { filter: hue-rotate(0deg); }
+                    100% { filter: hue-rotate(360deg); }
+                }
+                .animate-hue-slow {
+                    animation: hue-slow 20s linear infinite;
+                }
+
+                .animation-delay-2000 {
+                    animation-delay: 2s;
+                }
+                .animation-delay-4000 {
+                    animation-delay: 4s;
+                }
+
+                /* Reduce Motion */
+                @media (prefers-reduced-motion: reduce) {
+                    .animate-blob,
+                    .animate-hue-slow {
+                        animation: none !important;
+                        transform: none !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 };
