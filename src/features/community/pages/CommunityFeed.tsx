@@ -131,7 +131,7 @@ export const CommunityFeed: React.FC = () => {
   }, []);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-full text-white pt-20">Loading Feed...</div>;
+    return <div className="flex justify-center items-center h-full text-gray-900 pt-20">Loading Feed...</div>;
   }
 
   return (
@@ -190,11 +190,11 @@ const PostCard: React.FC<{
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full bg-slate-900/60 backdrop-blur-xl border border-slate-800/50 rounded-3xl p-4 mb-6 shadow-xl"
+      className="w-full bg-white backdrop-blur-xl border border-gray-200 rounded-3xl p-4 mb-6 shadow-xl"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/community/user/${post.user_id}`); }}>
-          <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 overflow-hidden">
             {post.profiles?.avatar_url ? (
               <img src={post.profiles.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
@@ -202,17 +202,17 @@ const PostCard: React.FC<{
             )}
           </div>
           <div>
-            <div className="font-semibold text-slate-200">{post.profiles?.full_name || 'MindFlow User'}</div>
-            <div className="text-xs text-slate-500">{new Date(post.created_at).toLocaleDateString()}</div>
+            <div className="font-semibold text-gray-900">{post.profiles?.full_name || 'MindFlow User'}</div>
+            <div className="text-xs text-gray-500">{new Date(post.created_at).toLocaleDateString()}</div>
           </div>
         </div>
-        <button className="text-slate-400 hover:text-white transition-colors p-2 rounded-full hover:bg-slate-800/50">
+        <button className="text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100">
           <MoreVertical size={20} />
         </button>
       </div>
 
       <div
-        className="text-slate-200 mb-4 whitespace-pre-wrap select-none cursor-pointer"
+        className="text-gray-900 mb-4 whitespace-pre-wrap select-none cursor-pointer"
         onMouseUp={handleTouchEnd}
         onTouchEnd={handleTouchEnd}
       >
@@ -221,7 +221,7 @@ const PostCard: React.FC<{
 
       {post.media_url && (
         <div
-          className="w-full rounded-2xl overflow-hidden mb-4 bg-slate-950 relative select-none cursor-pointer"
+          className="w-full rounded-2xl overflow-hidden mb-4 bg-gray-50 relative select-none cursor-pointer"
           onMouseUp={handleTouchEnd}
           onTouchEnd={handleTouchEnd}
         >
@@ -231,11 +231,11 @@ const PostCard: React.FC<{
 
       {post.hls_stream_url && (
         <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden mb-4 bg-black relative flex items-center justify-center">
-          <span className="text-slate-500 text-sm">Video View (Intersection pending)</span>
+          <span className="text-gray-500 text-sm">Video View (Intersection pending)</span>
         </div>
       )}
 
-      <div className="flex items-center gap-6 mt-2 pt-4 border-t border-slate-800/50">
+      <div className="flex items-center gap-6 mt-2 pt-4 border-t border-gray-200">
         <button 
           onClick={onLike}
           className="flex items-center gap-2 group"
@@ -246,23 +246,23 @@ const PostCard: React.FC<{
               "p-2.5 rounded-full transition-all duration-300",
               post.is_liked_by_me
                 ? "bg-red-500/20 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
-                : "bg-slate-800/50 text-slate-400 group-hover:bg-slate-800 group-hover:text-red-400"
+                : "bg-gray-100 text-gray-600 group-hover:bg-gray-100 group-hover:text-red-400"
             )}
           >
             <Heart size={22} className={cn(post.is_liked_by_me && "fill-current")} />
           </motion.div>
-          <span className="text-sm font-medium text-slate-400">{post.likes_count || 0}</span>
+          <span className="text-sm font-medium text-gray-600">{post.likes_count || 0}</span>
         </button>
 
         <button className="flex items-center gap-2 group">
-          <div className="p-2.5 rounded-full bg-slate-800/50 text-slate-400 group-hover:bg-slate-800 transition-all duration-300 group-hover:text-indigo-400">
+          <div className="p-2.5 rounded-full bg-gray-100 text-gray-600 group-hover:bg-gray-100 transition-all duration-300 group-hover:text-indigo-400">
             <MessageCircle size={22} />
           </div>
-          <span className="text-sm font-medium text-slate-400">{post.comments_count || 0}</span>
+          <span className="text-sm font-medium text-gray-600">{post.comments_count || 0}</span>
         </button>
 
         <button className="flex items-center gap-2 group ml-auto">
-          <div className="p-2.5 rounded-full bg-slate-800/50 text-slate-400 group-hover:bg-slate-800 transition-all duration-300 hover:text-white">
+          <div className="p-2.5 rounded-full bg-gray-100 text-gray-600 group-hover:bg-gray-100 transition-all duration-300 hover:text-gray-900">
             <Share2 size={22} />
           </div>
         </button>

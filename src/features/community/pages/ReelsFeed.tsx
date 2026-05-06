@@ -19,14 +19,14 @@ export const ReelsFeed: React.FC = () => {
   const reelPosts = posts?.filter(p => p.type === 'reel' || p.type === 'video' || p.media_url || p.type === 'text') || [];
 
   if (isLoading) {
-    return <div className="h-screen w-full flex items-center justify-center bg-black text-white">Loading Reels...</div>;
+    return <div className="h-screen w-full flex items-center justify-center bg-gray-900 text-white">Loading Reels...</div>;
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
+    <div className="h-[100dvh] w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
       {/* Absolute Back Button */}
       <div className="absolute top-safe left-4 z-50 mt-4">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/10">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10">
           <ArrowLeft size={24} />
         </button>
       </div>
@@ -67,7 +67,7 @@ const ReelItem: React.FC<{ post: Post }> = ({ post }) => {
   return (
     <div
       ref={containerRef}
-      className="h-[100dvh] w-full snap-start relative bg-slate-900 overflow-hidden flex items-center justify-center"
+      className="h-[100dvh] w-full snap-start relative bg-gray-100 overflow-hidden flex items-center justify-center"
     >
       {/* Background Media (Simulated Video/Image) */}
       {post.media_url ? (
@@ -84,21 +84,21 @@ const ReelItem: React.FC<{ post: Post }> = ({ post }) => {
       {/* Side Action Bar */}
       <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-10">
         <button className="flex flex-col items-center gap-1 group">
-          <div className="p-3 bg-black/40 backdrop-blur-md rounded-full text-white border border-white/10 group-active:scale-90 transition-transform">
+          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 group-active:scale-90 transition-transform">
             <Heart size={28} className={cn(post.is_liked_by_me && "fill-red-500 text-red-500")} />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-md">{post.likes_count || 0}</span>
         </button>
 
         <button className="flex flex-col items-center gap-1 group">
-          <div className="p-3 bg-black/40 backdrop-blur-md rounded-full text-white border border-white/10 group-active:scale-90 transition-transform">
+          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 group-active:scale-90 transition-transform">
             <MessageCircle size={28} />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-md">{post.comments_count || 0}</span>
         </button>
 
         <button className="flex flex-col items-center gap-1 group">
-          <div className="p-3 bg-black/40 backdrop-blur-md rounded-full text-white border border-white/10 group-active:scale-90 transition-transform">
+          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 group-active:scale-90 transition-transform">
             <Share2 size={28} />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-md">Share</span>
@@ -108,7 +108,7 @@ const ReelItem: React.FC<{ post: Post }> = ({ post }) => {
       {/* Bottom Content Area */}
       <div className="absolute bottom-0 left-0 right-16 p-4 z-10">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-slate-700 border border-white/20 overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-gray-200 border border-white/20 overflow-hidden">
             {post.profiles?.avatar_url ? (
               <img src={post.profiles.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
