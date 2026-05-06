@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
@@ -77,6 +77,22 @@ interface ProfilePageProps {
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettings }) => {
   const { user, signOut, refreshUser } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (data) {
+        setProfile(data);
+      }
+    };
+    fetchProfile();
+  }, [user]);
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,9 +165,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
     }
   };
   
-  const avatarUrl = user?.user_metadata?.avatar_url || defaultAvatar;
-  const targetExam = user?.user_metadata?.target_exam || 'Not Set';
-  const fullName = user?.user_metadata?.full_name || 'Student';
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || defaultAvatar;
+  const targetExam = profile?.target_exam || user?.user_metadata?.target_exam || 'Not Set';
+  const fullName = profile?.full_name || user?.user_metadata?.full_name || 'Student';
 
   const { stats: userStats, loading: statsLoading } = useProfileStats();
 
