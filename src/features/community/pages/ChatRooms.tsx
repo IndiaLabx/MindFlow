@@ -8,10 +8,20 @@ import { supabase } from '../../../lib/supabase';
 import { motion } from 'framer-motion';
 import { Send, Image as ImageIcon, File, ArrowLeft } from 'lucide-react';
 import { cn } from '../../../utils/cn';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export const ChatRooms: React.FC = () => {
   const { user } = useAuth();
-  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(location.state?.roomId || null);
+
+  // Clear location state after capturing so refresh doesn't auto-open it
+  useEffect(() => {
+      if (location.state?.roomId) {
+          navigate(location.pathname, { replace: true, state: {} });
+      }
+  }, [location, navigate]);
 
   const { data: rooms, isLoading } = useQuery({
     queryKey: ['chat-rooms', user?.id],
@@ -22,7 +32,11 @@ export const ChatRooms: React.FC = () => {
   if (isLoading) return <div className="text-white p-4">Loading chats...</div>;
 
   if (activeRoomId) {
-    const room = rooms?.find(r => r.id === activeRoomId);
+    let room = rooms?.find(r => r.id === activeRoomId);
+    // Fallback if room isn't in cache yet
+    if (!room) {
+        room = { id: activeRoomId, type: 'direct', created_at: '', updated_at: '' };
+    }
     return <ActiveChatRoom room={room!} onBack={() => setActiveRoomId(null)} />;
   }
 
