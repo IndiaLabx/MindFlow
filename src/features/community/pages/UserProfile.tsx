@@ -1,15 +1,16 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, UserPlus, UserCheck, MessageSquare, Image as ImageIcon, Video, FileText } from 'lucide-react';
+import { ArrowLeft, UserPlus, UserCheck, MessageSquare, Image as ImageIcon, Video, FileText, Settings } from 'lucide-react';
 import { fetchUserProfile, fetchUserPosts, toggleFollow, getOrCreateChatRoom } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import { cn } from '../../../utils/cn';
 
 export const UserProfile: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams<{ id: string }>();
     const { user: currentUser } = useAuth();
+    const id = params.id === 'me' ? currentUser?.id : params.id;
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -24,6 +25,10 @@ export const UserProfile: React.FC = () => {
         queryFn: () => fetchUserPosts(id!),
         enabled: !!id,
     });
+
+    if (params.id === 'me' && !currentUser) {
+        return <Navigate to="/login" replace />;
+    }
 
     const toggleFollowMutation = useMutation({
         mutationFn: () => toggleFollow(currentUser!.id, id!, !!profile?.is_following),
@@ -49,7 +54,26 @@ export const UserProfile: React.FC = () => {
     const isOwnProfile = currentUser?.id === id;
 
     if (isProfileLoading) {
-        return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-600">Loading Profile...</div>;
+        return (
+            <div className="flex flex-col min-h-screen bg-gray-50 pb-20 animate-pulse">
+                <div className="h-14 bg-gray-200 w-full"></div>
+                <div className="p-6 flex flex-col items-center border-b border-gray-200">
+                    <div className="w-24 h-24 rounded-full bg-gray-300 mb-4"></div>
+                    <div className="h-6 w-32 bg-gray-300 mb-2 rounded"></div>
+                    <div className="h-4 w-48 bg-gray-300 mb-6 rounded"></div>
+                    <div className="flex gap-8 mb-6">
+                        <div className="h-10 w-12 bg-gray-300 rounded"></div>
+                        <div className="h-10 w-12 bg-gray-300 rounded"></div>
+                        <div className="h-10 w-12 bg-gray-300 rounded"></div>
+                    </div>
+                </div>
+                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="aspect-square bg-gray-300 rounded-xl"></div>
+                    <div className="aspect-square bg-gray-300 rounded-xl"></div>
+                    <div className="aspect-square bg-gray-300 rounded-xl"></div>
+                </div>
+            </div>
+        );
     }
 
     if (!profile) {
@@ -97,7 +121,7 @@ export const UserProfile: React.FC = () => {
                     </div>
                 </div>
 
-                {!isOwnProfile && (
+                {!isOwnProfile ? (
                     <div className="flex gap-3 w-full max-w-xs">
                         <button
                             onClick={() => toggleFollowMutation.mutate()}
@@ -117,6 +141,15 @@ export const UserProfile: React.FC = () => {
                             className="flex-1 py-2.5 bg-white/10 text-gray-900 hover:bg-white/20 border border-gray-200 rounded-xl font-medium transition-all flex items-center justify-center gap-2"
                         >
                             <MessageSquare size={18} /> Message
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex gap-3 w-full max-w-xs">
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="flex-1 py-2.5 bg-white text-gray-900 border border-gray-200 shadow-sm hover:bg-gray-50 rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+                        >
+                            <Settings size={18} /> Edit Profile
                         </button>
                     </div>
                 )}
