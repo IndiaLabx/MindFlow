@@ -14,6 +14,8 @@ const ChatRooms = lazy(() => import('../features/community/pages/ChatRooms').the
 const ReelsFeed = lazy(() => import('../features/community/pages/ReelsFeed').then(m => ({ default: m.ReelsFeed })));
 const CommunitySearch = lazy(() => import('../features/community/pages/CommunitySearch').then(m => ({ default: m.CommunitySearch })));
 const UserProfile = lazy(() => import('../features/community/pages/UserProfile').then(m => ({ default: m.UserProfile })));
+const PostPage = lazy(() => import('../features/community/pages/PostPage').then(m => ({ default: m.PostPage })));
+
 
 
 const SchoolHome = lazy(() => import('../features/school/SchoolHome').then(m => ({ default: m.SchoolHome })));
@@ -322,6 +324,8 @@ const AppRoutesContent: React.FC = () => {
                     <Route path="/community/reels" element={<ProtectedRoute><ReelsFeed /></ProtectedRoute>} />
                     <Route path="/community/search" element={<ProtectedRoute><CommunitySearch /></ProtectedRoute>} />
                     <Route path="/community/user/:id" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+                    <Route path="/community/post/:id" element={<ProtectedRoute><PostPage /></ProtectedRoute>} />
+
                     <Route path="/school" element={<SchoolHome />} />
                     <Route path="/school/download" element={<SchoolDownloads />} />
 <Route path="/tools" element={<ToolsHome />} />

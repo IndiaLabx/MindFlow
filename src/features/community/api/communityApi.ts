@@ -23,7 +23,7 @@ export type SearchProfile = {
   is_following?: boolean;
 };
 
-export const fetchPosts = async (limit = 20, cursor?: string): Promise<Post[]> => {
+export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: Post[], nextCursor: string | null }> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -79,7 +79,7 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<Post[]> =
         postsData = fallbackRes.data || [];
     }
 
-    if (!postsData || postsData.length === 0) return [];
+    if (!postsData || postsData.length === 0) return { data: [], nextCursor: null };
 
     const postIds = postsData.map((p: any) => p.id);
 
@@ -101,18 +101,126 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<Post[]> =
 
     const myLikedPostIds = new Set((myLikesReq.data || []).map((l: any) => l.post_id));
 
-    return postsData.map((p: any) => ({
+    const formattedData = postsData.map((p: any) => ({
       ...p,
       profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
       likes_count: likesCountMap[p.id] || 0,
       comments_count: commentsCountMap[p.id] || 0,
       is_liked_by_me: myLikedPostIds.has(p.id)
     }));
+
+    const nextCursor = formattedData.length === limit ? formattedData[formattedData.length - 1].created_at : null;
+    return { data: formattedData, nextCursor };
   } catch (err) {
     console.error('Fetch posts error:', err);
-    return [];
+    return { data: [], nextCursor: null };
   }
 };
+
+
+
+export type Comment = {
+    id: string;
+    post_id: string;
+    user_id: string;
+    parent_comment_id: string | null;
+    content: string;
+    created_at: string;
+    updated_at: string;
+    profiles?: { id?: string; full_name: string | null; avatar_url: string | null };
+    likes_count?: number;
+    is_liked_by_me?: boolean;
+    replies?: Comment[];
+};
+
+export const fetchComments = async (postId: string, userId?: string): Promise<Comment[]> => {
+    try {
+        const { data: commentsData, error } = await supabase
+            .from('post_comments')
+            .select(`
+                *,
+                profiles:user_id(id, full_name, avatar_url)
+            `)
+            .eq('post_id', postId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        if (!commentsData || commentsData.length === 0) return [];
+
+        const commentIds = commentsData.map((c: any) => c.id);
+
+        const [likesReq, myLikesReq] = await Promise.all([
+            supabase.from('comment_likes').select('comment_id', { count: 'exact' }).in('comment_id', commentIds),
+            userId ? supabase.from('comment_likes').select('comment_id').eq('user_id', userId).in('comment_id', commentIds) : Promise.resolve({ data: [] })
+        ]);
+
+        const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
+            acc[curr.comment_id] = (acc[curr.comment_id] || 0) + 1;
+            return acc;
+        }, {});
+
+        const myLikedCommentIds = new Set((myLikesReq.data || []).map((l: any) => l.comment_id));
+
+        const formattedComments: Comment[] = commentsData.map((c: any) => ({
+            ...c,
+            profiles: Array.isArray(c.profiles) ? c.profiles[0] : c.profiles,
+            likes_count: likesCountMap[c.id] || 0,
+            is_liked_by_me: myLikedCommentIds.has(c.id),
+            replies: []
+        }));
+
+        // Organize into a tree structure
+        const commentMap = new Map<string, Comment>();
+        const rootComments: Comment[] = [];
+
+        formattedComments.forEach(c => commentMap.set(c.id, c));
+
+        formattedComments.forEach(c => {
+            if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
+                commentMap.get(c.parent_comment_id)!.replies!.push(c);
+            } else {
+                rootComments.push(c);
+            }
+        });
+
+        return rootComments;
+
+    } catch (err) {
+        console.error('Fetch comments error:', err);
+        return [];
+    }
+};
+
+export const toggleLikeComment = async (commentId: string, userId: string, currentlyLiked: boolean) => {
+    if (currentlyLiked) {
+        return await supabase.from('comment_likes').delete().match({ comment_id: commentId, user_id: userId });
+    } else {
+        return await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: userId });
+    }
+};
+
+export const createComment = async (postId: string, userId: string, content: string, parentCommentId: string | null = null) => {
+    const { data, error } = await supabase.from('post_comments').insert({
+        post_id: postId,
+        user_id: userId,
+        content: content.trim(),
+        parent_comment_id: parentCommentId
+    }).select(`
+        *,
+        profiles:user_id(id, full_name, avatar_url)
+    `).single();
+
+    if (error) throw error;
+
+    return {
+        ...data,
+        profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+        likes_count: 0,
+        is_liked_by_me: false,
+        replies: []
+    } as Comment;
+};
+
 
 export const toggleLikePost = async (postId: string, userId: string, currentlyLiked: boolean) => {
   if (currentlyLiked) {

@@ -1,7 +1,7 @@
 {
   "name": "mindflow-quiz",
   "private": true,
-  "version": "1.0.57",
+  "version": "1.0.58",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -35,6 +35,7 @@
     "react-dom": "^19.2.1",
     "react-easy-crop": "^5.5.5",
     "react-icons": "^5.5.0",
+    "react-intersection-observer": "^10.0.3",
     "react-latex-next": "^3.0.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.6",
