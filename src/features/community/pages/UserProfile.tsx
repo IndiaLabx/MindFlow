@@ -142,12 +142,12 @@ export const UserProfile: React.FC = () => {
                                 {post.media_url ? (
                                     <img src={post.media_url} alt="Post media" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full p-3 flex items-center justify-center text-center bg-gradient-to-br from-slate-800 to-slate-900">
+                                    <div className="w-full h-full p-3 flex items-center justify-center text-center bg-gradient-to-br from-gray-100 to-gray-200">
                                         <p className="text-xs sm:text-sm line-clamp-4 text-gray-800 font-medium">{post.content}</p>
                                     </div>
                                 )}
 
-                                <div className="absolute top-2 right-2 p-1.5 bg-black/40 backdrop-blur-md rounded-full text-gray-900">
+                                <div className="absolute top-2 right-2 p-1.5 bg-white/60 backdrop-blur-md border border-gray-200 rounded-full text-gray-900">
                                     {post.type === 'video' || post.type === 'reel' ? <Video size={14} /> :
                                      post.type === 'image' ? <ImageIcon size={14} /> :
                                      <FileText size={14} />}

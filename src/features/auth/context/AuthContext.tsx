@@ -19,6 +19,10 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   /** Function to manually refresh user data from the server. */
   refreshUser: () => Promise<void>;
+  /** The current user profile from public.profiles */
+  profile: any | null;
+  /** Function to manually refresh profile data from the server. */
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +43,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const lastSyncedUserId = useRef<string | null>(null);
 
@@ -66,6 +71,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
          lastSyncedUserId.current = session.user.id;
          // Run sync on load if user is logged in
          syncService.syncOnLogin(session.user.id, false);
+      }
+      if (session?.user) {
+        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (data) setProfile(data);
       }
       setLoading(false);
     };
@@ -95,6 +104,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setUser(finalUser);
 
+        // Fetch profile
+        const { data } = await supabase.from('profiles').select('*').eq('id', finalUser.id).single();
+        if (data) setProfile(data);
+
         // Check if this is a sign up event (either from explicit event or local flag)
         const isSignup = (event as string) === 'SIGNED_UP' || localStorage.getItem('mindflow_is_signup') === 'true';
 
@@ -111,6 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setUser(null);
         lastSyncedUserId.current = null;
+        setProfile(null);
 
         // If explicitly signed out by Supabase event (e.g. session expired, logged out elsewhere)
         if (event === 'SIGNED_OUT') {
@@ -135,6 +149,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   /** Refreshes the user object from Supabase. */
+  /** Refreshes the profile object from Supabase. */
+  const refreshProfile = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    if (data) setProfile(data);
+  };
+
   const refreshUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
@@ -146,6 +171,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     signOut,
     refreshUser,
+    profile,
+    refreshProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
