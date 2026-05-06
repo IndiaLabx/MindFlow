@@ -1,3 +1,4 @@
+import { useAuth } from '../../auth/context/AuthContext';
 import React, { useState, useEffect, useContext } from 'react';
 import { useSettingsStore } from '../../../stores/useSettingsStore';
 import { ArrowRight, Brain, Zap, Layers, Star, Play, Github, Download, Target, User as UserIcon, LogOut, ChevronDown, Moon, Sun } from 'lucide-react';
@@ -37,6 +38,7 @@ interface LandingPageProps {
  * @returns {JSX.Element} The rendered Landing Page.
  */
 export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginClick, user, onProfileClick, onSignOut }) => {
+  const { profile } = useAuth();
   const { canInstall, triggerInstall, installStatus } = usePWAInstall();
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -168,7 +170,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
               {user ? (
                 <div className="relative">
                   <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 cursor-pointer">
-                    <img src={user.user_metadata.avatar_url} alt="User avatar" className="w-8 h-8 rounded-full" />
+                    <img src={profile?.avatar_url || user?.user_metadata?.avatar_url} alt="User avatar" className="w-8 h-8 rounded-full" />
                     <ChevronDown className={`w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isProfileMenuOpen && (

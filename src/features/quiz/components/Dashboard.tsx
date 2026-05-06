@@ -55,7 +55,7 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onBackToIntro }) => {
   const navigate = useNavigate();
   const { loadingId, handleNavigation } = useNavSpinner();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { showToast } = useNotification();
 
   const containerVariants = {
@@ -107,8 +107,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBackToIntro }) => {
 
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mb-2 leading-relaxed font-medium">
             {getGreeting()},{" "}
-            {user?.user_metadata?.first_name ||
-              user?.user_metadata?.full_name?.split(" ")[0] ||
+            {profile?.full_name?.split(" ")[0] || user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(" ")[0] ||
               "buddy"}
             !
           </p>
