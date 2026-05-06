@@ -86,25 +86,25 @@ export const CommunitySearch: React.FC = () => {
     }, [user, toggleFollowMutation]);
 
     return (
-        <div className="flex flex-col w-full h-full min-h-[100dvh] bg-slate-950 pb-24">
+        <div className="flex flex-col w-full h-full min-h-[100dvh] bg-gray-50 pb-24">
             {/* Header / Search Bar */}
-            <div className="sticky top-0 z-50 p-4 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
+            <div className="sticky top-0 z-50 p-4 bg-white/80 backdrop-blur-xl border-b border-gray-200">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 -ml-2 rounded-full hover:bg-white/5 transition-colors text-slate-300"
+                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors text-gray-800"
                     >
                         <ArrowLeft size={24} />
                     </button>
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" />
                         <input
                             autoFocus
                             type="text"
                             placeholder="Find classmates, groups..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                            className="w-full pl-10 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-gray-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                         />
                     </div>
                 </div>
@@ -114,9 +114,9 @@ export const CommunitySearch: React.FC = () => {
             <div className="flex-1 p-4">
                 {searchTerm.trim().length < 2 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center mt-20 opacity-50">
-                        <Search size={48} className="mb-4 text-slate-500" />
-                        <h3 className="text-xl font-medium text-white mb-2">Search Network</h3>
-                        <p className="text-slate-400 max-w-xs">Type at least 2 characters to discover profiles.</p>
+                        <Search size={48} className="mb-4 text-gray-500" />
+                        <h3 className="text-xl font-medium text-gray-900 mb-2">Search Network</h3>
+                        <p className="text-gray-600 max-w-xs">Type at least 2 characters to discover profiles.</p>
                     </div>
                 ) : isLoading ? (
                     <div className="flex justify-center mt-10">
@@ -135,10 +135,10 @@ export const CommunitySearch: React.FC = () => {
     transition={{ delay: i * 0.05 }}
     key={profile.id}
     onClick={() => navigate(`/community/user/${profile.id}`)}
-    className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+    className="flex items-center justify-between p-3 rounded-2xl bg-gray-100 border border-gray-200 hover:bg-white/10 transition-colors cursor-pointer"
 >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-lg font-bold text-white overflow-hidden shadow-inner">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-lg font-bold text-gray-900 overflow-hidden shadow-inner">
                                         {profile.avatar_url ? (
                                             <img src={profile.avatar_url} alt={profile.full_name || 'User'} className="w-full h-full object-cover" />
                                         ) : (
@@ -146,8 +146,8 @@ export const CommunitySearch: React.FC = () => {
                                         )}
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-semibold text-white">{profile.full_name || 'Unknown User'}</span>
-                                        <span className="text-sm text-slate-400">MindFlow Member</span>
+                                        <span className="font-semibold text-gray-900">{profile.full_name || 'Unknown User'}</span>
+                                        <span className="text-sm text-gray-600">MindFlow Member</span>
                                     </div>
                                 </div>
 
@@ -156,8 +156,8 @@ export const CommunitySearch: React.FC = () => {
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2",
                                         profile.is_following
-                                            ? "bg-white/10 text-white hover:bg-white/20"
-                                            : "bg-blue-600 text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500"
+                                            ? "bg-white/10 text-gray-900 hover:bg-white/20"
+                                            : "bg-blue-600 text-gray-900 shadow-lg shadow-blue-500/20 hover:bg-blue-500"
                                     )}
                                 >
                                     {profile.is_following ? (
@@ -176,7 +176,7 @@ export const CommunitySearch: React.FC = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center text-slate-400 mt-10">
+                    <div className="text-center text-gray-600 mt-10">
                         No results found for "{searchTerm}".
                     </div>
                 )}

@@ -29,7 +29,7 @@ export const ChatRooms: React.FC = () => {
     enabled: !!user,
   });
 
-  if (isLoading) return <div className="text-white p-4">Loading chats...</div>;
+  if (isLoading) return <div className="text-gray-900 p-4">Loading chats...</div>;
 
   if (activeRoomId) {
     let room = rooms?.find(r => r.id === activeRoomId);
@@ -42,7 +42,7 @@ export const ChatRooms: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto pb-32 px-4">
-      <h2 className="text-2xl font-bold text-white mb-6 mt-4">Messages</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6 mt-4">Messages</h2>
       <div className="space-y-2">
         {rooms?.map(room => {
           // For direct chats, find the other person
@@ -56,9 +56,9 @@ export const ChatRooms: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveRoomId(room.id)}
-              className="w-full bg-slate-900/50 backdrop-blur-md border border-slate-800/50 rounded-2xl p-4 flex items-center gap-4 text-left"
+              className="w-full bg-white backdrop-blur-md border border-gray-200 rounded-2xl p-4 flex items-center gap-4 text-left"
             >
-              <div className="w-12 h-12 rounded-full bg-slate-700 overflow-hidden flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                 {avatar ? (
                   <img src={avatar} alt={title} className="w-full h-full object-cover" />
                 ) : (
@@ -66,14 +66,14 @@ export const ChatRooms: React.FC = () => {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-slate-200 truncate">{title}</div>
-                <div className="text-sm text-slate-500 truncate">Tap to open chat</div>
+                <div className="font-semibold text-gray-900 truncate">{title}</div>
+                <div className="text-sm text-gray-500 truncate">Tap to open chat</div>
               </div>
             </motion.button>
           );
         })}
         {rooms?.length === 0 && (
-          <div className="text-slate-500 text-center mt-10">No messages yet.</div>
+          <div className="text-gray-500 text-center mt-10">No messages yet.</div>
         )}
       </div>
     </div>
@@ -220,22 +220,22 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
   const title = room.type === 'direct' ? otherParticipant?.full_name || 'Unknown User' : 'Group Chat';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-2xl mx-auto bg-slate-950">
+    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-2xl mx-auto bg-gray-50">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-10">
-        <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-slate-800 text-slate-300">
+      <div className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-10">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-800">
           <ArrowLeft size={20} />
         </button>
         <div className="w-8 h-8 rounded-full bg-indigo-500 overflow-hidden">
              {otherParticipant?.avatar_url && <img src={otherParticipant.avatar_url} className="w-full h-full object-cover" />}
         </div>
-        <div className="font-semibold text-white">{title}</div>
+        <div className="font-semibold text-gray-900">{title}</div>
       </div>
 
       {/* Messages Area (Virtualized) */}
       <div className="flex-1 overflow-hidden">
         {isLoading ? (
-          <div className="flex justify-center p-10 text-slate-400">Loading messages...</div>
+          <div className="flex justify-center p-10 text-gray-600">Loading messages...</div>
         ) : (
           <Virtuoso
             ref={virtuosoRef}
@@ -249,8 +249,8 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
                     className={cn(
                       "max-w-[75%] rounded-2xl px-4 py-2",
                       isMine 
-                        ? "bg-blue-600 text-white rounded-br-sm shadow-md shadow-blue-600/20"
-                        : "bg-white/10 backdrop-blur-md text-white rounded-bl-sm border border-white/5 shadow-sm",
+                        ? "bg-blue-600 text-gray-900 rounded-br-sm shadow-md shadow-blue-600/20"
+                        : "bg-white/10 backdrop-blur-md text-gray-900 rounded-bl-sm border border-gray-200 shadow-sm",
                       msg.status === 'sending' && "opacity-60"
                     )}
                   >
@@ -261,12 +261,12 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
                     )}
                     {msg.media_url && msg.media_type === 'file' && (
                        <a href={msg.media_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-black/20 rounded-xl mb-2 hover:bg-black/30 transition">
-                          <File size={24} className="text-white" />
+                          <File size={24} className="text-gray-900" />
                           <span className="text-sm font-medium underline">Attachment (Click to view)</span>
                        </a>
                     )}
                     <div className="whitespace-pre-wrap break-words">{msg.text_content}</div>
-                    <div className={cn("text-[10px] mt-1 text-right", isMine ? "text-indigo-200" : "text-slate-400")}>
+                    <div className={cn("text-[10px] mt-1 text-right", isMine ? "text-indigo-200" : "text-gray-600")}>
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {msg.status === 'sending' && " • sending..."}
                     </div>
@@ -279,33 +279,33 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
       </div>
 
       {/* Input Area */}
-      <form onSubmit={handleSend} className="p-4 bg-slate-950/90 backdrop-blur-xl border-t border-white/5 pb-[env(safe-area-inset-bottom)] relative">
+      <form onSubmit={handleSend} className="p-4 bg-white/90 backdrop-blur-xl border-t border-gray-200 pb-[env(safe-area-inset-bottom)] relative">
         {isUploading && (
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-indigo-400 animate-pulse bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-indigo-400 animate-pulse bg-white px-3 py-1 rounded-full border border-gray-200">
             Uploading media...
           </div>
         )}
-        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full p-1 pl-4 pr-1">
+        <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-full p-1 pl-4 pr-1">
           <input
             type="text"
             value={newMessage}
             onChange={handleTyping}
             placeholder="Message..."
-            className="flex-1 bg-transparent border-none text-white focus:ring-0 outline-none placeholder:text-slate-500"
+            className="flex-1 bg-transparent border-none text-gray-900 focus:ring-0 outline-none placeholder:text-gray-500"
           />
           <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'image')} />
           <input type="file" ref={fileInputRef} accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => handleFileUpload(e, 'file')} />
           
-          <button type="button" onClick={() => imageInputRef.current?.click()} className="p-2 text-slate-400 hover:text-white rounded-full">
+          <button type="button" onClick={() => imageInputRef.current?.click()} className="p-2 text-gray-600 hover:text-gray-900 rounded-full">
             <ImageIcon size={20} />
           </button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-white rounded-full">
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-600 hover:text-gray-900 rounded-full">
             <File size={20} />
           </button>
           <button 
             type="submit" 
             disabled={(!newMessage.trim() && !isUploading)}
-            className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-500 shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:bg-slate-700 transition-colors"
+            className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-500 shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:bg-gray-200 transition-colors"
           >
             <Send size={18} className="translate-x-[1px] -translate-y-[1px]" />
           </button>
