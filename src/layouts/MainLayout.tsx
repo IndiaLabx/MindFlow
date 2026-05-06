@@ -49,7 +49,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onTabChange,
   onOpenSettings 
 }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { isReviewMode } = useQuizContext();
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const { isSocialMode, toggleSocialMode } = useSocialStore();
@@ -213,7 +213,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <NotificationBell />
                 <button onClick={() => onTabChange('profile')} className="rounded-full transition-opacity duration-200 hover:opacity-80">
                   <img
-                    src={user.user_metadata?.avatar_url || `https://api.dicebear.com/6.x/initials/svg?seed=${user.user_metadata?.full_name || user.email}`}
+                    src={profile?.avatar_url || user?.user_metadata?.avatar_url || `https://api.dicebear.com/6.x/initials/svg?seed=${profile?.full_name || user?.user_metadata?.full_name || user?.email}`}
                     alt="User Avatar"
                     className="w-8 h-8 rounded-full"
                   />

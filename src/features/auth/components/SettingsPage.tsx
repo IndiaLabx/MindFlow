@@ -66,28 +66,16 @@ const EditableField: React.FC<{
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
-  const { user, refreshUser } = useAuth();
+  const { user, profile: contextProfile, refreshProfile } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      setProfileLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (!error && data) {
-        setProfile(data);
-      }
+    if (contextProfile) {
+      setProfile(contextProfile);
       setProfileLoading(false);
-    };
-
-    fetchProfile();
-  }, [user]);
+    }
+  }, [contextProfile]);
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -104,12 +92,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const updateMetadata = async (key: string, value: string, successMessage: string) => {
     if (!user) return;
 
-    // Also update auth.users metadata for legacy compatibility just in case
-    await supabase.auth.updateUser({
-      data: { [key]: value }
-    });
-
-    // Update the profiles table
+    // Update the profiles table ONLY
     const { error } = await supabase
       .from('profiles')
       .update({ [key]: value })
@@ -121,7 +104,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
       showMessage(successMessage);
       // Update local state
       setProfile((prev: any) => ({ ...prev, [key]: value }));
-      await refreshUser();
+      await refreshProfile();
     }
   };
 
@@ -178,27 +161,27 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
 
             <div>
               <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Full Name</label>
-              <EditableField icon={User} value={profile?.full_name || user?.user_metadata?.full_name || ''} onSave={(v) => updateMetadata('full_name', v, 'Name updated!')} placeholder="Enter your full name" />
+              <EditableField icon={User} value={profile?.full_name || ''} onSave={(v) => updateMetadata('full_name', v, 'Name updated!')} placeholder="Enter your full name" />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Bio</label>
-              <EditableField icon={FileText} value={profile?.bio || user?.user_metadata?.bio || ''} onSave={(v) => updateMetadata('bio', v, 'Bio updated!')} placeholder="Write a short bio" />
+              <EditableField icon={FileText} value={profile?.bio || ''} onSave={(v) => updateMetadata('bio', v, 'Bio updated!')} placeholder="Write a short bio" />
             </div>
 
             <div>
                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Target Exam</label>
-               <EditableField icon={Target} value={profile?.target_exam || user?.user_metadata?.target_exam || ''} onSave={(v) => updateMetadata('target_exam', v, 'Target exam updated!')} placeholder="e.g. UPSC, SSC, Banking" />
+               <EditableField icon={Target} value={profile?.target_exam || ''} onSave={(v) => updateMetadata('target_exam', v, 'Target exam updated!')} placeholder="e.g. UPSC, SSC, Banking" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Phone Number</label>
-                  <EditableField icon={Phone} type="tel" value={profile?.phone || user?.user_metadata?.phone || ''} onSave={(v) => updateMetadata('phone', v, 'Phone updated!')} placeholder="+91 XXXXX XXXXX" />
+                  <EditableField icon={Phone} type="tel" value={profile?.phone || ''} onSave={(v) => updateMetadata('phone', v, 'Phone updated!')} placeholder="+91 XXXXX XXXXX" />
                </div>
                <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Date of Birth</label>
-                  <EditableField icon={Calendar} type="date" value={profile?.dob || user?.user_metadata?.dob || ''} onSave={(v) => updateMetadata('dob', v, 'DOB updated!')} />
+                  <EditableField icon={Calendar} type="date" value={profile?.dob || ''} onSave={(v) => updateMetadata('dob', v, 'DOB updated!')} />
                </div>
             </div>
 
