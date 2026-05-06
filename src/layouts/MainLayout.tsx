@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useRef, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BrainCircuit, Home, LayoutDashboard, GraduationCap, PlusCircle, User, Settings, LogIn, Sun, Moon, Brain, Menu } from 'lucide-react';
+import { BrainCircuit, Home, LayoutDashboard, GraduationCap, PlusCircle, User, Settings, LogIn, Sun, Moon, Brain, Menu, Search, Play, MessageSquare, ArrowLeft, Users } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { useQuizContext } from '../features/quiz/context/QuizContext';
@@ -14,7 +14,7 @@ import { SidePanel } from '../components/layout/SidePanel';
 /**
  * Unique identifiers for the main navigation tabs.
  */
-export type TabID = 'home' | 'school' | 'create' | 'profile' | 'login' | 'ai';
+export type TabID = 'home' | 'school' | 'create' | 'profile' | 'login' | 'ai' | 'community' | 'messages' | 'search' | 'reels';
 
 /**
  * Props for the MainLayout component.
@@ -23,7 +23,7 @@ interface MainLayoutProps {
   /** The main content to render within the layout frame. */
   children: React.ReactNode;
   /** The currently active navigation tab. */
-  activeTab: TabID;
+  activeTab: any;
   /** Callback to switch tabs. */
   onTabChange: (tab: TabID) => void;
   /** Callback to open the settings modal. */
@@ -251,7 +251,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-20 transition-opacity duration-500 z-0 bg-indigo-500"></div>
         <div ref={navRef} role="tablist" className="max-w-3xl mx-auto px-2 h-16 flex items-center justify-around relative z-20">
           
-          {/* Golden Ring Active Indicator */}
+                    {/* Golden Ring Active Indicator */}
           <motion.div
             className="absolute left-0 top-0 pointer-events-none z-0"
             animate={{
@@ -283,72 +283,145 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </div>
           </motion.div>
 
-          <NavTab 
-            id="home" 
-            label="Dashboard"
-            icon={<LayoutDashboard className="w-6 h-6" />}
-            isActive={activeTab === 'home'} 
-            onClick={() => onTabChange('home')}
-            buttonRef={homeRef}
-          />
-          
-          <NavTab 
-            id="school"
-            label="School"
-            icon={<GraduationCap className="w-6 h-6" />}
-            isActive={activeTab === 'school'}
-            onClick={() => onTabChange('school')}
-            buttonRef={schoolRef}
-          />
-          
-          <button 
-            ref={aiRef}
-            onClick={() => onTabChange('ai')}
-            className="relative -top-5 group z-30"
-          >
-            <div className={cn(
-              "relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-white dark:border-slate-900",
-              activeTab === 'ai'
-                ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/50 translate-y-1"
-                : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white hover:from-indigo-500 hover:to-indigo-600 hover:scale-105 shadow-indigo-600/30"
-            )}>
-              {/* Inner glow for glass feel */}
-              <div className="absolute inset-0 rounded-full border border-white/20"></div>
-              {/* Active glow */}
-              {activeTab === 'ai' && (
-                <div className="absolute inset-0 rounded-full blur-md bg-indigo-500/30 -z-10"></div>
-              )}
-              <Brain className="w-7 h-7" />
-            </div>
-            <span className={cn(
-              "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors",
-              activeTab === 'ai' ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500"
-            )}>
-              AI
-            </span>
-          </button>
+          {/* If we are in the community section, render Social Tabs instead */}
+          {(activeTab as any) === 'community' || (activeTab as any) === 'messages' || (activeTab as any) === 'search' || (activeTab as any) === 'reels' ? (
+            <>
+              <NavTab 
+                id="community" 
+                label="Feed"
+                icon={<LayoutDashboard className="w-6 h-6" />}
+                isActive={(activeTab as any) === 'community'} 
+                onClick={() => onTabChange('community')}
+                buttonRef={homeRef}
+              />
+              
+              <NavTab 
+                id="search"
+                label="Search"
+                icon={<Search className="w-6 h-6" />}
+                isActive={(activeTab as any) === 'search'}
+                onClick={() => onTabChange('search')}
+                buttonRef={schoolRef}
+              />
+              
+              <button 
+                ref={aiRef}
+                onClick={() => onTabChange('reels')}
+                className="relative -top-5 group z-30"
+              >
+                <div className={cn(
+                  "relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-white dark:border-slate-900",
+                  (activeTab as any) === 'reels'
+                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/50 translate-y-1"
+                    : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white hover:from-indigo-500 hover:to-indigo-600 hover:scale-105 shadow-indigo-600/30"
+                )}>
+                  <div className="absolute inset-0 rounded-full border border-white/20"></div>
+                  {(activeTab as any) === 'reels' && (
+                    <div className="absolute inset-0 rounded-full blur-md bg-indigo-500/30 -z-10"></div>
+                  )}
+                  <Play className="w-7 h-7" />
+                </div>
+                <span className={cn(
+                  "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors",
+                  (activeTab as any) === 'reels' ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500"
+                )}>
+                  Reels
+                </span>
+              </button>
 
-          {user ? (
-            <NavTab
-              id="profile"
-              label="Profile"
-              icon={<User className="w-6 h-6" />}
-              isActive={activeTab === 'profile'}
-              onClick={handleProfileClick}
-              buttonRef={profileRef}
-            />
+              <NavTab
+                id="messages"
+                label="Messages"
+                icon={<MessageSquare className="w-6 h-6" />}
+                isActive={(activeTab as any) === 'messages'}
+                onClick={() => onTabChange('messages')}
+                buttonRef={profileRef}
+              />
+
+              <NavTab
+                id="home"
+                label="Learn"
+                icon={<ArrowLeft className="w-6 h-6" />}
+                isActive={false}
+                onClick={() => onTabChange('home')}
+              />
+            </>
           ) : (
-            <NavTab
-              id="login"
-              label="Sign In"
-              icon={<LogIn className="w-6 h-6" />}
-              isActive={activeTab === 'login'}
-              onClick={handleProfileClick}
-              buttonRef={profileRef}
-            />
+            <>
+              <NavTab 
+                id="home" 
+                label="Dashboard"
+                icon={<LayoutDashboard className="w-6 h-6" />}
+                isActive={activeTab === 'home'} 
+                onClick={() => onTabChange('home')}
+                buttonRef={homeRef}
+              />
+              
+              <NavTab 
+                id="school"
+                label="School"
+                icon={<GraduationCap className="w-6 h-6" />}
+                isActive={activeTab === 'school'}
+                onClick={() => onTabChange('school')}
+                buttonRef={schoolRef}
+              />
+              
+              <button 
+                ref={aiRef}
+                onClick={() => onTabChange('ai')}
+                className="relative -top-5 group z-30"
+              >
+                <div className={cn(
+                  "relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-white dark:border-slate-900",
+                  activeTab === 'ai'
+                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/50 translate-y-1"
+                    : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white hover:from-indigo-500 hover:to-indigo-600 hover:scale-105 shadow-indigo-600/30"
+                )}>
+                  <div className="absolute inset-0 rounded-full border border-white/20"></div>
+                  {activeTab === 'ai' && (
+                    <div className="absolute inset-0 rounded-full blur-md bg-indigo-500/30 -z-10"></div>
+                  )}
+                  <Brain className="w-7 h-7" />
+                </div>
+                <span className={cn(
+                  "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors",
+                  activeTab === 'ai' ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500"
+                )}>
+                  AI
+                </span>
+              </button>
+
+              <NavTab
+                id="community"
+                label="Social"
+                icon={<Users className="w-6 h-6" />}
+                isActive={(activeTab as any) === 'community'}
+                onClick={() => onTabChange('community')}
+              />
+
+              {user ? (
+                <NavTab
+                  id="profile"
+                  label="Profile"
+                  icon={<User className="w-6 h-6" />}
+                  isActive={activeTab === 'profile'}
+                  onClick={handleProfileClick}
+                  buttonRef={profileRef}
+                />
+              ) : (
+                <NavTab
+                  id="login"
+                  label="Sign In"
+                  icon={<LogIn className="w-6 h-6" />}
+                  isActive={activeTab === 'login'}
+                  onClick={handleProfileClick}
+                  buttonRef={profileRef}
+                />
+              )}
+            </>
           )}
         </div>
-      </nav>
+</nav>
     </div>
   );
 };

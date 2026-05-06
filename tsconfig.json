@@ -2,7 +2,7 @@
   // TypeScript Configuration
   // Configures the TypeScript compiler for a React + Vite project using ESNext modules.
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "6.0",
     // Target ECMAScript version
     "target": "ES2022",
     // Enable experimental decorators
@@ -38,7 +38,6 @@
     "jsx": "react-jsx",
     // Base directory to resolve non-relative module names
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     // Path mapping for aliases (e.g., @/* -> src/*)
     "paths": {
       "@/*": [

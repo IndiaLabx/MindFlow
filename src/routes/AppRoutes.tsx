@@ -9,6 +9,10 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 
 // Lazy Loaded Components for Code Splitting
 // Groups: Main UI, Quiz Flow, Flashcard Flow, Auth Flow
+const CommunityFeed = lazy(() => import('../features/community/pages/CommunityFeed').then(m => ({ default: m.CommunityFeed })));
+const ChatRooms = lazy(() => import('../features/community/pages/ChatRooms').then(m => ({ default: m.ChatRooms })));
+const ReelsFeed = lazy(() => import('../features/community/pages/ReelsFeed').then(m => ({ default: m.ReelsFeed })));
+
 
 const SchoolHome = lazy(() => import('../features/school/SchoolHome').then(m => ({ default: m.SchoolHome })));
 const SchoolDownloads = lazy(() => import('../features/school/SchoolDownloads').then(m => ({ default: m.SchoolDownloads })));
@@ -311,6 +315,9 @@ const AppRoutesContent: React.FC = () => {
 
 
                     {/* School Routes */}
+                    <Route path="/community" element={<ProtectedRoute><CommunityFeed /></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><ChatRooms /></ProtectedRoute>} />
+                    <Route path="/community/reels" element={<ProtectedRoute><ReelsFeed /></ProtectedRoute>} />
                     <Route path="/school" element={<SchoolHome />} />
                     <Route path="/school/download" element={<SchoolDownloads />} />
 <Route path="/tools" element={<ToolsHome />} />

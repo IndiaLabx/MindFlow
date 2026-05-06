@@ -20,6 +20,8 @@ export const QuizLayout: React.FC = () => {
     const getActiveTab = (): TabID => {
         const path = location.pathname;
         if (path.includes('/login')) return 'login';
+        if (path.includes('/community')) return 'community';
+        if (path.includes('/messages')) return 'messages';
         if (path.includes('/ai')) return 'ai';
         if (path.includes('/profile') || path.includes('/settings')) return 'profile';
         if (path.includes('/school')) return 'school';
@@ -33,8 +35,19 @@ export const QuizLayout: React.FC = () => {
                 enterHome();
                 navigate('/dashboard');
                 break;
+            case 'community':
+                navigate('/community');
+                break;
+            case 'messages':
+                navigate('/messages');
+                break;
+            case 'search':
+                navigate('/community/search');
+                break;
+            case 'reels':
+                navigate('/community/reels');
+                break;
             case 'school':
-
                 navigate('/school');
                 break;
             case 'create':
