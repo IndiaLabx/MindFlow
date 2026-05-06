@@ -6,9 +6,12 @@ import { Heart, MessageCircle, Share2, MoreVertical, ArrowLeft } from 'lucide-re
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../../utils/cn';
+import { CreatePostModal } from '../components/CreatePostModal';
+import { Plus } from 'lucide-react';
 
 export const ReelsFeed: React.FC = () => {
   const navigate = useNavigate();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { data: posts, isLoading } = useQuery({
     queryKey: ['community-posts-reels'],
     queryFn: () => fetchPosts(),
@@ -38,6 +41,14 @@ export const ReelsFeed: React.FC = () => {
           <ReelItem key={post.id} post={post} />
         ))
       )}
+          <button
+        onClick={() => setIsCreateModalOpen(true)}
+        className="fixed bottom-24 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
+      >
+        <Plus size={28} />
+      </button>
+
+      <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="reels" />
     </div>
   );
 };
