@@ -174,29 +174,8 @@ export const toggleFollow = async (followerId: string, followingId: string, curr
     }
 };
 
-export const createPost = async (userId: string, content: string, type: 'text' | 'image' | 'video' = 'text', file?: File) => {
-    let media_url = null;
-
-    if (file && (type === 'image' || type === 'video')) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${userId}-${Date.now()}.${fileExt}`;
-        const filePath = `${userId}/${fileName}`;
-
-        // Assuming chat_media bucket is generic enough, or post_media
-        const { error: uploadError } = await supabase.storage
-            .from('chat_media')
-            .upload(filePath, file);
-
-        if (uploadError) {
-            throw uploadError;
-        }
-
-        const { data } = supabase.storage
-            .from('chat_media')
-            .getPublicUrl(filePath);
-
-        media_url = data.publicUrl;
-    }
+export const createPost = async (userId: string, content: string, type: 'text' | 'image' | 'video' | 'reel' = 'text', mediaUrl?: string) => {
+    let media_url = mediaUrl || null;
 
     const { data, error } = await supabase.from('posts').insert({
         user_id: userId,
@@ -208,7 +187,6 @@ export const createPost = async (userId: string, content: string, type: 'text' |
     if (error) throw error;
     return data;
 };
-
 
 export type UserProfileDetails = {
     id: string;

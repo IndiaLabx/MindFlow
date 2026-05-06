@@ -8,6 +8,7 @@ import { Heart, MessageCircle, Share2, MoreVertical, Plus, Image as ImageIcon, X
 import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { useNavigate } from 'react-router-dom';
+import { CreatePostModal } from '../components/CreatePostModal';
 
 // --- Particle Component for "Wow" Effect ---
 const FloatingHeart: React.FC<{ x: number, y: number, onComplete: () => void }> = ({ x, y, onComplete }) => {
@@ -41,39 +42,9 @@ export const CommunityFeed: React.FC = () => {
   const [particles, setParticles] = useState<{ id: number; x: number; y: number }[]>([]);
 
 
-  const [isComposeOpen, setIsComposeOpen] = useState(false);
-  const [composeText, setComposeText] = useState('');
-  const [composeFile, setComposeFile] = useState<File | null>(null);
-  const [composePreview, setComposePreview] = useState<string | null>(null);
-  const { showToast } = useNotificationStore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+    const { showToast } = useNotificationStore();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const createPostMutation = useMutation({
-    mutationFn: () => createPost(user!.id, composeText, composeFile ? 'image' : 'text', composeFile || undefined),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['community-posts'] });
-      setIsComposeOpen(false);
-      setComposeText('');
-      setComposeFile(null);
-      setComposePreview(null);
-      showToast({ title: 'Success', message: 'Post created successfully!', variant: 'success' });
-    },
-    onError: (err: any) => {
-      showToast({ title: 'Error', message: err.message || 'Failed to create post', variant: 'error' });
-    }
-  });
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setComposeFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setComposePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ['community-posts'],
@@ -155,6 +126,14 @@ export const CommunityFeed: React.FC = () => {
           navigate={navigate}
         />
       ))}
+          <button
+        onClick={() => setIsCreateModalOpen(true)}
+        className="fixed bottom-24 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
+      >
+        <Plus size={28} />
+      </button>
+
+      <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="posts" />
     </div>
   );
 };
