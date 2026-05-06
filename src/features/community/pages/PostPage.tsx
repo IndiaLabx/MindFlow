@@ -1,0 +1,274 @@
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../../../lib/supabase';
+import { fetchComments, toggleLikePost, toggleLikeComment, createComment, Post } from '../api/communityApi';
+import { useAuth } from '../../auth/context/AuthContext';
+import { Heart, MessageCircle, Share2, ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { cn } from '../../../utils/cn';
+import { useNotificationStore } from '../../../stores/useNotificationStore';
+import { CommentSkeleton } from '../components/CommentSkeleton';
+
+export const PostPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { showToast } = useNotificationStore();
+  const [commentText, setCommentText] = useState('');
+  const [replyingTo, setReplyingTo] = useState<{ id: string, username: string } | null>(null);
+
+  const { data: post, isLoading: postLoading } = useQuery({
+    queryKey: ['community-post', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`*, profiles:user_id(id, full_name, avatar_url)`)
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+
+      const [likesReq, commentsReq, myLikesReq] = await Promise.all([
+        supabase.from('post_likes').select('post_id', { count: 'exact' }).eq('post_id', id),
+        supabase.from('post_comments').select('post_id', { count: 'exact' }).eq('post_id', id),
+        user ? supabase.from('post_likes').select('post_id').eq('user_id', user.id).eq('post_id', id).single() : Promise.resolve({ data: null })
+      ]);
+
+      return {
+        ...data,
+        profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+        likes_count: likesReq.count || 0,
+        comments_count: commentsReq.count || 0,
+        is_liked_by_me: !!myLikesReq.data
+      } as Post;
+    },
+    enabled: !!id
+  });
+
+  const { data: comments, isLoading: commentsLoading } = useQuery({
+    queryKey: ['community-comments', id],
+    queryFn: () => fetchComments(id!, user?.id),
+    enabled: !!id
+  });
+
+  const likePostMutation = useMutation({
+    mutationFn: (currentlyLiked: boolean) => toggleLikePost(id!, user!.id, currentlyLiked),
+    onMutate: async (currentlyLiked) => {
+      await queryClient.cancelQueries({ queryKey: ['community-post', id] });
+      const previousPost = queryClient.getQueryData(['community-post', id]);
+
+      queryClient.setQueryData(['community-post', id], (old: any) => ({
+        ...old,
+        is_liked_by_me: !currentlyLiked,
+        likes_count: old.likes_count ? old.likes_count + (currentlyLiked ? -1 : 1) : (currentlyLiked ? 0 : 1)
+      }));
+      return { previousPost };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousPost) {
+        queryClient.setQueryData(['community-post', id], context.previousPost);
+      }
+    }
+  });
+
+  const submitCommentMutation = useMutation({
+    mutationFn: (content: string) => createComment(id!, user!.id, content, replyingTo?.id),
+    onSuccess: () => {
+      setCommentText('');
+      setReplyingTo(null);
+      queryClient.invalidateQueries({ queryKey: ['community-comments', id] });
+      queryClient.invalidateQueries({ queryKey: ['community-post', id] });
+      showToast({ title: 'Success', message: 'Comment posted', variant: 'success' });
+    },
+    onError: () => {
+      showToast({ title: 'Error', message: 'Failed to post comment', variant: 'error' });
+    }
+  });
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || !user) return;
+    submitCommentMutation.mutate(commentText);
+  };
+
+  if (postLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-indigo-500 w-8 h-8" /></div>;
+  }
+
+  if (!post) {
+    return <div className="p-4 text-center mt-20">Post not found</div>;
+  }
+
+  return (
+    <div className="flex flex-col w-full max-w-2xl mx-auto pb-32 min-h-screen bg-gray-50/50">
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 p-4 flex items-center gap-4 shadow-sm">
+        <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
+          <ArrowLeft size={24} className="text-gray-700" />
+        </button>
+        <h1 className="font-semibold text-lg text-gray-900">Post</h1>
+      </div>
+
+      {/* Main Post Content */}
+      <div className="bg-white p-4 mb-2 shadow-sm border-b border-gray-100">
+        <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => navigate(`/community/user/${post.user_id}`)}>
+          <img
+            src={post.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${post.profiles?.full_name || 'User'}`}
+            className="w-12 h-12 rounded-full object-cover border border-gray-200"
+            alt="avatar"
+          />
+          <div>
+            <div className="font-semibold text-gray-900">{post.profiles?.full_name || 'MindFlow User'}</div>
+            <div className="text-sm text-gray-500">{new Date(post.created_at).toLocaleString()}</div>
+          </div>
+        </div>
+
+        <div className="text-gray-900 text-lg mb-4 whitespace-pre-wrap">{post.content}</div>
+
+        {post.media_url && (
+          <img src={post.media_url} alt="media" className="w-full rounded-2xl mb-4 object-cover max-h-[60vh] border border-gray-100" />
+        )}
+
+        <div className="flex items-center gap-6 mt-2 pt-4 border-t border-gray-100">
+          <button
+            onClick={() => user && likePostMutation.mutate(!!post.is_liked_by_me)}
+            className="flex items-center gap-2 group"
+          >
+            <div className={cn("p-2 rounded-full transition-all duration-300", post.is_liked_by_me ? "bg-red-50 text-red-500" : "bg-gray-50 text-gray-600 hover:bg-gray-100")}>
+              <Heart size={24} className={cn(post.is_liked_by_me && "fill-current")} />
+            </div>
+            <span className="font-medium text-gray-600">{post.likes_count || 0}</span>
+          </button>
+          <div className="flex items-center gap-2 text-gray-600">
+            <MessageCircle size={24} className="p-1" />
+            <span className="font-medium">{post.comments_count || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Comments Section */}
+      <div className="flex-1 bg-white p-4">
+        <h2 className="font-semibold text-gray-900 mb-6">Comments</h2>
+
+        {commentsLoading ? (
+          <div className="space-y-6">
+            <CommentSkeleton />
+            <CommentSkeleton />
+            <CommentSkeleton isReply />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {comments?.map(comment => (
+              <CommentThread
+                key={comment.id}
+                comment={comment}
+                onReply={(id, username) => setReplyingTo({ id, username })}
+                currentUserId={user?.id}
+              />
+            ))}
+            {(!comments || comments.length === 0) && (
+              <div className="text-center text-gray-500 py-8">No comments yet. Be the first to reply!</div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Comment Input Sticky Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-2xl mx-auto bg-white border-t border-gray-200 p-3 pb-safe z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        {replyingTo && (
+          <div className="flex items-center justify-between bg-indigo-50 px-3 py-1.5 rounded-t-xl mb-2 -mt-4 mx-1">
+            <span className="text-xs text-indigo-600 font-medium">Replying to {replyingTo.username}</span>
+            <button onClick={() => setReplyingTo(null)} className="text-indigo-400 hover:text-indigo-600"><Share2 size={14} className="rotate-45"/></button>
+          </div>
+        )}
+        <form onSubmit={handleCommentSubmit} className="flex items-center gap-3">
+          <img
+            src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.email}`}
+            className="w-10 h-10 rounded-full object-cover shrink-0"
+            alt="avatar"
+          />
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={replyingTo ? "Write a reply..." : "Add a comment..."}
+              className="w-full bg-gray-100 border-none rounded-full px-4 py-2.5 pr-12 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              disabled={submitCommentMutation.isPending}
+            />
+            <button
+              type="submit"
+              disabled={!commentText.trim() || submitCommentMutation.isPending}
+              className="absolute right-1 top-1 bottom-1 p-2 rounded-full bg-indigo-600 text-white disabled:opacity-50 disabled:bg-gray-400 transition-colors"
+            >
+              {submitCommentMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="ml-0.5" />}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Recursive Component for Threaded Comments
+const CommentThread: React.FC<{ comment: any, onReply: (id: string, username: string) => void, currentUserId?: string, isReply?: boolean }> = ({ comment, onReply, currentUserId, isReply }) => {
+  const queryClient = useQueryClient();
+  const likeCommentMutation = useMutation({
+    mutationFn: (currentlyLiked: boolean) => toggleLikeComment(comment.id, currentUserId!, currentlyLiked),
+    onMutate: async (currentlyLiked) => {
+      // In a real app, you'd recursively update the nested tree in the cache.
+      // For simplicity here, we invalidate to refetch the tree.
+      queryClient.invalidateQueries({ queryKey: ['community-comments', comment.post_id] });
+    }
+  });
+
+  return (
+    <div className={cn("flex gap-3", isReply ? "mt-4 ml-8 relative before:absolute before:-left-5 before:top-5 before:w-4 before:h-px before:bg-gray-200" : "")}>
+      <img
+        src={comment.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${comment.profiles?.full_name || 'User'}`}
+        className={cn("rounded-full object-cover shrink-0 border border-gray-100", isReply ? "w-8 h-8" : "w-10 h-10")}
+        alt="avatar"
+      />
+      <div className="flex-1">
+        <div className="bg-gray-50/80 rounded-2xl p-3 inline-block max-w-full">
+          <div className="font-semibold text-sm text-gray-900">{comment.profiles?.full_name || 'User'}</div>
+          <div className="text-gray-800 text-sm whitespace-pre-wrap mt-0.5">{comment.content}</div>
+        </div>
+
+        <div className="flex items-center gap-4 mt-1 px-2">
+          <span className="text-xs text-gray-500 font-medium">
+            {new Date(comment.created_at).toLocaleDateString()}
+          </span>
+          <button
+            onClick={() => currentUserId && likeCommentMutation.mutate(!!comment.is_liked_by_me)}
+            className={cn("text-xs font-semibold hover:text-gray-900 transition-colors", comment.is_liked_by_me ? "text-red-500" : "text-gray-500")}
+          >
+            {comment.is_liked_by_me ? 'Liked' : 'Like'} {comment.likes_count > 0 && `(${comment.likes_count})`}
+          </button>
+          <button
+            onClick={() => onReply(comment.id, comment.profiles?.full_name || 'User')}
+            className="text-xs text-gray-500 font-semibold hover:text-gray-900 transition-colors"
+          >
+            Reply
+          </button>
+        </div>
+
+        {/* Render Nested Replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="relative before:absolute before:-left-[21px] before:top-2 before:bottom-6 before:w-px before:bg-gray-200">
+            {comment.replies.map((reply: any) => (
+              <CommentThread
+                key={reply.id}
+                comment={reply}
+                onReply={onReply}
+                currentUserId={currentUserId}
+                isReply
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

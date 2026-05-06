@@ -12,14 +12,14 @@ import { Plus } from 'lucide-react';
 export const ReelsFeed: React.FC = () => {
   const navigate = useNavigate();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { data: posts, isLoading } = useQuery({
+  const { data: postsData, isLoading } = useQuery({
     queryKey: ['community-posts-reels'],
-    queryFn: () => fetchPosts(),
+    queryFn: () => fetchPosts(50),
   });
 
   // Filter out to only reels/videos for demo purposes
   // Since we only seeded text, we'll map them for testing the layout if no media exists
-  const reelPosts = posts?.filter(p => p.type === 'reel' || p.type === 'video' || p.media_url || p.type === 'text') || [];
+  const reelPosts = postsData?.data?.filter((p: any) => p.type === 'reel' || p.type === 'video' || p.media_url || p.type === 'text') || [];
 
   if (isLoading) {
     return <div className="h-screen w-full flex items-center justify-center bg-gray-900 text-white">Loading Reels...</div>;
