@@ -6,6 +6,7 @@ import { QuizLayout } from '../features/quiz/QuizLayout';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { SynapticLoader } from '../components/ui/SynapticLoader';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 // Lazy Loaded Components for Code Splitting
 // Groups: Main UI, Quiz Flow, Flashcard Flow, Auth Flow
@@ -319,12 +320,12 @@ const AppRoutesContent: React.FC = () => {
 
 
                     {/* School Routes */}
-                    <Route path="/community" element={<ProtectedRoute><CommunityFeed /></ProtectedRoute>} />
-                    <Route path="/messages" element={<ProtectedRoute><ChatRooms /></ProtectedRoute>} />
-                    <Route path="/community/reels" element={<ProtectedRoute><ReelsFeed /></ProtectedRoute>} />
-                    <Route path="/community/search" element={<ProtectedRoute><CommunitySearch /></ProtectedRoute>} />
-                    <Route path="/community/user/:id" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-                    <Route path="/community/post/:id" element={<ProtectedRoute><PostPage /></ProtectedRoute>} />
+                    <Route path="/community" element={<ProtectedRoute><ErrorBoundary fallbackMessage="The Community feed is temporarily unavailable."><CommunityFeed /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Messages are temporarily unavailable."><ChatRooms /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/reels" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Reels are temporarily unavailable."><ReelsFeed /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/search" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Search is temporarily unavailable."><CommunitySearch /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/user/:id" element={<ProtectedRoute><ErrorBoundary><UserProfile /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/post/:id" element={<ProtectedRoute><ErrorBoundary><PostPage /></ErrorBoundary></ProtectedRoute>} />
 
                     <Route path="/school" element={<SchoolHome />} />
                     <Route path="/school/download" element={<SchoolDownloads />} />
