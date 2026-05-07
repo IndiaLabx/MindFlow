@@ -76,10 +76,23 @@ interface ProfilePageProps {
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettings }) => {
-  const { user, profile, signOut, refreshUser, refreshProfile } = useAuth();
+  const { user, signOut, refreshUser } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
 
-
-  // Using global profile from AuthContext instead of fetching locally.
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (data) {
+        setProfile(data);
+      }
+    };
+    fetchProfile();
+  }, [user]);
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -142,7 +155,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
 
         if (updateUserError) throw updateUserError;
 
-        await refreshProfile();
+        await refreshUser();
         setImageSrc(null); // Close the cropper modal
 
     } catch (err: any) {
@@ -152,9 +165,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
     }
   };
   
-  const avatarUrl = profile?.avatar_url || defaultAvatar;
-  const targetExam = profile?.target_exam || 'Not Set';
-  const fullName = profile?.full_name || 'Student';
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || defaultAvatar;
+  const targetExam = profile?.target_exam || user?.user_metadata?.target_exam || 'Not Set';
+  const fullName = profile?.full_name || user?.user_metadata?.full_name || 'Student';
 
   const { stats: userStats, loading: statsLoading } = useProfileStats();
 
