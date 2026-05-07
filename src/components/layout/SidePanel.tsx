@@ -14,7 +14,7 @@ interface SidePanelProps {
 }
 
 export const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, onTabChange }) => {
-    const { user, profile, signOut } = useAuth();
+    const { user, signOut } = useAuth();
     const navigate = useNavigate();
 
     const handleNavigation = (path: string, tab?: string) => {
@@ -108,14 +108,14 @@ export const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, onTabChan
                                         <div className="flex items-center gap-4">
                                             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/50 dark:to-indigo-800/30 p-1 shadow-inner border border-white dark:border-slate-700">
                                                 <img
-                                                    src={profile?.avatar_url || user?.user_metadata?.avatar_url || `https://api.dicebear.com/6.x/initials/svg?seed=\${profile?.full_name || user?.user_metadata?.full_name || user?.email}`}
+                                                    src={user.user_metadata?.avatar_url || `https://api.dicebear.com/6.x/initials/svg?seed=\${user.user_metadata?.full_name || user.email}`}
                                                     alt="User Avatar"
                                                     className="w-full h-full rounded-full object-cover"
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                                                    {profile?.full_name || user?.user_metadata?.full_name || 'MindFlow User'}
+                                                    {user.user_metadata?.full_name || 'MindFlow User'}
                                                 </h3>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                                                     {user.email}
