@@ -119,14 +119,19 @@ export const CommunityFeed: React.FC = () => {
 
   if (status === 'pending') {
     return (
-      <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-32 pt-4 px-4">
+      <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-32 pt-0 px-0 md:px-4">
+      <SocialHeader />
+      <div className="w-full px-4">
         {[1, 2, 3].map(i => <PostCardSkeleton key={i} />)}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-32 pt-4 px-4">
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-32 pt-0 px-0 md:px-4">
+      <SocialHeader />
+      <div className="w-full px-4 flex flex-col items-center">
       <AnimatePresence>
         {particles.map(p => (
           <FloatingHeart key={p.id} x={p.x} y={p.y} onComplete={() => removeParticle(p.id)} />
@@ -163,6 +168,7 @@ export const CommunityFeed: React.FC = () => {
         <Plus size={28} />
       </button>
 
+      </div>
       <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="posts" />
     </div>
   );
