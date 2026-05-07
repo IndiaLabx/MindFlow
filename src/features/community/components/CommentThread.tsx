@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { toggleLikeComment } from '../api/communityApi';
 import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
@@ -11,6 +12,7 @@ export const CommentThread: React.FC<{
   isReply?: boolean;
 }> = React.memo(({ comment, onReply, currentUserId, isReply }) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { showToast } = useNotificationStore();
   const likeCommentMutation = useMutation({
     mutationFn: (currentlyLiked: boolean) => toggleLikeComment(comment.id, currentUserId!, currentlyLiked),
@@ -41,18 +43,27 @@ export const CommentThread: React.FC<{
     <div className={cn("flex w-full mb-5", isReply ? "mt-3 ml-12" : "mt-2")}>
       {/* Avatar Column */}
       <img
+        onClick={(e) => { e.stopPropagation(); navigate(`/u/${comment.profiles?.username || comment.user_id}`); }}
         src={comment.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${comment.profiles?.full_name || 'User'}`}
-        className={cn("rounded-full object-cover shrink-0 border border-gray-100", isReply ? "w-8 h-8" : "w-10 h-10")}
+        className={cn("rounded-full object-cover shrink-0 border border-gray-100 cursor-pointer", isReply ? "w-8 h-8" : "w-10 h-10")}
         alt="avatar"
       />
+        {/* Content Column */}
+        <div className="flex-1 ml-3 flex flex-col justify-start">
+          {/* Username and Text */}
+          <div className="text-[14px] leading-snug">
+            <span 
+              className="font-bold text-gray-900 mr-2 cursor-pointer hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/u/${comment.profiles?.username || comment.user_id}`);
+              }}
+            >
+              {comment.profiles?.full_name || 'User'}
+            </span>
+            <span className="text-gray-900 whitespace-pre-wrap">{comment.content}</span>
+          </div>
 
-      {/* Content Column */}
-      <div className="flex-1 ml-3 flex flex-col justify-start">
-        {/* Username and Text */}
-        <div className="text-[14px] leading-snug">
-          <span className="font-bold text-gray-900 mr-2">{comment.profiles?.full_name || 'User'}</span>
-          <span className="text-gray-900 whitespace-pre-wrap">{comment.content}</span>
-        </div>
 
         {/* Metadata Row */}
         <div className="flex items-center gap-4 mt-1.5">

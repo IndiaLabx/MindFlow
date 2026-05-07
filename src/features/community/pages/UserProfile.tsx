@@ -8,34 +8,34 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { cn } from '../../../utils/cn';
 
 export const UserProfile: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const { username } = useParams<{ username: string }>();
     const { user: currentUser } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const { data: profile, isLoading: isProfileLoading } = useQuery({
-        queryKey: ['user-profile', id, currentUser?.id],
-        queryFn: () => fetchUserProfile(id!, currentUser?.id),
-        enabled: !!id,
+        queryKey: ['user-profile', username, currentUser?.id],
+        queryFn: () => fetchUserProfile(username!, currentUser?.id),
+        enabled: !!username,
     });
 
     const { data: posts, isLoading: isPostsLoading } = useQuery({
-        queryKey: ['user-posts', id],
-        queryFn: () => fetchUserPosts(id!),
-        enabled: !!id,
+        queryKey: ['user-posts', profile?.id],
+        queryFn: () => fetchUserPosts(profile!.id),
+        enabled: !!profile?.id,
     });
 
     const toggleFollowMutation = useMutation({
-        mutationFn: () => toggleFollow(currentUser!.id, id!, !!profile?.is_following),
+        mutationFn: () => toggleFollow(currentUser!.id, profile!.id, !!profile?.is_following),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user-profile', id, currentUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile', username, currentUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['community-posts'] });
             queryClient.invalidateQueries({ queryKey: ['community-search'] });
         }
     });
 
     const messageMutation = useMutation({
-        mutationFn: () => getOrCreateChatRoom(currentUser!.id, id!),
+        mutationFn: () => getOrCreateChatRoom(currentUser!.id, profile!.id),
         onSuccess: (roomId) => {
             if (roomId) {
                 // Navigate to messages, perhaps passing room ID or assuming chat screen loads recent
@@ -46,7 +46,7 @@ export const UserProfile: React.FC = () => {
         }
     });
 
-    const isOwnProfile = currentUser?.id === id;
+    const isOwnProfile = currentUser?.id === profile?.id;
 
     if (isProfileLoading) {
         return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-600">Loading Profile...</div>;
@@ -54,8 +54,8 @@ export const UserProfile: React.FC = () => {
 
     if (!profile) {
         return <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-gray-600">
-            <h2 className="text-xl mb-4">User not found</h2>
-            <button onClick={() => navigate(-1)} className="px-4 py-2 bg-gray-100 rounded-lg text-gray-900">Go Back</button>
+            <h2 className="text-xl font-bold mb-2">User not found</h2>
+            <button onClick={() => navigate(-1)} className="text-blue-500 hover:underline">Go back</button>
         </div>;
     }
 
@@ -66,7 +66,7 @@ export const UserProfile: React.FC = () => {
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
                     <ArrowLeft size={24} />
                 </button>
-                <div className="font-semibold text-lg">{profile.full_name || 'User'}</div>
+                <div className="font-semibold text-lg">{profile.username || profile.full_name || 'User'}</div>
             </div>
 
             {/* Profile Info */}

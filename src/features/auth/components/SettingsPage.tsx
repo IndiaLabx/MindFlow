@@ -101,6 +101,36 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     setTimeout(() => { setError(null); setMessage(null); }, 3000);
   };
 
+    const updateUsername = async (value: string) => {
+    if (!user) return;
+
+    // Validation
+    const isValid = /^[a-z0-9_\.]+(\.[a-z0-9_\.]+)*$/.test(value) && value.length <= 30 && !value.includes(' ');
+    if (!isValid) {
+      showMessage('Invalid username. Use lowercase, numbers, underscores, or periods. No spaces, max 30 chars.', true);
+      throw new Error('Invalid format');
+    }
+
+    // Update the profiles table
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username: value })
+      .eq('id', user.id);
+
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        showMessage('Username is already taken.', true);
+      } else {
+        showMessage(error.message, true);
+      }
+      throw error;
+    } else {
+      showMessage('Username updated successfully!');
+      setProfile((prev: any) => ({ ...prev, username: value }));
+      await refreshUser();
+    }
+  };
+
   const updateMetadata = async (key: string, value: string, successMessage: string) => {
     if (!user) return;
 
@@ -179,6 +209,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
             <div>
               <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Full Name</label>
               <EditableField icon={User} value={profile?.full_name || user?.user_metadata?.full_name || ''} onSave={(v) => updateMetadata('full_name', v, 'Name updated!')} placeholder="Enter your full name" />
+              <div className="mt-4"><EditableField icon={User} value={profile?.username || ''} onSave={updateUsername} placeholder="Enter username (e.g. mindflow_user)" /></div>
             </div>
 
             <div>

@@ -25,7 +25,7 @@ export const PostPage: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('posts')
-        .select(`*, profiles:user_id(id, full_name, avatar_url)`)
+        .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
         .eq('id', id)
         .single();
       if (error) throw error;
@@ -112,8 +112,8 @@ export const PostPage: React.FC = () => {
       </div>
 
       {/* Main Post Content */}
-      <div className="bg-white p-4 mb-0 border-b border-gray-200">
-        <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => navigate(`/community/user/${post.user_id}`)}>
+        <div className="bg-white p-4 mb-0 border-b border-gray-200">
+          <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => navigate(`/u/${post.profiles?.username || post.user_id}`)}>
           <img
             src={post.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${post.profiles?.full_name || 'User'}`}
             className="w-12 h-12 rounded-full object-cover border border-gray-200"

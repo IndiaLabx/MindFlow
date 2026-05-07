@@ -134,7 +134,7 @@ export const CommunitySearch: React.FC = () => {
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: i * 0.05 }}
     key={profile.id}
-    onClick={() => navigate(`/community/user/${profile.id}`)}
+    onClick={() => navigate(`/u/${profile.username || profile.id}`)}
     className="flex items-center justify-between p-3 rounded-2xl bg-gray-100 border border-gray-200 hover:bg-white/10 transition-colors cursor-pointer"
 >
                                 <div className="flex items-center gap-3">

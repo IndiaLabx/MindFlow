@@ -5,6 +5,9 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { Plus } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../../../lib/supabase';
+
 // Mock data for future "24-hour Status Updates"
 const mockStories = [
   { id: '1', name: 'Alice', avatarUrl: 'https://api.dicebear.com/6.x/avataaars/svg?seed=Alice', isViewed: false },
@@ -19,10 +22,19 @@ export const SocialHeader: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const { data: profileUsername } = useQuery({
+    queryKey: ['my-username', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+      return data?.username || null;
+    },
+    enabled: !!user,
+  });
+
   const handleProfileClick = () => {
     if (user) {
-      // Route to user's community profile page
-      navigate(`/community/user/${user.id}`);
+      navigate(`/u/${profileUsername || user.id}`);
     }
   };
 

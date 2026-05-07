@@ -63,7 +63,7 @@ export const PostCard: React.FC<{
       className="w-full bg-white backdrop-blur-xl border border-gray-200 rounded-3xl p-4 mb-6 shadow-sm"
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/community/user/${post.user_id}`); }}>
+        <div className="flex items-center gap-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/u/${post.profiles?.username || post.user_id}`); }}>
           <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 overflow-hidden">
             {post.profiles?.avatar_url ? (
               <img src={post.profiles.avatar_url} alt="Avatar" className="w-full h-full object-cover" />

@@ -324,7 +324,7 @@ const AppRoutesContent: React.FC = () => {
                     <Route path="/messages" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Messages are temporarily unavailable."><ChatRooms /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/community/reels" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Reels are temporarily unavailable."><ReelsFeed /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/community/search" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Search is temporarily unavailable."><CommunitySearch /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/community/user/:id" element={<ProtectedRoute><ErrorBoundary><UserProfile /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/u/:username" element={<ProtectedRoute><ErrorBoundary><UserProfile /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/community/post/:id" element={<ProtectedRoute><ErrorBoundary><PostPage /></ErrorBoundary></ProtectedRoute>} />
 
                     <Route path="/school" element={<SchoolHome />} />
