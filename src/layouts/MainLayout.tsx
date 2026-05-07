@@ -114,8 +114,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         } else {
           // Standard tab logic
           const height = 56; // Increased from 48 to wrap text completely
-          // Vertically center in the 64px (h-16) nav container
-          const top = (64 - height) / 2;
+          // Vertically center in the 56px (h-14) nav container
+          const top = (56 - height) / 2;
           const left = baseLeft - 4;
           const width = baseWidth + 8;
 
@@ -249,8 +249,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* --- Sticky Bottom Tab Bar --- */}
       <nav className={cn(
-        "fixed bottom-0 left-0 w-full z-50 transition-colors duration-300 pb-[env(safe-area-inset-bottom)] group overflow-visible",
-        isReviewMode || isAIFullScreen ? "hidden" : "block"
+        "fixed bottom-0 left-0 w-full z-[10000] transition-colors duration-300 pb-[env(safe-area-inset-bottom)] group overflow-visible",
+        isReviewMode || isAIFullScreen || activeTab === 'reels' ? "hidden" : "block"
       )}>
         {/* Glow Background Layer */}
         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
@@ -261,7 +261,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
         {/* Centered Subtle Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[60px] opacity-20 transition-opacity duration-500 z-0 bg-indigo-500"></div>
-        <div ref={navRef} role="tablist" className="max-w-3xl mx-auto px-2 h-16 flex items-center justify-around relative z-20">
+        <div ref={navRef} role="tablist" className="max-w-3xl mx-auto px-2 h-14 flex items-center justify-around relative z-20">
           
                     {/* Golden Ring Active Indicator */}
           <motion.div
