@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Send, Image as ImageIcon, File, ArrowLeft } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ChatListSkeleton } from '../components/ChatListSkeleton';
 
 export const ChatRooms: React.FC = () => {
   const { user } = useAuth();
@@ -29,7 +30,7 @@ export const ChatRooms: React.FC = () => {
     enabled: !!user,
   });
 
-  if (isLoading) return <div className="text-gray-900 p-4">Loading chats...</div>;
+  if (isLoading) return <ChatListSkeleton />;
 
   if (activeRoomId) {
     let room = rooms?.find(r => r.id === activeRoomId);

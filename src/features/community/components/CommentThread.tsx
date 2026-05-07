@@ -40,42 +40,52 @@ export const CommentThread: React.FC<{
   });
 
   return (
-    <div className={cn("flex gap-3", isReply ? "mt-4 ml-8 relative before:absolute before:-left-5 before:top-5 before:w-4 before:h-px before:bg-gray-200" : "")}>
+    <div className={cn("flex w-full mb-5", isReply ? "mt-3 ml-12" : "mt-2")}>
+      {/* Avatar Column */}
       <img
         onClick={(e) => { e.stopPropagation(); navigate(`/u/${comment.profiles?.username || comment.user_id}`); }}
         src={comment.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${comment.profiles?.full_name || 'User'}`}
         className={cn("rounded-full object-cover shrink-0 border border-gray-100 cursor-pointer", isReply ? "w-8 h-8" : "w-10 h-10")}
         alt="avatar"
       />
-      <div className="flex-1">
-        <div className="bg-gray-50/80 rounded-2xl p-3 inline-block max-w-full">
-          <div
-            className="font-semibold text-sm text-gray-900 cursor-pointer hover:underline"
-            onClick={(e) => { e.stopPropagation(); navigate(`/u/${comment.profiles?.username || comment.user_id}`); }}
-          >{comment.profiles?.full_name || 'User'}</div>
-          <div className="text-gray-800 text-sm whitespace-pre-wrap mt-0.5">{comment.content}</div>
-        </div>
+        {/* Content Column */}
+        <div className="flex-1 ml-3 flex flex-col justify-start">
+          {/* Username and Text */}
+          <div className="text-[14px] leading-snug">
+            <span 
+              className="font-bold text-gray-900 mr-2 cursor-pointer hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/u/${comment.profiles?.username || comment.user_id}`);
+              }}
+            >
+              {comment.profiles?.full_name || 'User'}
+            </span>
+            <span className="text-gray-900 whitespace-pre-wrap">{comment.content}</span>
+          </div>
 
-        <div className="flex items-center gap-4 mt-1 px-2">
-          <span className="text-xs text-gray-500 font-medium">
+
+        {/* Metadata Row */}
+        <div className="flex items-center gap-4 mt-1.5">
+          <span className="text-[12px] text-gray-500 font-medium">
             {new Date(comment.created_at).toLocaleDateString()}
           </span>
           <button
-            onClick={() => currentUserId && likeCommentMutation.mutate(!!comment.is_liked_by_me)}
-            className={cn("text-xs font-semibold hover:text-gray-900 transition-colors", comment.is_liked_by_me ? "text-red-500" : "text-gray-500")}
-          >
-            {comment.is_liked_by_me ? 'Liked' : 'Like'} {comment.likes_count > 0 && `(${comment.likes_count})`}
-          </button>
-          <button
             onClick={() => onReply(comment.id, comment.profiles?.full_name || 'User')}
-            className="text-xs text-gray-500 font-semibold hover:text-gray-900 transition-colors"
+            className="text-[12px] text-gray-500 font-semibold hover:text-gray-900 transition-colors"
           >
             Reply
           </button>
         </div>
 
+        {/* Replies */}
         {comment.replies && comment.replies.length > 0 && (
-          <div className="relative before:absolute before:-left-[21px] before:top-2 before:bottom-6 before:w-px before:bg-gray-200">
+          <div className="mt-2">
+            {/* View Replies button could go here in future */}
+            <div className="flex items-center gap-3 mt-1 mb-2">
+               <div className="w-8 h-px bg-gray-300"></div>
+               <span className="text-xs font-semibold text-gray-500">View replies ({comment.replies.length})</span>
+            </div>
             {comment.replies.map((reply: any) => (
               <CommentThread
                 key={reply.id}
@@ -86,6 +96,21 @@ export const CommentThread: React.FC<{
               />
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Like Button (Far Right) */}
+      <div className="flex flex-col items-center justify-start ml-auto pl-3 pt-2">
+        <button
+          onClick={() => currentUserId && likeCommentMutation.mutate(!!comment.is_liked_by_me)}
+          className={cn("p-1 transition-all", comment.is_liked_by_me ? "text-red-500 scale-110" : "text-gray-400 hover:text-gray-600")}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={comment.is_liked_by_me ? "currentColor" : "none"} stroke="currentColor" strokeWidth={comment.is_liked_by_me ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
+             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>
+        {comment.likes_count > 0 && (
+          <span className="text-[10px] font-semibold text-gray-500 mt-0.5">{comment.likes_count}</span>
         )}
       </div>
     </div>
