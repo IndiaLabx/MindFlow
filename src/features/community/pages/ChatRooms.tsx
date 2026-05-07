@@ -10,6 +10,10 @@ import { Send, Image as ImageIcon, File, ArrowLeft } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChatListSkeleton } from '../components/ChatListSkeleton';
+import { ChatIntro } from './ChatIntro';
+import { ChatMessageItem } from './ChatMessageItem';
+import { ChatInputBar } from './ChatInputBar';
+import { Info } from 'lucide-react';
 
 export const ChatRooms: React.FC = () => {
   const { user } = useAuth();
@@ -18,6 +22,12 @@ export const ChatRooms: React.FC = () => {
   const [activeRoomId, setActiveRoomId] = useState<string | null>(location.state?.roomId || null);
 
   // Clear location state after capturing so refresh doesn't auto-open it
+  useEffect(() => {
+    document.body.classList.add('hide-bottom-nav');
+    return () => {
+      document.body.classList.remove('hide-bottom-nav');
+    };
+  }, []);
   useEffect(() => {
       if (location.state?.roomId) {
           navigate(location.pathname, { replace: true, state: {} });
@@ -86,13 +96,13 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
   const queryClient = useQueryClient();
   const { sendTypingStatus } = useSocialRealtime();
   
-  const [newMessage, setNewMessage] = useState('');
+
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   
   
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
+
+
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['chat-messages', room.id],
@@ -198,39 +208,30 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
     }
   };
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !user) return;
 
-    sendMutation.mutate({
-      room_id: room.id,
-      sender_id: user.id,
-      text_content: newMessage.trim()
-    });
-    setNewMessage('');
-    sendTypingStatus(room.id, false);
-  };
 
-  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMessage(e.target.value);
-    // Debounce this in a real scenario
-    sendTypingStatus(room.id, e.target.value.length > 0);
-  };
+
 
   const otherParticipant = room.participants?.find(p => p.user_id !== user?.id);
   const title = room.type === 'direct' ? otherParticipant?.full_name || 'Unknown User' : 'Group Chat';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-2xl mx-auto bg-gray-50">
+    <div className="fixed inset-0 z-[100] bg-white flex flex-col w-full md:relative md:h-[calc(100vh-70px)] md:max-w-2xl md:mx-auto md:border-x md:border-gray-100 md:shadow-sm">
       {/* Header */}
       <div className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-10">
         <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-800">
           <ArrowLeft size={20} />
         </button>
-        <div className="w-8 h-8 rounded-full bg-indigo-500 overflow-hidden">
-             {otherParticipant?.avatar_url && <img src={otherParticipant.avatar_url} className="w-full h-full object-cover" />}
+        <div className="w-10 h-10 rounded-full bg-indigo-500 overflow-hidden shadow-sm">
+             {otherParticipant?.avatar_url ? <img src={otherParticipant.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white font-bold">{(otherParticipant?.full_name || 'U').charAt(0)}</div>}
         </div>
-        <div className="font-semibold text-gray-900">{title}</div>
+        <div className="flex-1 overflow-hidden">
+            <div className="font-semibold text-gray-900 truncate">{title}</div>
+            {room.type === 'direct' && <div className="text-xs text-gray-500 truncate">Active 2h ago</div>}
+        </div>
+        <button className="p-2 -mr-2 rounded-full hover:bg-gray-100 text-gray-800">
+            <Info size={24} strokeWidth={1.5} />
+        </button>
       </div>
 
       {/* Messages Area (Virtualized) */}
@@ -240,39 +241,73 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
         ) : (
           <Virtuoso
             ref={virtuosoRef}
+            components={{
+              Header: () => (
+                room.type === 'direct' && otherParticipant ? <ChatIntro user={otherParticipant} /> : <div className="h-4" />
+              )
+            }}
             data={messages || []}
             initialTopMostItemIndex={(messages?.length || 0) - 1}
             itemContent={(index, msg) => {
+              const prevMsg = index > 0 ? messages?.[index - 1] : null;
+              let showTimeSeparator = false;
+              let timeSeparatorText = '';
+
+              if (msg && msg.created_at) {
+                  const currentMsgDate = new Date(msg.created_at);
+                  if (!prevMsg) {
+                      showTimeSeparator = true;
+                  } else {
+                      const prevMsgDate = new Date(prevMsg.created_at);
+                      const diffInHours = (currentMsgDate.getTime() - prevMsgDate.getTime()) / (1000 * 60 * 60);
+
+                      const isDifferentDay = currentMsgDate.toDateString() !== prevMsgDate.toDateString();
+
+                      if (diffInHours > 1 || isDifferentDay) {
+                          showTimeSeparator = true;
+                      }
+                  }
+
+                  if (showTimeSeparator) {
+                      const today = new Date();
+                      const isToday = currentMsgDate.toDateString() === today.toDateString();
+
+                      const timeStr = currentMsgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      if (isToday) {
+                          timeSeparatorText = `Today ${timeStr}`;
+                      } else {
+                          const dateStr = currentMsgDate.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                          timeSeparatorText = `${dateStr} ${timeStr}`;
+                      }
+                  }
+              }
+
+              const handleLikeToggle = (messageId: string, isLiked: boolean) => {
+                  queryClient.setQueryData<ChatMessage[]>(['chat-messages', room.id], (old) => {
+                      if (!old) return old;
+                      return old.map(m => {
+                          if (m.id === messageId) {
+                              const likes = m.likes || [];
+                              if (isLiked) {
+                                  return { ...m, likes: likes.filter(l => l.user_id !== user?.id) };
+                              } else {
+                                  return { ...m, likes: [...likes, { user_id: user!.id }] };
+                              }
+                          }
+                          return m;
+                      });
+                  });
+              };
               const isMine = msg.sender_id === user?.id;
               return (
-                <div className={cn("px-4 py-2 flex", isMine ? "justify-end" : "justify-start")}>
-                                    <div 
-                    className={cn(
-                      "max-w-[75%] rounded-2xl px-4 py-2",
-                      isMine 
-                        ? "bg-blue-600 text-gray-900 rounded-br-sm shadow-md shadow-blue-600/20"
-                        : "bg-white/10 backdrop-blur-md text-gray-900 rounded-bl-sm border border-gray-200 shadow-sm",
-                      msg.status === 'sending' && "opacity-60"
-                    )}
-                  >
-                    {msg.media_url && msg.media_type === 'image' && (
-                       <div className="mb-2 rounded-xl overflow-hidden bg-black/20">
-                          <img src={msg.media_url} alt="chat media" className="max-w-full h-auto object-cover max-h-64" loading="lazy" />
-                       </div>
-                    )}
-                    {msg.media_url && msg.media_type === 'file' && (
-                       <a href={msg.media_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-black/20 rounded-xl mb-2 hover:bg-black/30 transition">
-                          <File size={24} className="text-gray-900" />
-                          <span className="text-sm font-medium underline">Attachment (Click to view)</span>
-                       </a>
-                    )}
-                    <div className="whitespace-pre-wrap break-words">{msg.text_content}</div>
-                    <div className={cn("text-[10px] mt-1 text-right", isMine ? "text-indigo-200" : "text-gray-600")}>
-                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      {msg.status === 'sending' && " • sending..."}
-                    </div>
-                  </div>
-                </div>
+                <ChatMessageItem
+                  msg={msg}
+                  isMine={isMine}
+                  showTimeSeparator={showTimeSeparator}
+                  timeSeparatorText={timeSeparatorText}
+                  otherParticipantAvatar={otherParticipant?.avatar_url}
+                  onLikeToggle={handleLikeToggle}
+                />
               );
             }}
           />
@@ -280,38 +315,18 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
       </div>
 
       {/* Input Area */}
-      <form onSubmit={handleSend} className="p-4 bg-white/90 backdrop-blur-xl border-t border-gray-200 pb-[env(safe-area-inset-bottom)] relative">
-        {isUploading && (
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-indigo-400 animate-pulse bg-white px-3 py-1 rounded-full border border-gray-200">
-            Uploading media...
-          </div>
-        )}
-        <div className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-full p-1 pl-4 pr-1">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={handleTyping}
-            placeholder="Message..."
-            className="flex-1 bg-transparent border-none text-gray-900 focus:ring-0 outline-none placeholder:text-gray-500"
-          />
-          <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'image')} />
-          <input type="file" ref={fileInputRef} accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => handleFileUpload(e, 'file')} />
-          
-          <button type="button" onClick={() => imageInputRef.current?.click()} className="p-2 text-gray-600 hover:text-gray-900 rounded-full">
-            <ImageIcon size={20} />
-          </button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-600 hover:text-gray-900 rounded-full">
-            <File size={20} />
-          </button>
-          <button 
-            type="submit" 
-            disabled={(!newMessage.trim() && !isUploading)}
-            className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-500 shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:bg-gray-200 transition-colors"
-          >
-            <Send size={18} className="translate-x-[1px] -translate-y-[1px]" />
-          </button>
-        </div>
-      </form>
+      <ChatInputBar
+        onSend={(text) => {
+          sendMutation.mutate({
+            room_id: room.id,
+            sender_id: user!.id,
+            text_content: text
+          });
+        }}
+        onUpload={handleFileUpload}
+        isUploading={isUploading}
+        onTyping={(isTyping) => sendTypingStatus(room.id, isTyping)}
+      />
     </div>
   );
 };

@@ -248,7 +248,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       </main>
 
       {/* --- Sticky Bottom Tab Bar --- */}
+
+      <style>{'body.hide-bottom-nav .main-layout-nav { display: none !important; }'}</style>
       <nav className={cn(
+        "main-layout-nav",
         "fixed bottom-0 left-0 w-full z-[10000] transition-colors duration-300 pb-[env(safe-area-inset-bottom)] group overflow-visible",
         isReviewMode || isAIFullScreen || activeTab === 'reels' ? "hidden" : "block"
       )}>
