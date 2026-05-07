@@ -97,7 +97,16 @@ export const UserProfile: React.FC = () => {
                     </div>
                 </div>
 
-                {!isOwnProfile && (
+                {isOwnProfile ? (
+                    <div className="flex gap-3 w-full max-w-xs">
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="flex-1 py-2.5 bg-white/10 text-gray-900 hover:bg-white/20 border border-gray-200 rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+                        >
+                            Edit Profile
+                        </button>
+                    </div>
+                ) : (
                     <div className="flex gap-3 w-full max-w-xs">
                         <button
                             onClick={() => toggleFollowMutation.mutate()}
