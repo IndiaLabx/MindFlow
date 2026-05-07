@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useProfileStats } from '../hooks/useProfileStats';
 import { useNavigate } from 'react-router-dom';
+import { useNotificationStore } from "../../../stores/useNotificationStore";
 import { useQueryClient } from '@tanstack/react-query';
 
 const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=e2e8f0';
@@ -98,6 +99,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useNotificationStore();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Cropper States
@@ -150,20 +152,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
           .from('avatars')
           .getPublicUrl(filePath);
 
-        // Update User Profile Metadata
+        // Update User Profile Metadata ONLY
+        // Trigger will handle profiles table sync automatically
         const { error: updateUserError } = await supabase.auth.updateUser({
           data: { avatar_url: publicUrl },
         });
 
         if (updateUserError) throw updateUserError;
-
-        // Also update profiles table explicitly
-        const { error: updateProfilesError } = await supabase
-          .from('profiles')
-          .update({ avatar_url: publicUrl })
-          .eq('id', user.id);
-
-        if (updateProfilesError) throw updateProfilesError;
 
         await refreshUser();
 
@@ -176,12 +171,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
         queryClient.invalidateQueries({ queryKey: ['community-comments'] });
         queryClient.invalidateQueries({ queryKey: ['chat-rooms'] });
 
-        setImageSrc(null); // Close the cropper modal
+        showToast({ title: 'Success', message: 'Profile picture updated successfully', variant: 'success' });
 
     } catch (err: any) {
         setError(`Upload failed: ${err.message}`);
     } finally {
         setUploading(false);
+        setImageSrc(null); // Close the cropper modal always
     }
   };
   
