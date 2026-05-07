@@ -4,6 +4,8 @@ import { fetchUserRooms, fetchMessages, sendMessage, uploadChatMedia, ChatRoom, 
 import { useAuth } from '../../auth/context/AuthContext';
 import { useSocialRealtime } from '../hooks/useSocialRealtime';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { usePresenceStore } from '../../../stores/usePresenceStore';
+
 import { supabase } from '../../../lib/supabase';
 import { motion } from 'framer-motion';
 import { Send, Image as ImageIcon, File, ArrowLeft } from 'lucide-react';
@@ -215,6 +217,23 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
   const otherParticipant = room.participants?.find(p => p.user_id !== user?.id);
   const title = room.type === 'direct' ? otherParticipant?.full_name || 'Unknown User' : 'Group Chat';
 
+  const isOnline = usePresenceStore(state => otherParticipant ? state.isUserOnline(otherParticipant.user_id) : false);
+
+  const formatTimeAgo = (dateString?: string) => {
+    if (!dateString) return 'Offline';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Active just now';
+    if (diffInSeconds < 3600) return `Active ${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `Active ${Math.floor(diffInSeconds / 3600)}h ago`;
+
+    const diffInDays = Math.floor(diffInSeconds / 86400);
+    if (diffInDays === 1) return 'Active yesterday';
+    return `Active ${diffInDays}d ago`;
+  };
+
   return (
     <div className="fixed inset-0 z-[100] bg-white flex flex-col w-full md:relative md:h-[calc(100vh-70px)] md:max-w-2xl md:mx-auto md:border-x md:border-gray-100 md:shadow-sm">
       {/* Header */}
@@ -227,7 +246,18 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
         </div>
         <div className="flex-1 overflow-hidden">
             <div className="font-semibold text-gray-900 truncate">{title}</div>
-            {room.type === 'direct' && <div className="text-xs text-gray-500 truncate">Active 2h ago</div>}
+            {room.type === 'direct' && (
+              <div className="text-xs text-gray-500 truncate flex items-center gap-1">
+                {isOnline ? (
+                  <>
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    <span className="text-green-600 font-medium">Active now</span>
+                  </>
+                ) : (
+                  <span>{formatTimeAgo(otherParticipant?.last_seen ?? undefined)}</span>
+                )}
+              </div>
+            )}
         </div>
         <button className="p-2 -mr-2 rounded-full hover:bg-gray-100 text-gray-800">
             <Info size={24} strokeWidth={1.5} />
