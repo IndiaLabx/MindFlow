@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../../components/Button/Button';
 import { ArrowLeft, User, Mail, Lock, Loader2, Check, AlertTriangle, Pencil, X, Phone, Calendar, Target, FileText, Trash2 } from 'lucide-react';
@@ -67,6 +68,7 @@ const EditableField: React.FC<{
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const { user, refreshUser } = useAuth();
+  const queryClient = useQueryClient();
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
@@ -128,6 +130,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
       showMessage('Username updated successfully!');
       setProfile((prev: any) => ({ ...prev, username: value }));
       await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['community-search'] });
+      queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['community-comments'] });
+      queryClient.invalidateQueries({ queryKey: ['chat-rooms'] });
     }
   };
 
@@ -152,6 +161,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
       // Update local state
       setProfile((prev: any) => ({ ...prev, [key]: value }));
       await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['community-search'] });
+      queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['community-comments'] });
+      queryClient.invalidateQueries({ queryKey: ['chat-rooms'] });
     }
   };
 

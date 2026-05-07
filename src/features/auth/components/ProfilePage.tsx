@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useProfileStats } from '../hooks/useProfileStats';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=e2e8f0';
 
@@ -94,6 +95,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
     fetchProfile();
   }, [user]);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -148,14 +150,32 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
           .from('avatars')
           .getPublicUrl(filePath);
 
-        // Update User Profile
+        // Update User Profile Metadata
         const { error: updateUserError } = await supabase.auth.updateUser({
-          data: { avatar_url: `${publicUrl}?t=${new Date().getTime()}` }, // Bust cache
+          data: { avatar_url: publicUrl },
         });
 
         if (updateUserError) throw updateUserError;
 
+        // Also update profiles table explicitly
+        const { error: updateProfilesError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: publicUrl })
+          .eq('id', user.id);
+
+        if (updateProfilesError) throw updateProfilesError;
+
         await refreshUser();
+
+        // Invalidate global queries to reflect new avatar everywhere
+        queryClient.invalidateQueries({ queryKey: ['profile'] });
+        queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+        queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+        queryClient.invalidateQueries({ queryKey: ['community-search'] });
+        queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+        queryClient.invalidateQueries({ queryKey: ['community-comments'] });
+        queryClient.invalidateQueries({ queryKey: ['chat-rooms'] });
+
         setImageSrc(null); // Close the cropper modal
 
     } catch (err: any) {
@@ -166,6 +186,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
   };
   
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || defaultAvatar;
+  // Dynamic cache-buster for rendering
+  const displayAvatarUrl = avatarUrl !== defaultAvatar ? `${avatarUrl}?t=${Date.now()}` : avatarUrl;
+
   const targetExam = profile?.target_exam || user?.user_metadata?.target_exam || 'Not Set';
   const fullName = profile?.full_name || user?.user_metadata?.full_name || 'Student';
 
@@ -233,7 +256,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
             <div className="p-6 pb-6 text-center relative">
               
               <div className="relative w-28 h-28 mx-auto -mt-20">
-                  <img src={avatarUrl} alt="User Avatar" className="w-28 h-28 rounded-full border-4 border-white dark:border-slate-800 shadow-lg object-cover" />
+                  <img src={displayAvatarUrl} alt="User Avatar" className="w-28 h-28 rounded-full border-4 border-white dark:border-slate-800 shadow-lg object-cover" />
                   <input type="file" ref={avatarInputRef} className="hidden" onChange={handleFileSelect} accept="image/png, image/jpeg" />
                   <button
                       onClick={handleAvatarClick}
