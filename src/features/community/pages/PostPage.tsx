@@ -102,7 +102,7 @@ export const PostPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-2xl mx-auto pb-32 min-h-screen bg-gray-50/50">
+    <div className="flex flex-col w-full max-w-2xl mx-auto pb-[140px] min-h-screen bg-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 p-4 flex items-center gap-4 shadow-sm">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
@@ -112,7 +112,7 @@ export const PostPage: React.FC = () => {
       </div>
 
       {/* Main Post Content */}
-      <div className="bg-white p-4 mb-2 shadow-sm border-b border-gray-100">
+      <div className="bg-white p-4 mb-0 border-b border-gray-200">
         <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => navigate(`/community/user/${post.user_id}`)}>
           <img
             src={post.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${post.profiles?.full_name || 'User'}`}
@@ -149,7 +149,7 @@ export const PostPage: React.FC = () => {
       </div>
 
       {/* Comments Section */}
-      <div className="flex-1 bg-white p-4">
+      <div className="flex-1 bg-white px-4 py-2">
         <h2 className="font-semibold text-gray-900 mb-6">Comments</h2>
 
         {commentsLoading ? (
@@ -176,35 +176,37 @@ export const PostPage: React.FC = () => {
       </div>
 
       {/* Comment Input Sticky Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-2xl mx-auto bg-white border-t border-gray-200 p-3 pb-safe z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-[64px] left-0 right-0 max-w-3xl mx-auto bg-white border-t border-gray-200 p-3 z-40 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_20px_rgba(255,255,255,1)]">
         {replyingTo && (
-          <div className="flex items-center justify-between bg-indigo-50 px-3 py-1.5 rounded-t-xl mb-2 -mt-4 mx-1">
-            <span className="text-xs text-indigo-600 font-medium">Replying to {replyingTo.username}</span>
-            <button onClick={() => setReplyingTo(null)} className="text-indigo-400 hover:text-indigo-600"><Share2 size={14} className="rotate-45"/></button>
+          <div className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-t-lg mb-2 -mt-3 mx-1 border border-gray-100 border-b-0">
+            <span className="text-xs text-gray-500">Replying to <span className="font-semibold text-gray-900">{replyingTo.username}</span></span>
+            <button type="button" onClick={() => setReplyingTo(null)} className="text-gray-400 hover:text-gray-900 text-xs font-bold px-2 py-1">Cancel</button>
           </div>
         )}
         <form onSubmit={handleCommentSubmit} className="flex items-center gap-3">
           <img
             src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.email}`}
-            className="w-10 h-10 rounded-full object-cover shrink-0"
+            className="w-10 h-10 rounded-full object-cover shrink-0 border border-gray-100"
             alt="avatar"
           />
-          <div className="flex-1 relative">
+          <div className="flex-1 flex items-center bg-transparent relative">
             <input
               type="text"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder={replyingTo ? "Write a reply..." : "Add a comment..."}
-              className="w-full bg-gray-100 border-none rounded-full px-4 py-2.5 pr-12 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              placeholder={replyingTo ? "Add a reply..." : "Add a comment..."}
+              className="w-full bg-gray-100/80 border-none rounded-full px-4 py-2.5 pr-[70px] text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none focus:bg-gray-100 transition-colors"
               disabled={submitCommentMutation.isPending}
             />
-            <button
-              type="submit"
-              disabled={!commentText.trim() || submitCommentMutation.isPending}
-              className="absolute right-1 top-1 bottom-1 p-2 rounded-full bg-indigo-600 text-white disabled:opacity-50 disabled:bg-gray-400 transition-colors"
-            >
-              {submitCommentMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="ml-0.5" />}
-            </button>
+            {commentText.trim() && (
+              <button
+                type="submit"
+                disabled={submitCommentMutation.isPending}
+                className="absolute right-1 px-3 py-1 text-sm font-semibold text-blue-500 hover:text-blue-700 disabled:opacity-50"
+              >
+                {submitCommentMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'Post'}
+              </button>
+            )}
           </div>
         </form>
       </div>
