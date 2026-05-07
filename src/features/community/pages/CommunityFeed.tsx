@@ -11,7 +11,6 @@ import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { useNavigate } from 'react-router-dom';
 import { CreatePostModal } from '../components/CreatePostModal';
 import { PostCardSkeleton } from '../components/PostCardSkeleton';
-import { SocialHeader } from '../components/SocialHeader';
 
 // --- Particle Component for "Wow" Effect ---
 const FloatingHeart: React.FC<{ x: number, y: number, onComplete: () => void }> = ({ x, y, onComplete }) => {
@@ -124,10 +123,7 @@ export const CommunityFeed: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center w-full mx-auto pb-32">
-      <SocialHeader />
-      <div className="w-full max-w-2xl px-4 pt-4">
-      {/* Render Particles Overlay */}
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-32 pt-4 px-4">
       <AnimatePresence>
         {particles.map(p => (
           <FloatingHeart key={p.id} x={p.x} y={p.y} onComplete={() => removeParticle(p.id)} />
@@ -165,7 +161,6 @@ export const CommunityFeed: React.FC = () => {
       </button>
 
       <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="posts" />
-      </div>
     </div>
   );
 };
