@@ -143,16 +143,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const updateMetadata = async (key: string, value: string, successMessage: string) => {
     if (!user) return;
 
-    // Also update auth.users metadata for legacy compatibility just in case
-    await supabase.auth.updateUser({
+    // Update auth.users metadata ONLY
+    // Security Definer Trigger will sync this down to the profiles table
+    const { error } = await supabase.auth.updateUser({
       data: { [key]: value }
     });
-
-    // Update the profiles table
-    const { error } = await supabase
-      .from('profiles')
-      .update({ [key]: value })
-      .eq('id', user.id);
 
     if (error) {
       showMessage(error.message, true);
