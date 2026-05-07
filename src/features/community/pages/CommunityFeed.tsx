@@ -126,10 +126,7 @@ export const CommunityFeed: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center w-full mx-auto pb-32">
-      <SocialHeader />
-      <div className="w-full max-w-2xl px-4 pt-4">
-      {/* Render Particles Overlay */}
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-32 pt-4 px-4">
       <AnimatePresence>
         {particles.map(p => (
           <FloatingHeart key={p.id} x={p.x} y={p.y} onComplete={() => removeParticle(p.id)} />
@@ -161,13 +158,12 @@ export const CommunityFeed: React.FC = () => {
 
       <button
         onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-24 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
+        className="fixed bottom-28 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
       >
         <Plus size={28} />
       </button>
 
       <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="posts" />
-      </div>
     </div>
   );
 };

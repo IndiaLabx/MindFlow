@@ -49,7 +49,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onTabChange,
   onOpenSettings 
 }) => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { isReviewMode } = useQuizContext();
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const { isSocialMode, toggleSocialMode } = useSocialStore();
@@ -178,7 +178,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     )}>
       
       {/* --- Sticky Top Header --- */}
-      {!isReviewMode && !isAIFullScreen && !isSocialMode && (
+      {!isReviewMode && !isAIFullScreen && (
       <header className="sticky top-0 z-40 w-full transition-all duration-300 relative group overflow-visible">
         {/* Glow Background Layer */}
         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
@@ -213,7 +213,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <NotificationBell />
                 <button onClick={() => onTabChange('profile')} className="rounded-full transition-opacity duration-200 hover:opacity-80">
                   <img
-                    src={profile?.avatar_url || user?.user_metadata?.avatar_url || `https://api.dicebear.com/6.x/initials/svg?seed=${profile?.full_name || user?.user_metadata?.full_name || user?.email}`}
+                    src={user.user_metadata?.avatar_url || `https://api.dicebear.com/6.x/initials/svg?seed=${user.user_metadata?.full_name || user.email}`}
                     alt="User Avatar"
                     className="w-8 h-8 rounded-full"
                   />
@@ -300,7 +300,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             <>
               <NavTab 
                 id="community" 
-                label="Feed"
+                label="Feed" hideTextOnMobile
                 icon={<LayoutDashboard className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'community'} 
                 onClick={() => onTabChange('community')}
@@ -309,7 +309,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               
               <NavTab 
                 id="search"
-                label="Search"
+                label="Search" hideTextOnMobile
                 icon={<Search className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'search'}
                 onClick={() => onTabChange('search')}
@@ -334,7 +334,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   <Play className="w-7 h-7" />
                 </div>
                 <span className={cn(
-                  "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors",
+                  "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors hidden md:block",
                   (activeTab as any) === 'reels' ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500"
                 )}>
                   Reels
@@ -343,7 +343,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
               <NavTab
                 id="messages"
-                label="Messages"
+                label="Messages" hideTextOnMobile
                 icon={<MessageSquare className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'messages'}
                 onClick={() => onTabChange('messages')}
@@ -352,7 +352,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
               <NavTab
                 id="home"
-                label="Learn"
+                label="Learn" hideTextOnMobile
                 icon={<ArrowLeft className="w-6 h-6" />}
                 isActive={false}
                 onClick={() => onTabChange('home')}
@@ -396,7 +396,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   <Brain className="w-7 h-7" />
                 </div>
                 <span className={cn(
-                  "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors",
+                  "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors hidden md:block",
                   activeTab === 'ai' ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500"
                 )}>
                   AI
@@ -439,7 +439,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 };
 
 // Helper Subcomponent for Tab Items
-const NavTab = ({ id, label, icon, isActive, onClick, buttonRef }: { id: string, label: string, icon: React.ReactNode, isActive: boolean, onClick: () => void, buttonRef?: React.RefObject<HTMLButtonElement | null> }) => (
+const NavTab = ({ id, label, icon, isActive, onClick, buttonRef, hideTextOnMobile }: { id: string, label: string, icon: React.ReactNode, isActive: boolean, onClick: () => void, buttonRef?: React.RefObject<HTMLButtonElement | null>, hideTextOnMobile?: boolean }) => (
   <motion.button
     ref={buttonRef}
     onClick={onClick}
@@ -471,6 +471,7 @@ const NavTab = ({ id, label, icon, isActive, onClick, buttonRef }: { id: string,
     </div>
     <span className={cn(
       "text-[10px] font-bold mt-1 transition-all z-10",
+      hideTextOnMobile ? "hidden md:block" : "",
       isActive
          ? "text-[var(--gold-2)] dark:text-[var(--gold-3)] font-black tracking-wide"
          : "font-semibold"
