@@ -20,6 +20,7 @@ export type ChatMessage = {
   created_at: string;
   updated_at: string;
   read_at?: string | null;
+  likes?: { user_id: string }[];
   // Local optimistic state
   status?: 'sending' | 'sent' | 'error';
 };
@@ -101,7 +102,7 @@ export const uploadChatMedia = async (file: File, userId: string): Promise<strin
 export const fetchMessages = async (roomId: string, limit = 50): Promise<ChatMessage[]> => {
   const { data, error } = await supabase
     .from('chat_room_messages')
-    .select('*')
+    .select('*, likes:chat_message_likes(user_id)')
     .eq('room_id', roomId)
     .order('created_at', { ascending: false }) // fetch newest first
     .limit(limit);
@@ -127,4 +128,21 @@ export const sendMessage = async (message: Partial<ChatMessage>): Promise<ChatMe
 
   if (error) throw error;
   return data as ChatMessage;
+};
+
+
+export const toggleMessageLike = async (messageId: string, userId: string, isLiked: boolean): Promise<void> => {
+  if (isLiked) {
+    const { error } = await supabase
+      .from('chat_message_likes')
+      .delete()
+      .eq('message_id', messageId)
+      .eq('user_id', userId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from('chat_message_likes')
+      .insert({ message_id: messageId, user_id: userId });
+    if (error) throw error;
+  }
 };
