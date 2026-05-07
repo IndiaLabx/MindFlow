@@ -9,7 +9,7 @@ export type Post = {
   type: 'text' | 'image' | 'video' | 'reel';
   created_at: string;
   updated_at: string;
-  profiles?: { id?: string; full_name: string | null; avatar_url: string | null };
+  profiles?: { id?: string; full_name: string | null; username?: string; avatar_url: string | null };
   likes_count?: number;
   comments_count?: number;
   is_liked_by_me?: boolean;
@@ -18,6 +18,7 @@ export type Post = {
 export type SearchProfile = {
   id: string;
   full_name: string | null;
+  username: string;
   avatar_url: string | null;
   similarity: number;
   is_following?: boolean;
@@ -51,7 +52,7 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
             .from('posts')
             .select(`
             *,
-            profiles:user_id(id, full_name, avatar_url)
+            profiles:user_id(id, full_name, username, avatar_url)
             `)
             .in('user_id', followingIds)
             .order('created_at', { ascending: false })
@@ -68,7 +69,7 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
             .from('posts')
             .select(`
             *,
-            profiles:user_id(id, full_name, avatar_url)
+            profiles:user_id(id, full_name, username, avatar_url)
             `)
             .order('created_at', { ascending: false })
             .limit(limit);
@@ -127,7 +128,7 @@ export type Comment = {
     content: string;
     created_at: string;
     updated_at: string;
-    profiles?: { id?: string; full_name: string | null; avatar_url: string | null };
+    profiles?: { id?: string; full_name: string | null; username?: string; avatar_url: string | null };
     likes_count?: number;
     is_liked_by_me?: boolean;
     replies?: Comment[];
@@ -139,7 +140,7 @@ export const fetchComments = async (postId: string, userId?: string): Promise<Co
             .from('post_comments')
             .select(`
                 *,
-                profiles:user_id(id, full_name, avatar_url)
+                profiles:user_id(id, full_name, username, avatar_url)
             `)
             .eq('post_id', postId)
             .order('created_at', { ascending: true });
@@ -207,7 +208,7 @@ export const createComment = async (postId: string, userId: string, content: str
         parent_comment_id: parentCommentId
     }).select(`
         *,
-        profiles:user_id(id, full_name, avatar_url)
+        profiles:user_id(id, full_name, username, avatar_url)
     `).single();
 
     if (error) throw error;
@@ -299,6 +300,7 @@ export const createPost = async (userId: string, content: string, type: 'text' |
 export type UserProfileDetails = {
     id: string;
     full_name: string | null;
+    username: string;
     avatar_url: string | null;
     created_at: string;
     followers_count: number;
@@ -306,20 +308,20 @@ export type UserProfileDetails = {
     is_following: boolean;
 };
 
-export const fetchUserProfile = async (profileId: string, currentUserId?: string): Promise<UserProfileDetails | null> => {
+export const fetchUserProfile = async (username: string, currentUserId?: string): Promise<UserProfileDetails | null> => {
     try {
         const { data: profile, error } = await supabase
             .from('profiles')
-            .select('id, full_name, avatar_url, created_at')
-            .eq('id', profileId)
+            .select('id, full_name, username, avatar_url, created_at')
+            .eq('username', username)
             .single();
 
         if (error || !profile) return null;
 
         const [followersReq, followingReq, isFollowingReq] = await Promise.all([
-            supabase.from('user_followers').select('follower_id', { count: 'exact' }).eq('following_id', profileId),
-            supabase.from('user_followers').select('following_id', { count: 'exact' }).eq('follower_id', profileId),
-            currentUserId ? supabase.from('user_followers').select('follower_id').match({ follower_id: currentUserId, following_id: profileId }).single() : Promise.resolve({ data: null })
+            supabase.from('user_followers').select('follower_id', { count: 'exact' }).eq('following_id', profile.id),
+            supabase.from('user_followers').select('following_id', { count: 'exact' }).eq('follower_id', profile.id),
+            currentUserId ? supabase.from('user_followers').select('follower_id').match({ follower_id: currentUserId, following_id: profile.id }).single() : Promise.resolve({ data: null })
         ]);
 
         return {
@@ -340,7 +342,7 @@ export const fetchUserPosts = async (profileId: string, limit = 20): Promise<Pos
             .from('posts')
             .select(`
                 *,
-                profiles:user_id(id, full_name, avatar_url)
+                profiles:user_id(id, full_name, username, avatar_url)
             `)
             .eq('user_id', profileId)
             .order('created_at', { ascending: false })
