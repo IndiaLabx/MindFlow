@@ -6,7 +6,7 @@ export type ChatRoom = {
   created_at: string;
   updated_at: string;
   // Synthetic fields joined on client or view
-  participants?: { user_id: string; full_name: string | null; avatar_url: string | null }[];
+  participants?: { user_id: string; full_name: string | null; avatar_url: string | null; last_seen?: string | null }[];
   last_message?: string;
 };
 
@@ -58,7 +58,7 @@ export const fetchUserRooms = async (userId: string): Promise<ChatRoom[]> => {
 
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('id, full_name, avatar_url')
+    .select('id, full_name, avatar_url, last_seen')
     .in('id', Array.from(participantUserIds));
 
   const profileMap = new Map(profiles?.map(p => [p.id, p]));

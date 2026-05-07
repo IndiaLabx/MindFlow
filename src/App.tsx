@@ -17,6 +17,7 @@ import { SynapticLoader } from './components/ui/SynapticLoader';
  * @returns {JSX.Element} The mounted application.
  */
 import { PWAUpdateManager } from './components/common/PWAUpdateManager';
+import { PresenceProvider } from './components/PresenceProvider';
 
 const App: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
@@ -62,8 +63,10 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <AppProvider>
-        <PWAUpdateManager />
+        <PresenceProvider>
+          <PWAUpdateManager />
         <AppRoutes />
+        </PresenceProvider>
       </AppProvider>
     </HashRouter>
   );
