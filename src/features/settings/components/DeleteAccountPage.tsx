@@ -20,13 +20,7 @@ export const DeleteAccountPage: React.FC = () => {
         setIsDeleting(true);
         try {
             // Update profile to mark for deletion
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    status: 'pending_deletion',
-                    delete_requested_at: new Date().toISOString()
-                })
-                .eq('id', user.id);
+            const { error } = await supabase.rpc('request_account_deletion');
 
             if (error) throw error;
 
