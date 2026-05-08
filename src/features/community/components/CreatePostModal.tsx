@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Image as ImageIcon, Video, Film, Loader2 } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
-import { createPost } from '../api/communityApi';
+import { createPost, createReel } from '../api/communityApi';
 import { uploadMediaWithProgress } from '../api/uploadMedia';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -66,8 +66,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
       showToast({ title: 'File too large', message: 'Images must be under 5MB.', variant: 'error' });
       return;
     }
-    if (isVideo && fileSizeMB > 20) {
-      showToast({ title: 'File too large', message: 'Videos/Reels must be under 20MB.', variant: 'error' });
+    if (isVideo && fileSizeMB > 50) {
+      showToast({ title: 'File too large', message: 'Videos/Reels must be under 50MB.', variant: 'error' });
       return;
     }
 

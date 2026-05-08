@@ -38,7 +38,7 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
             .eq('follower_id', user.id);
 
         if (followersData && followersData.length > 0) {
-            followingIds = followersData.map(f => f.following_id);
+            followingIds = followersData.map((f: any) => f.following_id);
             // Optionally, include the user's own posts
             followingIds.push(user.id);
         }
@@ -258,7 +258,7 @@ export const searchProfiles = async (query: string, currentUserId?: string): Pro
                 .eq('follower_id', currentUserId)
                 .in('following_id', profileIds);
 
-            const followingSet = new Set(follows?.map(f => f.following_id) || []);
+            const followingSet = new Set(follows?.map((f: any) => f.following_id) || []);
             results = results.map(p => ({
                 ...p,
                 is_following: followingSet.has(p.id)
@@ -392,8 +392,8 @@ export const getOrCreateChatRoom = async (user1Id: string, user2Id: string): Pro
         const { data: rooms2 } = await supabase.from('chat_participants').select('room_id').eq('user_id', user2Id);
 
         if (rooms1 && rooms2) {
-            const r1Ids = new Set(rooms1.map(r => r.room_id));
-            const commonRoom = rooms2.find(r => r1Ids.has(r.room_id));
+            const r1Ids = new Set(rooms1.map((r: any) => r.room_id));
+            const commonRoom = rooms2.find((r: any) => r1Ids.has(r.room_id));
             if (commonRoom) {
                 // verify it's a direct room
                 const { data: roomDetails } = await supabase.from('chat_rooms').select('type').eq('id', commonRoom.room_id).single();
@@ -418,4 +418,231 @@ export const getOrCreateChatRoom = async (user1Id: string, user2Id: string): Pro
         console.error('Error getting/creating chat room:', err);
         return null;
     }
+};
+
+
+
+export type Reel = {
+  id: string;
+  user_id: string;
+  video_url: string;
+  caption: string | null;
+  created_at: string;
+  updated_at: string;
+  profiles?: { id?: string; full_name: string | null; username?: string; avatar_url: string | null };
+  likes_count?: number;
+  comments_count?: number;
+  is_liked_by_me?: boolean;
+};
+
+export type ReelComment = {
+    id: string;
+    reel_id: string;
+    user_id: string;
+    parent_comment_id: string | null;
+    content: string;
+    created_at: string;
+    updated_at: string;
+    profiles?: { id?: string; full_name: string | null; username?: string; avatar_url: string | null };
+    likes_count?: number;
+    is_liked_by_me?: boolean;
+    replies?: ReelComment[];
+};
+
+
+
+
+export const fetchReels = async (limit = 20, cursor?: string): Promise<{ data: Reel[], nextCursor: string | null }> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let q = supabase
+        .from('reels')
+        .select(`
+            *,
+            profiles:user_id(id, full_name, username, avatar_url)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (cursor) q = q.lt('created_at', cursor);
+
+    const { data: reelsData, error } = await q;
+
+    if (error) throw error;
+    if (!reelsData || reelsData.length === 0) return { data: [], nextCursor: null };
+
+    const reelIds = reelsData.map((p: any) => p.id);
+
+    const [likesReq, commentsReq, myLikesReq] = await Promise.all([
+      supabase.from('reel_likes').select('reel_id', { count: 'exact' }).in('reel_id', reelIds),
+      supabase.from('reel_comments').select('reel_id', { count: 'exact' }).in('reel_id', reelIds),
+      user ? supabase.from('reel_likes').select('reel_id').eq('user_id', user.id).in('reel_id', reelIds) : Promise.resolve({ data: [] })
+    ]);
+
+    const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
+      acc[curr.reel_id] = (acc[curr.reel_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    const commentsCountMap = (commentsReq.data || []).reduce((acc: any, curr: any) => {
+      acc[curr.reel_id] = (acc[curr.reel_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    const myLikedReelIds = new Set((myLikesReq.data || []).map((l: any) => l.reel_id));
+
+    const formattedData = reelsData.map((p: any) => ({
+      ...p,
+      profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
+      likes_count: likesCountMap[p.id] || 0,
+      comments_count: commentsCountMap[p.id] || 0,
+      is_liked_by_me: myLikedReelIds.has(p.id)
+    }));
+
+    return {
+      data: formattedData as Reel[],
+      nextCursor: reelsData.length === limit ? reelsData[reelsData.length - 1].created_at : null
+    };
+  } catch (err) {
+    console.error('Fetch reels error:', err);
+    return { data: [], nextCursor: null };
+  }
+};
+
+export const fetchReel = async (id: string, currentUserId?: string): Promise<Reel | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('reels')
+            .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+        if (!data) return null;
+
+        const [likesReq, commentsReq, myLikesReq] = await Promise.all([
+            supabase.from('reel_likes').select('reel_id', { count: 'exact' }).eq('reel_id', id),
+            supabase.from('reel_comments').select('reel_id', { count: 'exact' }).eq('reel_id', id),
+            currentUserId ? supabase.from('reel_likes').select('reel_id').eq('user_id', currentUserId).eq('reel_id', id).single() : Promise.resolve({ data: null })
+        ]);
+
+        return {
+            ...data,
+            profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+            likes_count: likesReq.count || 0,
+            comments_count: commentsReq.count || 0,
+            is_liked_by_me: !!myLikesReq.data
+        } as Reel;
+    } catch (err) {
+        console.error('Fetch reel error:', err);
+        return null;
+    }
+};
+
+export const toggleLikeReel = async (reelId: string, userId: string, currentlyLiked: boolean) => {
+    if (currentlyLiked) {
+        return await supabase.from('reel_likes').delete().match({ reel_id: reelId, user_id: userId });
+    } else {
+        return await supabase.from('reel_likes').insert({ reel_id: reelId, user_id: userId });
+    }
+};
+
+export const createReel = async (userId: string, videoUrl: string, caption?: string) => {
+    const { data, error } = await supabase.from('reels').insert({
+        user_id: userId,
+        video_url: videoUrl,
+        caption: caption?.trim() || null
+    }).select().single();
+
+    if (error) throw error;
+    return data;
+};
+
+export const fetchReelComments = async (reelId: string, userId?: string): Promise<ReelComment[]> => {
+    try {
+        const { data: commentsData, error } = await supabase
+            .from('reel_comments')
+            .select(`
+                *,
+                profiles:user_id(id, full_name, username, avatar_url)
+            `)
+            .eq('reel_id', reelId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        if (!commentsData || commentsData.length === 0) return [];
+
+        const commentIds = commentsData.map((c: any) => c.id);
+
+        const [likesReq, myLikesReq] = await Promise.all([
+            supabase.from('reel_comment_likes').select('comment_id', { count: 'exact' }).in('comment_id', commentIds),
+            userId ? supabase.from('reel_comment_likes').select('comment_id').eq('user_id', userId).in('comment_id', commentIds) : Promise.resolve({ data: [] })
+        ]);
+
+        const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
+            acc[curr.comment_id] = (acc[curr.comment_id] || 0) + 1;
+            return acc;
+        }, {});
+
+        const myLikedCommentIds = new Set((myLikesReq.data || []).map((l: any) => l.comment_id));
+
+        const formattedComments: ReelComment[] = commentsData.map((c: any) => ({
+            ...c,
+            profiles: Array.isArray(c.profiles) ? c.profiles[0] : c.profiles,
+            likes_count: likesCountMap[c.id] || 0,
+            is_liked_by_me: myLikedCommentIds.has(c.id),
+            replies: []
+        }));
+
+        // Organize into a tree structure
+        const commentMap = new Map<string, ReelComment>();
+        const rootComments: ReelComment[] = [];
+
+        formattedComments.forEach(c => commentMap.set(c.id, c));
+
+        formattedComments.forEach(c => {
+            if (c.parent_comment_id && commentMap.has(c.parent_comment_id)) {
+                commentMap.get(c.parent_comment_id)!.replies!.push(c);
+            } else {
+                rootComments.push(c);
+            }
+        });
+
+        return rootComments;
+
+    } catch (err) {
+        console.error('Fetch reel comments error:', err);
+        return [];
+    }
+};
+
+export const toggleLikeReelComment = async (commentId: string, userId: string, currentlyLiked: boolean) => {
+    if (currentlyLiked) {
+        return await supabase.from('reel_comment_likes').delete().match({ comment_id: commentId, user_id: userId });
+    } else {
+        return await supabase.from('reel_comment_likes').insert({ comment_id: commentId, user_id: userId });
+    }
+};
+
+export const createReelComment = async (reelId: string, userId: string, content: string, parentCommentId: string | null = null) => {
+    const { data, error } = await supabase.from('reel_comments').insert({
+        reel_id: reelId,
+        user_id: userId,
+        content: content.trim(),
+        parent_comment_id: parentCommentId
+    }).select(`
+        *,
+        profiles:user_id(id, full_name, username, avatar_url)
+    `).single();
+
+    if (error) throw error;
+
+    return {
+        ...data,
+        profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+        likes_count: 0,
+        is_liked_by_me: false,
+        replies: []
+    } as ReelComment;
 };
