@@ -58,7 +58,7 @@ export const ReelsFeed: React.FC = () => {
       {/* Floating Action Button for Create Reel */}
       <button
         onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-32 md:bottom-28 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
+        className="fixed bottom-24 md:bottom-20 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
       >
         <Plus size={28} />
       </button>
