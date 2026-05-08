@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.mindflow.app',
+  appId: 'com.aklabxmindflow.app',
   appName: 'MindFlow',
   webDir: 'dist',
   plugins: {

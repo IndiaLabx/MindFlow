@@ -54,7 +54,7 @@ To make this feel like a native app and not just a wrapped website:
 
 All native Android configuration (Icons, App Name, Package Info) happens inside the `android/` directory and `capacitor.config.ts`.
 
-- **Package Name:** `com.mindflow.app`
+- **Package Name:** `com.aklabxmindflow.app`
 - **Native Project:** `android/`
 
 If you change core plugins, always run:

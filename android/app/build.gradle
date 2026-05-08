@@ -10,10 +10,10 @@ android {
         }
     }
 
-    namespace = "com.mindflow.app"
+    namespace = "com.aklabxmindflow.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.mindflow.app"
+        applicationId "com.aklabxmindflow.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
