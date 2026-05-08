@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
@@ -121,21 +124,45 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
     setIsGoogleLoading(true);
     setError(null);
     try {
-      // Correctly configure the redirect URL for GitHub Pages production or local dev
-      const redirectURL = import.meta.env.PROD
-        ? 'https://aklabx.github.io/MindFlow/?'
-        : 'http://localhost:3000';
-
       if (isSignUp) {
         localStorage.setItem('mindflow_is_signup', 'true');
       }
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectURL,
+
+      // Check if we are running natively on Android/iOS via Capacitor
+      if (Capacitor.isNativePlatform()) {
+        try {
+          // Initialize plugin (often required on some platforms before first use)
+          await GoogleAuth.initialize();
+
+          const googleUser = await GoogleAuth.signIn();
+
+          if (googleUser && googleUser.authentication && googleUser.authentication.idToken) {
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: 'google',
+              token: googleUser.authentication.idToken,
+            });
+            if (error) throw error;
+          } else {
+             throw new Error("Failed to retrieve ID token from Google.");
+          }
+        } catch (nativeError: any) {
+          console.error("Native Google Sign-In Error:", nativeError);
+          throw new Error(nativeError.message || "Native Google Sign-In failed.");
         }
-      });
-      if (error) throw error;
+      } else {
+        // Fallback to Web-based OAuth for PWA/Browser
+        const redirectURL = import.meta.env.PROD
+          ? 'https://aklabx.github.io/MindFlow/?'
+          : 'http://localhost:3000';
+
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectURL,
+          }
+        });
+        if (error) throw error;
+      }
     } catch (error: any) {
       setError(error.error_description || error.message);
     } finally {
