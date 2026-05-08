@@ -19,13 +19,7 @@ export const RestoreAccountModal: React.FC = () => {
     const handleRestore = async () => {
         setIsRestoring(true);
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    status: 'active',
-                    delete_requested_at: null
-                })
-                .eq('id', user.id);
+            const { error } = await supabase.rpc('restore_account');
 
             if (error) throw error;
 
