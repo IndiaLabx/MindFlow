@@ -72,12 +72,13 @@ export const UserProfile: React.FC = () => {
 
             {/* Profile Info */}
             <div className="p-6 flex flex-col items-center border-b border-gray-200 bg-gradient-to-b from-blue-900/10 to-transparent">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-3xl font-bold mb-4 shadow-lg shadow-blue-500/20 overflow-hidden">
-                    {profile.avatar_url ? (
-                        <img src={profile.avatar_url} alt={profile.full_name || 'User'} className="w-full h-full object-cover" />
-                    ) : (
-                        (profile.full_name || 'U').charAt(0).toUpperCase()
-                    )}
+                <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold mb-4 shadow-lg shadow-blue-500/20 overflow-hidden">
+                    <PresenceAvatar
+                        userId={profile.id}
+                        avatarUrl={profile.avatar_url || `https://api.dicebear.com/6.x/avataaars/svg?seed=${profile.id}`}
+                        altText={profile.full_name || 'User'}
+                        className="w-full h-full"
+                    />
                 </div>
 
                 <h1 className="text-2xl font-bold mb-1">{profile.full_name}</h1>

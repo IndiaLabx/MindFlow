@@ -139,12 +139,13 @@ export const CommunitySearch: React.FC = () => {
     className="flex items-center justify-between p-3 rounded-2xl bg-gray-100 border border-gray-200 hover:bg-white/10 transition-colors cursor-pointer"
 >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-lg font-bold text-gray-900 overflow-hidden shadow-inner">
-                                        {profile.avatar_url ? (
-                                            <img src={profile.avatar_url} alt={profile.full_name || 'User'} className="w-full h-full object-cover" />
-                                        ) : (
-                                            (profile.full_name || 'U').charAt(0).toUpperCase()
-                                        )}
+                                    <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-gray-200">
+                                        <PresenceAvatar
+                                            userId={profile.id}
+                                            avatarUrl={profile.avatar_url || `https://api.dicebear.com/6.x/avataaars/svg?seed=${profile.id}`}
+                                            altText={profile.full_name || 'User'}
+                                            className="w-full h-full"
+                                        />
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="font-semibold text-gray-900">{profile.full_name || 'Unknown User'}</span>

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import Cropper from 'react-easy-crop';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
@@ -252,7 +253,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
             <div className="p-6 pb-6 text-center relative">
               
               <div className="relative w-28 h-28 mx-auto -mt-20">
-                  <img src={displayAvatarUrl} alt="User Avatar" className="w-28 h-28 rounded-full border-4 border-white dark:border-slate-800 shadow-lg object-cover" />
+                  <PresenceAvatar
+                    userId={user?.id || ''}
+                    avatarUrl={displayAvatarUrl}
+                    altText="Profile"
+                    className="w-28 h-28 rounded-full border-4 border-white dark:border-slate-800 shadow-lg"
+                  />
                   <input type="file" ref={avatarInputRef} className="hidden" onChange={handleFileSelect} accept="image/png, image/jpeg" />
                   <button
                       onClick={handleAvatarClick}

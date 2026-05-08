@@ -1,4 +1,5 @@
 import React from 'react';
+import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toggleLikeComment, toggleLikeReelComment } from '../api/communityApi';
@@ -43,12 +44,14 @@ export const CommentThread: React.FC<{
   return (
     <div className={cn("w-full flex items-start justify-between mb-5", isReply ? "mt-3 pl-12" : "mt-2")}>
       {/* Avatar Column */}
-      <img
-        onClick={(e) => { e.stopPropagation(); navigate(`/u/${comment.profiles?.username || comment.user_id}`); }}
-        src={comment.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${comment.profiles?.full_name || 'User'}`}
-        className={cn("rounded-full object-cover shrink-0 border border-gray-100 cursor-pointer", isReply ? "w-8 h-8" : "w-10 h-10")}
-        alt="avatar"
-      />
+      <div onClick={(e) => { e.stopPropagation(); navigate(`/u/${comment.profiles?.username || comment.user_id}`); }} className={cn("shrink-0 cursor-pointer", isReply ? "w-8 h-8" : "w-10 h-10")}>
+        <PresenceAvatar
+          userId={comment.user_id}
+          avatarUrl={comment.profiles?.avatar_url || `https://ui-avatars.com/api/?name=${comment.profiles?.full_name || 'User'}`}
+          altText="avatar"
+          className="w-full h-full"
+        />
+      </div>
         {/* Content Column */}
         <div className="flex-1 pr-4 ml-3 flex flex-col justify-start">
           {/* Username and Text */}

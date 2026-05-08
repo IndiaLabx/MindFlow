@@ -66,11 +66,12 @@ export const PostCard: React.FC<{
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/u/${post.profiles?.username || post.user_id}`); }}>
           <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 overflow-hidden">
-            {post.profiles?.avatar_url ? (
-              <img src={post.profiles.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500" />
-            )}
+            <PresenceAvatar
+              userId={post.user_id}
+              avatarUrl={post.profiles?.avatar_url}
+              altText={post.profiles?.full_name || 'User'}
+              className="w-full h-full"
+            />
           </div>
           <div>
             <div className="font-semibold text-gray-900">{post.profiles?.full_name || 'MindFlow User'}</div>
@@ -153,7 +154,15 @@ export const PostCard: React.FC<{
             className="mt-4 pt-4 border-t border-gray-100 overflow-hidden"
             onSubmit={handleCommentSubmit}
           >
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-0.5">
+                <PresenceAvatar
+                  userId={user?.id || ''}
+                  avatarUrl={user?.user_metadata?.avatar_url || "https://api.dicebear.com/6.x/avataaars/svg?seed=fallback"}
+                  className="w-full h-full"
+                  altText="Your avatar"
+                />
+              </div>
               <input
                 type="text"
                 value={commentText}

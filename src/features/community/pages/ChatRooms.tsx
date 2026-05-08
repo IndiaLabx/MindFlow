@@ -80,13 +80,6 @@ export const ChatRooms: React.FC = () => {
                   className="w-full h-full"
                 />
               </div>
-              <div className="hidden">
-                {avatar ? (
-                  <img src={avatar} alt={title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500" />
-                )}
-              </div>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-gray-900 truncate">{title}</div>
                 <div className="text-sm text-gray-500 truncate">Tap to open chat</div>
