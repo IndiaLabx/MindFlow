@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
+import { PresenceDot } from '../../../components/ui/PresenceDot';
 import Cropper from 'react-easy-crop';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
@@ -269,8 +270,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
                   </button>
               </div>
 
-              <div className="mt-4">
-                  <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">{fullName}</h1>
+              <div className="mt-4 flex flex-col items-center">
+                  <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100">{fullName}</h1>
+                      <PresenceDot userId={user?.id || ''} />
+                  </div>
                   <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-0.5">{user.email}</p>
               </div>
 

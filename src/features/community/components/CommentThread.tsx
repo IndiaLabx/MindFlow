@@ -1,5 +1,6 @@
 import React from 'react';
 import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
+import { PresenceDot } from '../../../components/ui/PresenceDot';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toggleLikeComment, toggleLikeReelComment } from '../api/communityApi';
@@ -56,15 +57,18 @@ export const CommentThread: React.FC<{
         <div className="flex-1 pr-4 ml-3 flex flex-col justify-start">
           {/* Username and Text */}
           <div className="text-[14px] leading-snug">
-            <span 
-              className="font-bold text-gray-900 mr-2 cursor-pointer hover:underline"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/u/${comment.profiles?.username || comment.user_id}`);
-              }}
-            >
-              {comment.profiles?.full_name || 'User'}
-            </span>
+            <div className="inline-flex items-center gap-1.5 mr-2">
+              <span
+                className="font-bold text-gray-900 cursor-pointer hover:underline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/u/${comment.profiles?.username || comment.user_id}`);
+                }}
+              >
+                {comment.profiles?.full_name || 'User'}
+              </span>
+              <PresenceDot userId={comment.user_id} className="w-2 h-2" />
+            </div>
             <span className="text-gray-900 whitespace-pre-wrap">{comment.content}</span>
           </div>
 
