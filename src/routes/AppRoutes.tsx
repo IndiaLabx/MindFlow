@@ -85,6 +85,7 @@ const OWSSession = lazy(() => import('../features/ows/components/OWSSession').th
 const AuthPage = lazy(() => import('../features/auth/components/AuthPage'));
 const ProfilePage = lazy(() => import('../features/auth/components/ProfilePage'));
 const SettingsPage = lazy(() => import('../features/auth/components/SettingsPage'));
+const DeleteAccountPage = lazy(() => import('../features/settings/components/DeleteAccountPage').then(m => ({ default: m.DeleteAccountPage })));
 const SubscriptionPage = lazy(() => import('../features/auth/components/SubscriptionPage'));
 const SupportPage = lazy(() => import('../features/auth/components/SupportPage'));
 
@@ -235,6 +236,11 @@ const AppRoutesContent: React.FC = () => {
                         </ProtectedRoute>
                     } />
 
+                    <Route path="/settings/deleteaccount" element={
+                        <ProtectedRoute>
+                            <DeleteAccountPage />
+                        </ProtectedRoute>
+                    } />
                     <Route path="/settings" element={
                         <ProtectedRoute>
                             <SettingsPage onBack={() => navTo('/profile')} />

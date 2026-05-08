@@ -190,10 +190,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     setLoading(false);
   };
 
-  const handleDeleteAccount = async () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-       showMessage("Account deletion is not supported via the client side currently. Please contact support.", true);
-    }
+  const handleDeleteAccount = () => {
+    // Navigate to the dedicated delete account page
+    window.location.hash = '#/settings/deleteaccount';
   };
 
   return (
@@ -302,8 +301,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                   onClick={handleDeleteAccount}
                   className="px-4 py-2 border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors flex items-center gap-2"
                >
-                  <Trash2 className="w-4 h-4" /> Delete Account
-               </button>
+                  <Trash2 className="w-4 h-4" /> Delete Account</button>
            </div>
         </div>
 

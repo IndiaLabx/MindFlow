@@ -9,6 +9,8 @@ import { db } from '../../../lib/db';
  * Interface for the Auth Context value.
  */
 interface AuthContextType {
+  profileStatus: string | null;
+  deleteRequestedAt: string | null;
   /** The current Supabase session, or null if not authenticated. */
   session: Session | null;
   /** The current authenticated user object, or null. */
@@ -39,6 +41,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [profileStatus, setProfileStatus] = useState<string | null>(null);
+  const [deleteRequestedAt, setDeleteRequestedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const lastSyncedUserId = useRef<string | null>(null);
 
@@ -67,6 +71,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
          // Run sync on load if user is logged in
          syncService.syncOnLogin(session.user.id, false);
       }
+      if (session?.user) {
+        try {
+            const { data } = await supabase.from('profiles').select('status, delete_requested_at').eq('id', session.user.id).single();
+            if (data) {
+                setProfileStatus(data.status);
+                setDeleteRequestedAt(data.delete_requested_at);
+            }
+        } catch (e) { console.error('Error fetching profile status:', e); }
+      }
       setLoading(false);
     };
 
@@ -94,6 +107,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (error) console.error('Error updating user metadata:', error);
         }
         setUser(finalUser);
+        try {
+            const { data } = await supabase.from('profiles').select('status, delete_requested_at').eq('id', finalUser.id).single();
+            if (data) {
+                setProfileStatus(data.status);
+                setDeleteRequestedAt(data.delete_requested_at);
+            }
+        } catch (e) { console.error('Error fetching profile status on auth change:', e); }
 
         // Check if this is a sign up event (either from explicit event or local flag)
         const isSignup = (event as string) === 'SIGNED_UP' || localStorage.getItem('mindflow_is_signup') === 'true';
@@ -110,6 +130,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } else {
         setUser(null);
+        setProfileStatus(null);
+        setDeleteRequestedAt(null);
         lastSyncedUserId.current = null;
 
         // If explicitly signed out by Supabase event (e.g. session expired, logged out elsewhere)
@@ -141,6 +163,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const value = {
+    profileStatus,
+    deleteRequestedAt,
     session,
     user,
     loading,
