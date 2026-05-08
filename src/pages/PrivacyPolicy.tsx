@@ -88,21 +88,33 @@ export const PrivacyPolicy: React.FC = () => {
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">5. Your Choices</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">5. Data Retention and Deletion</h3>
+                            <p>
+                                We retain your personal information only for as long as is necessary for the purposes set out in this Privacy Policy.
+                                You have the right to request the deletion of your account and all associated personal data at any time.
+                            </p>
+                            <ul className="list-disc pl-5 mt-2 space-y-1">
+                                <li><strong>How to delete your data:</strong> You can delete your account directly within the MindFlow app by navigating to Settings &gt; Developer &gt; Delete Account, or by contacting us at support@mindflow.com.</li>
+                                <li>Upon request, we will securely delete your email, profile information, and learning progress from our active databases within 30 days.</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">6. Your Choices</h3>
                             <p>
                                 You can choose not to provide certain personal information, though this may limit your ability to use some features of the app. You can clear your local browser storage at any time to remove offline data. If you wish to delete your account and all associated data, please contact support.
                             </p>
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">6. Changes to This Privacy Policy</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">7. Changes to This Privacy Policy</h3>
                             <p>
                                 We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
                             </p>
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">7. Contact Us</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">8. Contact Us</h3>
                             <p>
                                 If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at support@mindflow.com (or via the Support section in the app).
                             </p>

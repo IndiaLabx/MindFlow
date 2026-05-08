@@ -5,6 +5,11 @@ const config: CapacitorConfig = {
   appName: 'MindFlow',
   webDir: 'dist',
   plugins: {
+    GoogleAuth: {
+      scopes: ["profile", "email"],
+      serverClientId: "876926327353-37gvcdi26i3stpim10oarihfrr0c0ujv.apps.googleusercontent.com",
+      forceCodeForRefreshToken: true
+    },
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
