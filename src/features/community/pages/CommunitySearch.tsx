@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import { motion } from 'framer-motion';
 import { Search, ArrowLeft, UserPlus, UserCheck, User as UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

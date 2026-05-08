@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Share2, MoreVertical, Send } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

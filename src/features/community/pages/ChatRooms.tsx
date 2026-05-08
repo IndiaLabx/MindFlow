@@ -7,6 +7,7 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { usePresenceStore } from '../../../stores/usePresenceStore';
 
 import { supabase } from '../../../lib/supabase';
+import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import { motion } from 'framer-motion';
 import { Send, Image as ImageIcon, File, ArrowLeft } from 'lucide-react';
 import { cn } from '../../../utils/cn';
@@ -71,7 +72,15 @@ export const ChatRooms: React.FC = () => {
               onClick={() => setActiveRoomId(room.id)}
               className="w-full bg-white backdrop-blur-md border border-gray-200 rounded-2xl p-4 flex items-center gap-4 text-left"
             >
-              <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+              <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 shadow-sm">
+                <PresenceAvatar
+                  userId={otherParticipant?.user_id || ''}
+                  avatarUrl={otherParticipant?.avatar_url}
+                  altText={otherParticipant?.full_name || 'User'}
+                  className="w-full h-full"
+                />
+              </div>
+              <div className="hidden">
                 {avatar ? (
                   <img src={avatar} alt={title} className="w-full h-full object-cover" />
                 ) : (
@@ -241,8 +250,13 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
         <button onClick={onBack} className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-800">
           <ArrowLeft size={20} />
         </button>
-        <div className="w-10 h-10 rounded-full bg-indigo-500 overflow-hidden shadow-sm">
-             {otherParticipant?.avatar_url ? <img src={otherParticipant.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white font-bold">{(otherParticipant?.full_name || 'U').charAt(0)}</div>}
+        <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm">
+             <PresenceAvatar
+                userId={otherParticipant?.user_id || ''}
+                avatarUrl={otherParticipant?.avatar_url}
+                altText={otherParticipant?.full_name || 'User'}
+                className="w-full h-full"
+             />
         </div>
         <div className="flex-1 overflow-hidden">
             <div className="font-semibold text-gray-900 truncate">{title}</div>
