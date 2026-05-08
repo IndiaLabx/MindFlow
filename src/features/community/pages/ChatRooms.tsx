@@ -56,7 +56,7 @@ export const ChatRooms: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto pb-32 px-4">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6 mt-4">Messages</h2>
+      <div className="flex items-center gap-3 mb-6 mt-4"><button onClick={() => navigate('/community')} className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-800"><ArrowLeft size={24} /></button><h2 className="text-2xl font-bold text-gray-900">Messages</h2></div>
       <div className="space-y-2">
         {rooms?.map(room => {
           // For direct chats, find the other person
