@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import { motion } from 'framer-motion';
 import { ArrowLeft, UserPlus, UserCheck, MessageSquare, Image as ImageIcon, Video, FileText } from 'lucide-react';
 import { fetchUserProfile, fetchUserPosts, toggleFollow, getOrCreateChatRoom } from '../api/communityApi';

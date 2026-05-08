@@ -1,4 +1,5 @@
 import React from 'react';
+import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -54,10 +55,11 @@ export const SocialHeader: React.FC = () => {
         >
           <div className="relative">
             <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-slate-700 dark:to-slate-600">
-              <img
-                src={userAvatar}
-                alt="Your Story"
-                className="w-full h-full rounded-full border-2 border-white dark:border-slate-900 object-cover"
+              <PresenceAvatar
+                userId={user?.id || ''}
+                avatarUrl={userAvatar}
+                altText="Your Story"
+                className="w-full h-full rounded-full border-2 border-white dark:border-slate-900"
               />
             </div>
             {/* Plus Badge */}
