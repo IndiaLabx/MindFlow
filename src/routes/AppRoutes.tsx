@@ -13,6 +13,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 const CommunityFeed = lazy(() => import('../features/community/pages/CommunityFeed').then(m => ({ default: m.CommunityFeed })));
 const ChatRooms = lazy(() => import('../features/community/pages/ChatRooms').then(m => ({ default: m.ChatRooms })));
 const ReelsFeed = lazy(() => import('../features/community/pages/ReelsFeed').then(m => ({ default: m.ReelsFeed })));
+const ReelCommentsPage = lazy(() => import('../features/community/pages/ReelCommentsPage').then(m => ({ default: m.ReelCommentsPage })));
 const CommunitySearch = lazy(() => import('../features/community/pages/CommunitySearch').then(m => ({ default: m.CommunitySearch })));
 const UserProfile = lazy(() => import('../features/community/pages/UserProfile').then(m => ({ default: m.UserProfile })));
 const PostPage = lazy(() => import('../features/community/pages/PostPage').then(m => ({ default: m.PostPage })));
@@ -323,6 +324,7 @@ const AppRoutesContent: React.FC = () => {
                     <Route path="/community" element={<ProtectedRoute><ErrorBoundary fallbackMessage="The Community feed is temporarily unavailable."><CommunityFeed /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/messages" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Messages are temporarily unavailable."><ChatRooms /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/community/reels" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Reels are temporarily unavailable."><ReelsFeed /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/reels/:id/comments" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Comments are temporarily unavailable."><ReelCommentsPage /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/community/search" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Search is temporarily unavailable."><CommunitySearch /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/u/:username" element={<ProtectedRoute><ErrorBoundary><UserProfile /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/community/post/:id" element={<ProtectedRoute><ErrorBoundary><PostPage /></ErrorBoundary></ProtectedRoute>} />

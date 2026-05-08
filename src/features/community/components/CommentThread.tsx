@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { toggleLikeComment } from '../api/communityApi';
+import { toggleLikeComment, toggleLikeReelComment } from '../api/communityApi';
 import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 
@@ -10,7 +10,8 @@ export const CommentThread: React.FC<{
   onReply: (id: string, username: string) => void;
   currentUserId?: string;
   isReply?: boolean;
-}> = React.memo(({ comment, onReply, currentUserId, isReply }) => {
+  isReelComment?: boolean;
+}> = React.memo(({ comment, onReply, currentUserId, isReply, isReelComment }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { showToast } = useNotificationStore();
@@ -92,6 +93,7 @@ export const CommentThread: React.FC<{
                 comment={reply}
                 onReply={onReply}
                 currentUserId={currentUserId}
+                  isReelComment={isReelComment}
                 isReply
               />
             ))}
