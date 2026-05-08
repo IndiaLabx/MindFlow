@@ -101,7 +101,7 @@ export const ReelCommentsPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-2xl mx-auto pb-[140px] min-h-screen bg-white">
+    <div className="flex flex-col w-full max-w-[100vw] overflow-x-hidden md:max-w-2xl mx-auto pb-[140px] min-h-screen bg-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 p-4 flex items-center gap-4 shadow-sm">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
@@ -169,7 +169,7 @@ export const ReelCommentsPage: React.FC = () => {
       </div>
 
       {/* Comment Input Sticky Bottom */}
-      <div className="fixed bottom-[64px] left-0 right-0 max-w-3xl mx-auto bg-white border-t border-gray-200 p-3 z-40 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_20px_rgba(255,255,255,1)]">
+      <div className="fixed bottom-[56px] left-0 right-0 max-w-3xl mx-auto bg-white border-t border-gray-200 p-3 z-40 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_20px_rgba(255,255,255,1)]">
         {replyingTo && (
           <div className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-t-lg mb-2 -mt-3 mx-1 border border-gray-100 border-b-0">
             <span className="text-xs text-gray-500">Replying to <span className="font-semibold text-gray-900">{replyingTo.username}</span></span>
