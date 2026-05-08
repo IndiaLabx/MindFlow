@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from './context/AuthContext';
 import AuthPage from './components/AuthPage';
+import { RestoreAccountModal } from './components/RestoreAccountModal';
 import { SynapticLoader } from '../../components/ui/SynapticLoader';
 
 interface AuthGuardProps {
@@ -31,7 +32,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     return <AuthPage onBack={() => {}} />;
   }
 
-  return <>{children}</>;
+  return <><RestoreAccountModal />{children}</>;
 };
 
 export default AuthGuard;

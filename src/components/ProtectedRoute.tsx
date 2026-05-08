@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { SynapticLoader } from './ui/SynapticLoader';
+import { RestoreAccountModal } from '../features/auth/components/RestoreAccountModal';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -33,5 +34,5 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // If user exists, render the protected component
-  return <>{children}</>;
+  return <><RestoreAccountModal />{children}</>;
 };
