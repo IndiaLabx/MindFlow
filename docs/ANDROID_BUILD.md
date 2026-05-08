@@ -61,3 +61,23 @@ If you change core plugins, always run:
 ```bash
 npx cap sync android
 ```
+
+## Google Play Console Deployment (AAB format)
+
+Google Play **no longer accepts `.apk` files** for new apps. You must submit an Android App Bundle (`.aab`).
+
+To generate the AAB file for production upload:
+1. Ensure your web build is fresh:
+   ```bash
+   npm run build
+   npx cap sync android
+   ```
+2. Navigate to the android directory and build the bundle:
+   ```bash
+   cd android
+   ./gradlew bundleRelease
+   ```
+3. The final `.aab` file will be located at:
+   `android/app/build/outputs/bundle/release/app-release.aab`
+
+You will also find placeholder graphic assets for the Play Store (App Icon, Feature Graphic) and your store metadata (Title, Description) in the `google-play-assets/` folder.
