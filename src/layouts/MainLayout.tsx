@@ -319,30 +319,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 buttonRef={schoolRef}
               />
               
-              <button 
-                ref={aiRef}
+              <NavTab
+                id="reels"
+                label="Reels" hideTextOnMobile
+                icon={<Play className="w-6 h-6" />}
+                isActive={(activeTab as any) === 'reels'}
                 onClick={() => onTabChange('reels')}
-                className="relative -top-5 group z-30"
-              >
-                <div className={cn(
-                  "relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-white dark:border-slate-900",
-                  (activeTab as any) === 'reels'
-                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/50 translate-y-1"
-                    : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white hover:from-indigo-500 hover:to-indigo-600 hover:scale-105 shadow-indigo-600/30"
-                )}>
-                  <div className="absolute inset-0 rounded-full border border-white/20"></div>
-                  {(activeTab as any) === 'reels' && (
-                    <div className="absolute inset-0 rounded-full blur-md bg-indigo-500/30 -z-10"></div>
-                  )}
-                  <Play className="w-7 h-7" />
-                </div>
-                <span className={cn(
-                  "absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold transition-colors hidden md:block",
-                  (activeTab as any) === 'reels' ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500"
-                )}>
-                  Reels
-                </span>
-              </button>
+                buttonRef={aiRef}
+              />
 
               <NavTab
                 id="messages"

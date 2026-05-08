@@ -41,7 +41,7 @@ export const CommentThread: React.FC<{
   });
 
   return (
-    <div className={cn("flex w-full mb-5", isReply ? "mt-3 ml-12" : "mt-2")}>
+    <div className={cn("w-full flex items-start justify-between mb-5", isReply ? "mt-3 pl-12" : "mt-2")}>
       {/* Avatar Column */}
       <img
         onClick={(e) => { e.stopPropagation(); navigate(`/u/${comment.profiles?.username || comment.user_id}`); }}
@@ -50,7 +50,7 @@ export const CommentThread: React.FC<{
         alt="avatar"
       />
         {/* Content Column */}
-        <div className="flex-1 ml-3 flex flex-col justify-start">
+        <div className="flex-1 pr-4 ml-3 flex flex-col justify-start">
           {/* Username and Text */}
           <div className="text-[14px] leading-snug">
             <span 
