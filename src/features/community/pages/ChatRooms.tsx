@@ -8,6 +8,7 @@ import { usePresenceStore } from '../../../stores/usePresenceStore';
 
 import { supabase } from '../../../lib/supabase';
 import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
+import { PresenceDot } from '../../../components/ui/PresenceDot';
 import { motion } from 'framer-motion';
 import { Send, Image as ImageIcon, File, ArrowLeft } from 'lucide-react';
 import { cn } from '../../../utils/cn';
@@ -81,7 +82,12 @@ export const ChatRooms: React.FC = () => {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-900 truncate">{title}</div>
+                <div className="font-semibold text-gray-900 truncate flex items-center gap-2">
+                  {title}
+                  {room.type === 'direct' && otherParticipant?.user_id && (
+                    <PresenceDot userId={otherParticipant.user_id} />
+                  )}
+                </div>
                 <div className="text-sm text-gray-500 truncate">Tap to open chat</div>
               </div>
             </motion.button>
@@ -252,7 +258,12 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
              />
         </div>
         <div className="flex-1 overflow-hidden">
-            <div className="font-semibold text-gray-900 truncate">{title}</div>
+            <div className="font-semibold text-gray-900 truncate flex items-center gap-2">
+              {title}
+              {room.type === 'direct' && otherParticipant?.user_id && (
+                <PresenceDot userId={otherParticipant.user_id} />
+              )}
+            </div>
             {room.type === 'direct' && (
               <div className="text-xs text-gray-500 truncate flex items-center gap-1">
                 {isOnline ? (

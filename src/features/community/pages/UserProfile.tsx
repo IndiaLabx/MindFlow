@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
+import { PresenceDot } from '../../../components/ui/PresenceDot';
 import { motion } from 'framer-motion';
 import { ArrowLeft, UserPlus, UserCheck, MessageSquare, Image as ImageIcon, Video, FileText } from 'lucide-react';
 import { fetchUserProfile, fetchUserPosts, toggleFollow, getOrCreateChatRoom } from '../api/communityApi';
@@ -67,7 +68,10 @@ export const UserProfile: React.FC = () => {
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
                     <ArrowLeft size={24} />
                 </button>
-                <div className="font-semibold text-lg">{profile.username || profile.full_name || 'User'}</div>
+                <div className="font-semibold text-lg flex items-center gap-2">
+                    {profile.username || profile.full_name || 'User'}
+                    <PresenceDot userId={profile.id} />
+                </div>
             </div>
 
             {/* Profile Info */}
@@ -81,7 +85,10 @@ export const UserProfile: React.FC = () => {
                     />
                 </div>
 
-                <h1 className="text-2xl font-bold mb-1">{profile.full_name}</h1>
+                <h1 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
+                    {profile.full_name}
+                    <PresenceDot userId={profile.id} />
+                </h1>
                 <p className="text-gray-600 text-sm mb-6">Joined {new Date(profile.created_at).toLocaleDateString()}</p>
 
                 <div className="flex gap-8 mb-6 text-center">

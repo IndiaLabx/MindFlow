@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
+import { PresenceDot } from '../../../components/ui/PresenceDot';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Share2, MoreVertical, Send } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -74,7 +75,10 @@ export const PostCard: React.FC<{
             />
           </div>
           <div>
-            <div className="font-semibold text-gray-900">{post.profiles?.full_name || 'MindFlow User'}</div>
+            <div className="font-semibold text-gray-900 flex items-center gap-2">
+              {post.profiles?.full_name || 'MindFlow User'}
+              <PresenceDot userId={post.user_id} />
+            </div>
             <div className="text-xs text-gray-500">{new Date(post.created_at).toLocaleDateString()}</div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
+import { PresenceDot } from '../../../components/ui/PresenceDot';
 import { motion } from 'framer-motion';
 import { Search, ArrowLeft, UserPlus, UserCheck, User as UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -148,7 +149,10 @@ export const CommunitySearch: React.FC = () => {
                                         />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-semibold text-gray-900">{profile.full_name || 'Unknown User'}</span>
+                                        <div className="font-semibold text-gray-900 flex items-center gap-2">
+                                            {profile.full_name || 'Unknown User'}
+                                            <PresenceDot userId={profile.id} />
+                                        </div>
                                         <span className="text-sm text-gray-600">MindFlow Member</span>
                                     </div>
                                 </div>
