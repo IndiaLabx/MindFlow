@@ -7,6 +7,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createComment, Post } from '../api/communityApi';
 import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
+import { Menu, Transition } from '@headlessui/react';
+import { ShieldAlert } from 'lucide-react';
+import { ReportModal } from './reports/ReportModal';
+import { submitReport } from '../api/reportsApi';
 
 export const PostCard: React.FC<{
   navigate: any;
@@ -19,6 +23,48 @@ export const PostCard: React.FC<{
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [commentText, setCommentText] = useState('');
   const queryClient = useQueryClient();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+  const [isHiddenLocally, setIsHiddenLocally] = useState(false);
+
+  const handleReportSubmit = async (reason: string, customNote: string) => {
+    if (!user) return;
+    setIsReporting(true);
+    try {
+      await submitReport({
+        target_id: post.id,
+        target_type: 'post',
+        reporter_id: user.id,
+        reason,
+        custom_note: customNote,
+        evidence_data: {
+            content: post.content,
+            media_url: post.media_url,
+            author_id: post.user_id,
+            author_name: post.profiles?.full_name
+        }
+      });
+      setIsReportModalOpen(false);
+      showToast({ title: 'Report Submitted', message: 'Post hidden. Thanks for reporting.', variant: 'success' });
+      setIsHiddenLocally(true);
+      // Remove from query cache
+      queryClient.setQueryData(['community-posts'], (old: any) => {
+         if (!old) return old;
+         return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+                ...page,
+                data: page.data.filter((p: any) => p.id !== post.id)
+            }))
+         };
+      });
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      showToast({ title: 'Error', message: 'Failed to submit report', variant: 'error' });
+    } finally {
+      setIsReporting(false);
+    }
+  };
   const { showToast } = useNotificationStore();
 
   const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
@@ -82,9 +128,47 @@ export const PostCard: React.FC<{
             <div className="text-xs text-gray-500">{new Date(post.created_at).toLocaleDateString()}</div>
           </div>
         </div>
-        <button className="text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100">
-          <MoreVertical size={20} />
-        </button>
+        <Menu as="div" className="relative">
+          <Menu.Button className="text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100 focus:outline-none">
+            <MoreVertical size={20} />
+          </Menu.Button>
+          <Transition
+            as={React.Fragment}
+            enter="transition ease-out duration-100"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
+          >
+            <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 focus:outline-none z-50">
+              <div className="py-1">
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => setIsReportModalOpen(true)}
+                      className={cn(
+                        active ? 'bg-gray-50 dark:bg-slate-700/50' : '',
+                        'flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 font-medium'
+                      )}
+                    >
+                      <ShieldAlert size={16} />
+                      Report Post
+                    </button>
+                  )}
+                </Menu.Item>
+              </div>
+            </Menu.Items>
+          </Transition>
+        </Menu>
+
+        <ReportModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
+            targetName={post.profiles?.full_name || 'Post'}
+            targetType="post"
+            onSubmit={handleReportSubmit}
+        />
       </div>
 
       <div
