@@ -20,7 +20,7 @@ import { ChatInputBar } from './ChatInputBar';
 import { Info, MoreVertical } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { submitReport } from '../api/reportsApi';
-import { ReportUserModal } from '../components/reports/ReportUserModal';
+import { ReportModal } from '../components/reports/ReportModal';
 import { BlockUserPromptModal } from '../components/reports/BlockUserPromptModal';
 import { ShieldAlert } from 'lucide-react';
 import { checkBlockStatus, blockUser, unblockUser } from '../api/communityApi';

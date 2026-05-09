@@ -2,22 +2,29 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, X, AlertTriangle, ArrowRight } from 'lucide-react';
 
-interface ReportUserModalProps {
+interface ReportModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (reason: string, customNote: string) => void;
     targetName: string;
 }
 
-const REPORT_REASONS = [
+const USER_REASONS = [
     'Spam',
     'Harassment/Bullying',
     'Hate Speech',
     'Inappropriate Content',
     'Impersonation'
 ];
+const CONTENT_REASONS = [
+    'Misinformation',
+    'Copyright/Plagiarism',
+    'Violence',
+    'Spam/Scam',
+    'Promoting Self-Harm'
+];
 
-export const ReportUserModal: React.FC<ReportUserModalProps> = ({ isOpen, onClose, onSubmit, targetName }) => {
+export const ReportModal: React.FC<ReportModalProps & { targetType?: 'user' | 'post' | 'reel' }> = ({ isOpen, onClose, onSubmit, targetName, targetType = 'user' }) => {
     const [step, setStep] = useState(1);
     const [selectedReason, setSelectedReason] = useState<string>('');
     const [customNote, setCustomNote] = useState('');
@@ -63,8 +70,8 @@ export const ReportUserModal: React.FC<ReportUserModalProps> = ({ isOpen, onClos
                                     <ShieldAlert className="w-6 h-6 text-red-600 dark:text-red-400" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Report User</h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">Reporting {targetName}</p>
+                                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">{targetType === 'user' ? 'Report User' : 'Report Content'}</h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Reporting {targetType === 'user' ? targetName : (targetType === 'post' ? 'Post' : 'Reel')}</p>
                                 </div>
                             </div>
                             <button
@@ -87,9 +94,9 @@ export const ReportUserModal: React.FC<ReportUserModalProps> = ({ isOpen, onClos
                                         transition={{ duration: 0.2 }}
                                         className="p-6 absolute inset-0"
                                     >
-                                        <h4 className="text-base font-medium text-slate-800 dark:text-slate-200 mb-4">Why are you reporting this user?</h4>
+                                        <h4 className="text-base font-medium text-slate-800 dark:text-slate-200 mb-4">Why are you reporting this {targetType}?</h4>
                                         <div className="space-y-2">
-                                            {REPORT_REASONS.map((reason) => (
+                                            {(targetType === 'user' ? USER_REASONS : CONTENT_REASONS).map((reason) => (
                                                 <label
                                                     key={reason}
                                                     className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${

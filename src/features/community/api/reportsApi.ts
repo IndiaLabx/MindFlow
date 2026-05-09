@@ -5,6 +5,7 @@ type ReportStatus = 'pending' | 'being_reviewed' | 'resolved' | 'ignored';
 
 export interface ReportPayload {
   target_id: string;
+  target_type?: 'user' | 'post' | 'reel';
   reporter_id: string;
   reason: string;
   custom_note?: string;
@@ -25,7 +26,7 @@ export const submitReport = async (payload: ReportPayload) => {
 export const fetchMyReports = async (reporterId: string) => {
   const { data, error } = await supabase
     .from('reports')
-    .select('*, target:public_profiles!reports_target_id_fkey(full_name, username, avatar_url)')
+    .select('*')
     .eq('reporter_id', reporterId)
     .order('created_at', { ascending: false });
 
@@ -36,7 +37,7 @@ export const fetchMyReports = async (reporterId: string) => {
 export const fetchAllReports = async () => {
     const { data, error } = await supabase
         .from('reports')
-        .select('*, reporter:public_profiles!reports_reporter_id_fkey(full_name, username), target:public_profiles!reports_target_id_fkey(full_name, username)')
+        .select('*, reporter:public_profiles!reports_reporter_id_fkey(full_name, username)')
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -54,3 +55,19 @@ export const updateReportStatus = async (reportId: string, status: ReportStatus,
     if (error) throw error;
     return data;
 }
+
+export const deleteContentByAdmin = async (targetId: string, targetType: 'post' | 'reel') => {
+    const { error } = await supabase.rpc('delete_content_by_admin', {
+        p_target_id: targetId,
+        p_target_type: targetType
+    });
+    if (error) throw error;
+};
+
+export const restoreContentByAdmin = async (targetId: string, targetType: 'post' | 'reel') => {
+    const { error } = await supabase.rpc('restore_content_by_admin', {
+        p_target_id: targetId,
+        p_target_type: targetType
+    });
+    if (error) throw error;
+};
