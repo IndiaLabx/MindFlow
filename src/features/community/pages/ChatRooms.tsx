@@ -19,6 +19,10 @@ import { ChatMessageItem } from './ChatMessageItem';
 import { ChatInputBar } from './ChatInputBar';
 import { Info, MoreVertical } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
+import { submitReport } from '../api/reportsApi';
+import { ReportUserModal } from '../components/reports/ReportUserModal';
+import { BlockUserPromptModal } from '../components/reports/BlockUserPromptModal';
+import { ShieldAlert } from 'lucide-react';
 import { checkBlockStatus, blockUser, unblockUser } from '../api/communityApi';
 import { useNotification } from '../../../hooks/useNotification';
 
@@ -106,6 +110,9 @@ export const ChatRooms: React.FC = () => {
 
 const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room, onBack }) => {
   const { user } = useAuth();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isBlockPromptOpen, setIsBlockPromptOpen] = useState(false);
+
   const queryClient = useQueryClient();
   const { sendTypingStatus } = useSocialRealtime();
   
@@ -356,6 +363,19 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
                                 )}
                             </Menu.Item>
                         )}
+                        <Menu.Item>
+                            {({ active }) => (
+                                <button
+                                    onClick={() => setIsReportModalOpen(true)}
+                                    className={cn(
+                                        active ? 'bg-red-50 text-red-600' : 'text-red-600',
+                                        'group flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors'
+                                    )}
+                                >
+                                    <ShieldAlert className="w-4 h-4" /> Report User
+                                </button>
+                            )}
+                        </Menu.Item>
                     </div>
                 </Menu.Items>
             </Transition>

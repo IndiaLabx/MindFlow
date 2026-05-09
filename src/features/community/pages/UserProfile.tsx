@@ -6,6 +6,10 @@ import { PresenceDot } from '../../../components/ui/PresenceDot';
 import { motion } from 'framer-motion';
 import { ArrowLeft, UserPlus, UserCheck, MessageSquare, Image as ImageIcon, Video, FileText, MoreVertical } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
+import { submitReport } from '../api/reportsApi';
+import { ReportUserModal } from '../components/reports/ReportUserModal';
+import { BlockUserPromptModal } from '../components/reports/BlockUserPromptModal';
+import { ShieldAlert } from 'lucide-react';
 import { checkBlockStatus, blockUser, unblockUser } from '../api/communityApi';
 import { useNotification } from '../../../hooks/useNotification';
 import { fetchUserProfile, fetchUserPosts, toggleFollow, getOrCreateChatRoom } from '../api/communityApi';
@@ -18,6 +22,9 @@ export const UserProfile: React.FC = () => {
     const navigate = useNavigate();
     const { showToast } = useNotification();
     const queryClient = useQueryClient();
+
+    const [isReportModalOpen, setIsReportModalOpen] = React.useState(false);
+    const [isBlockPromptOpen, setIsBlockPromptOpen] = React.useState(false);
 
     const { data: profile, isLoading: isProfileLoading } = useQuery({
         queryKey: ['user-profile', username, currentUser?.id],
