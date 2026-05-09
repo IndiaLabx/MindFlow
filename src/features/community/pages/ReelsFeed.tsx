@@ -10,6 +10,10 @@ import { CreatePostModal } from '../components/CreatePostModal';
 import { Plus } from 'lucide-react';
 import { ReelSkeleton } from '../components/ReelSkeleton';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
+import { Menu, Transition } from '@headlessui/react';
+import { ShieldAlert, MoreVertical } from 'lucide-react';
+import { ReportModal } from '../components/reports/ReportModal';
+import { submitReport } from '../api/reportsApi';
 
 export const ReelsFeed: React.FC = () => {
   const navigate = useNavigate();
@@ -75,6 +79,44 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
   const [isPlaying, setIsPlaying] = useState(true);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isHiddenLocally, setIsHiddenLocally] = useState(false);
+
+  const handleReportSubmit = async (reason: string, customNote: string) => {
+    if (!currentUser) return;
+    try {
+      await submitReport({
+        target_id: reel.id,
+        target_type: 'reel',
+        reporter_id: currentUser.id,
+        reason,
+        custom_note: customNote,
+        evidence_data: {
+            video_url: reel.video_url,
+            caption: reel.caption,
+            author_id: reel.user_id,
+            author_name: reel.profiles?.full_name
+        }
+      });
+      setIsReportModalOpen(false);
+      showToast({ title: 'Report Submitted', message: 'Reel reported and hidden.', variant: 'success' });
+      setIsHiddenLocally(true);
+
+      // Allow exit animation to complete before removing from cache
+      setTimeout(() => {
+          queryClient.setQueryData(['community-reels'], (old: any) => {
+             if (!old) return old;
+             return {
+                ...old,
+                data: old.data.filter((r: any) => r.id !== reel.id)
+             };
+          });
+      }, 300);
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      showToast({ title: 'Error', message: 'Failed to submit report', variant: 'error' });
+    }
+  };
   const { showToast } = useNotificationStore();
 
   const likeReelMutation = useMutation({
@@ -145,11 +187,16 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="h-[100dvh] w-full snap-start relative bg-black overflow-hidden flex items-center justify-center cursor-pointer"
-      onClick={togglePlay}
-    >
+    <AnimatePresence>
+      {!isHiddenLocally && (
+        <motion.div
+          initial={{ opacity: 1, height: '100dvh' }}
+          exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+          transition={{ duration: 0.3 }}
+          ref={containerRef}
+          className="h-[100dvh] w-full snap-start relative bg-black flex items-center justify-center cursor-pointer overflow-hidden"
+          onClick={togglePlay}
+        >
       {/* Background Media (Video) using Byte-Range Requests */}
       {reel.video_url && (
         <video
@@ -187,6 +234,66 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-md">Share</span>
         </button>
+
+        <div onClick={(e) => e.stopPropagation()} className="z-50">
+          <Menu as="div" className="relative flex flex-col items-center group">
+            <Menu.Button
+              onClick={(e) => {
+                  e.stopPropagation();
+                  if(isPlaying && videoRef.current) {
+                      videoRef.current.pause();
+                      setIsPlaying(false);
+                  }
+              }}
+              className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform">
+              <MoreVertical size={28} />
+            </Menu.Button>
+            <Transition
+              as={React.Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
+            >
+              <Menu.Items className="absolute right-0 bottom-14 mb-2 w-48 origin-bottom-right bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 focus:outline-none z-[60]">
+                <div className="py-1">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsReportModalOpen(true);
+                        }}
+                        className={cn(
+                          active ? 'bg-gray-50 dark:bg-slate-700/50' : '',
+                          'flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 font-medium'
+                        )}
+                      >
+                        <ShieldAlert size={16} />
+                        Report Reel
+                      </button>
+                    )}
+                  </Menu.Item>
+                </div>
+              </Menu.Items>
+            </Transition>
+          </Menu>
+        </div>
+      </div>
+
+      <div onClick={(e) => e.stopPropagation()} className="z-[70] relative">
+        <ReportModal
+            isOpen={isReportModalOpen}
+            onClose={() => {
+               setIsReportModalOpen(false);
+               if(videoRef.current) { videoRef.current.play(); setIsPlaying(true); }
+            }}
+            targetName={reel.profiles?.full_name || 'Reel'}
+            targetType="reel"
+            onSubmit={handleReportSubmit}
+        />
       </div>
 
       {/* Bottom Content Area */}
@@ -229,6 +336,8 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

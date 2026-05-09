@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ShieldAlert, CheckCircle2, ShieldQuestion, Clock, MessageSquare, Save, X, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ShieldAlert, CheckCircle2, ShieldQuestion, Clock, MessageSquare, Save, X, ExternalLink, Trash2, Undo } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
-import { fetchAllReports, updateReportStatus } from '../../community/api/reportsApi';
+import { fetchAllReports, updateReportStatus, deleteContentByAdmin, restoreContentByAdmin } from '../../community/api/reportsApi';
 import { cn } from '../../../utils/cn';
 import { useNotification } from '../../../hooks/useNotification';
 
@@ -19,6 +19,38 @@ export const AdminReportsQueue: React.FC = () => {
     const [selectedReport, setSelectedReport] = useState<any | null>(null);
     const [editingStatus, setEditingStatus] = useState<ReportStatus>('pending');
     const [adminNote, setAdminNote] = useState('');
+    const [isActionLoading, setIsActionLoading] = useState(false);
+
+    const handleDeleteContent = async () => {
+        if (!selectedReport || selectedReport.target_type === 'user') return;
+        setIsActionLoading(true);
+        try {
+            await deleteContentByAdmin(selectedReport.target_id, selectedReport.target_type as 'post' | 'reel');
+            showToast({ title: 'Content Deleted', message: 'Content has been permanently deleted.', variant: 'success' });
+            queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+            setSelectedReport(null);
+        } catch (err) {
+            showToast({ title: 'Error', message: 'Failed to delete content', variant: 'error' });
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
+
+    const handleRestoreContent = async () => {
+        if (!selectedReport || selectedReport.target_type === 'user') return;
+        setIsActionLoading(true);
+        try {
+            await restoreContentByAdmin(selectedReport.target_id, selectedReport.target_type as 'post' | 'reel');
+            await updateReportStatus(selectedReport.id, 'resolved', 'Content restored and verified by admin.');
+            showToast({ title: 'Content Restored', message: 'Content is visible again.', variant: 'success' });
+            queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+            setSelectedReport(null);
+        } catch (err) {
+            showToast({ title: 'Error', message: 'Failed to restore content', variant: 'error' });
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
 
     // Strict Guard
     useEffect(() => {
@@ -202,34 +234,103 @@ export const AdminReportsQueue: React.FC = () => {
                                     </div>
                                 </div>
 
+
                                 {/* Evidence Snapshot */}
                                 <div>
                                     <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-                                        Snapshot Evidence (Target Profile)
+                                        Snapshot Evidence ({selectedReport.target_type === 'user' ? 'Target Profile' : 'Reported Content'})
                                     </h4>
-                                    <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center gap-4">
-                                        {selectedReport.evidence_data?.avatar_url ? (
-                                            <img src={selectedReport.evidence_data.avatar_url} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
-                                        ) : (
-                                            <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-xl">
-                                                {selectedReport.evidence_data?.full_name?.[0] || '?'}
+
+                                    {selectedReport.target_type === 'user' ? (
+                                        <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center gap-4">
+                                            {selectedReport.evidence_data?.avatar_url ? (
+                                                <img src={selectedReport.evidence_data.avatar_url} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
+                                            ) : (
+                                                <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 font-bold text-xl">
+                                                    {selectedReport.evidence_data?.full_name?.[0] || '?'}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <p className="font-bold text-slate-900 dark:text-white text-lg">{selectedReport.evidence_data?.full_name}</p>
+                                                <p className="text-sm text-slate-500">@{selectedReport.evidence_data?.username}</p>
+                                                {selectedReport.evidence_data?.bio && (
+                                                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                                                        "{selectedReport.evidence_data.bio}"
+                                                    </p>
+                                                )}
                                             </div>
-                                        )}
-                                        <div>
-                                            <p className="font-bold text-slate-900 dark:text-white text-lg">{selectedReport.evidence_data?.full_name}</p>
-                                            <p className="text-sm text-slate-500">@{selectedReport.evidence_data?.username}</p>
-                                            {selectedReport.evidence_data?.bio && (
-                                                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 mt-2 p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                    "{selectedReport.evidence_data.bio}"
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                            <div className="flex items-center gap-2 mb-3 text-sm text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-700 pb-2">
+                                                Author: {selectedReport.evidence_data?.author_name || 'Unknown'} (ID: {selectedReport.evidence_data?.author_id})
+                                            </div>
+
+                                            {selectedReport.evidence_data?.content && (
+                                                <p className="text-slate-800 dark:text-slate-200 mb-4 whitespace-pre-wrap">
+                                                    {selectedReport.evidence_data.content}
                                                 </p>
                                             )}
+                                            {selectedReport.evidence_data?.caption && (
+                                                <p className="text-slate-800 dark:text-slate-200 mb-4 font-medium">
+                                                    Caption: {selectedReport.evidence_data.caption}
+                                                </p>
+                                            )}
+
+                                            {selectedReport.evidence_data?.media_url && (
+                                                <img src={selectedReport.evidence_data.media_url} alt="Evidence Media" className="w-full max-h-64 object-cover rounded-xl" />
+                                            )}
+                                            {selectedReport.evidence_data?.video_url && (
+                                                <video src={selectedReport.evidence_data.video_url} controls className="w-full max-h-64 rounded-xl bg-black" />
+                                            )}
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
+
 
                                 {/* Admin Action Area */}
                                 <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Admin Actions</h4>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="flex justify-between items-center mb-2">
+        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Admin Actions</h4>
+        {selectedReport.target_type !== 'user' && (
+            <div className="flex gap-2">
+                <button
+                    onClick={handleRestoreContent}
+                    disabled={isActionLoading}
+                    className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg flex items-center gap-1 transition-colors disabled:opacity-50"
+                >
+                    <Undo className="w-3.5 h-3.5" /> Restore
+                </button>
+                <button
+                    onClick={handleDeleteContent}
+                    disabled={isActionLoading}
+                    className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-100 hover:bg-red-200 rounded-lg flex items-center gap-1 transition-colors disabled:opacity-50"
+                >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete Content
+                </button>
+            </div>
+        )}
+    </div>
+                                        {selectedReport.target_type !== 'user' && (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={handleRestoreContent}
+                                                    disabled={isActionLoading}
+                                                    className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg flex items-center gap-1 transition-colors disabled:opacity-50"
+                                                >
+                                                    <Undo className="w-3.5 h-3.5" /> Restore
+                                                </button>
+                                                <button
+                                                    onClick={handleDeleteContent}
+                                                    disabled={isActionLoading}
+                                                    className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-100 hover:bg-red-200 rounded-lg flex items-center gap-1 transition-colors disabled:opacity-50"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" /> Delete Content
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <div className="flex gap-2">
                                         {['pending', 'being_reviewed', 'resolved', 'ignored'].map((status) => (
@@ -272,7 +373,7 @@ export const AdminReportsQueue: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={handleSave}
-                                    disabled={updateMutation.isPending}
+                                    disabled={updateMutation.isPending || isActionLoading}
                                     className="px-5 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50"
                                 >
                                     <Save className="w-4 h-4" /> Save Actions
