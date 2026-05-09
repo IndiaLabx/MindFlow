@@ -40,6 +40,7 @@ const SynonymClusterList = lazy(() => import('../features/synonyms/components/Sy
 const BlueprintPreviewWrapper = lazy(() => import('../features/quiz/components/BlueprintPreviewWrapper').then(m => ({ default: m.BlueprintPreviewWrapper })));
 const ExamBlueprintsHub = lazy(() => import('../features/quiz/components/ExamBlueprintsHub').then(m => ({ default: m.ExamBlueprintsHub })));
 
+const AdminReportsQueue = lazy(() => import('../features/admin/components/AdminReportsQueue').then(m => ({ default: m.AdminReportsQueue })));
 const AdminHome = lazy(() => import('../features/quiz/components/AdminHome').then(m => ({ default: m.AdminHome })));
 const AdminManageMaterials = lazy(() => import('../features/quiz/components/AdminManageMaterials').then(m => ({ default: m.AdminManageMaterials })));
 const AdminUploadGK = lazy(() => import("../features/admin/components/AdminUploadGK").then(m => ({ default: m.AdminUploadGK })));
@@ -95,6 +96,7 @@ const SupportPage = lazy(() => import('../features/auth/components/SupportPage')
  * Maps URL paths to components and connects navigation actions from the `useQuizContext` hook.
  */
 import { AppPreferencesPage } from '../features/settings/components/AppPreferencesPage';
+import { MyReportsPage } from '../features/settings/components/MyReportsPage';
 
 const AppRoutesContent: React.FC = () => {
     // Destructure all necessary state and actions from the global store
@@ -236,6 +238,7 @@ const AppRoutesContent: React.FC = () => {
                         </ProtectedRoute>
                     } />
 
+                    <Route path="/settings/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
                     <Route path="/settings/deleteaccount" element={
                         <ProtectedRoute>
                             <DeleteAccountPage />
@@ -486,6 +489,7 @@ const AppRoutesContent: React.FC = () => {
                 <Route path="*" element={<Navigate to="/" replace />} />
 
                     <Route path="/admin" element={<AdminHome />} />
+                    <Route path="/admin/reports" element={<AdminReportsQueue />} />
                                         <Route path="/admin/materials" element={<AdminManageMaterials />} />
                     <Route path="/admin/upload" element={<AdminUploadMaterials />} />
                     <Route path="/admin/uploadgk" element={<AdminUploadGK />} />
