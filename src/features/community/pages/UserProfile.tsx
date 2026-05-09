@@ -320,7 +320,7 @@ export const UserProfile: React.FC = () => {
                     <ReportUserModal
                         isOpen={isReportModalOpen}
                         onClose={() => setIsReportModalOpen(false)}
-                        onSubmit={(reason, customNote) => reportMutation.mutate({ reason, customNote })}
+                        onSubmit={(reason: string, customNote: string) => reportMutation.mutate({ reason, customNote })}
                         targetName={profile.full_name || profile.username}
                     />
                     <BlockUserPromptModal
