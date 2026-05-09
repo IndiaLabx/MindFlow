@@ -97,6 +97,30 @@ export const UserProfile: React.FC = () => {
         }
     });
 
+    const reportMutation = useMutation({
+        mutationFn: (data: { reason: string, customNote: string }) => submitReport({
+            target_id: profile!.id,
+            reporter_id: currentUser!.id,
+            reason: data.reason,
+            custom_note: data.customNote,
+            evidence_data: {
+                id: profile!.id,
+                username: profile!.username,
+                full_name: profile!.full_name,
+                avatar_url: profile!.avatar_url,
+                bio: null // bio not directly typed here
+            }
+        }),
+        onSuccess: () => {
+            setIsReportModalOpen(false);
+            showToast({ title: 'Report Submitted', message: 'Thank you for keeping MindFlow safe. We are reviewing this.', variant: 'success' });
+            setIsBlockPromptOpen(true);
+        },
+        onError: () => {
+            showToast({ title: 'Error', message: 'Failed to submit report. Please try again.', variant: 'error' });
+        }
+    });
+
     if (isProfileLoading) {
         return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-600">Loading Profile...</div>;
     }
@@ -165,7 +189,21 @@ export const UserProfile: React.FC = () => {
                                         </Menu.Item>
                                     )}
                                 </div>
-                            </Menu.Items>
+
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <button
+                                                    onClick={() => setIsReportModalOpen(true)}
+                                                    className={cn(
+                                                        active ? 'bg-red-50 text-red-600' : 'text-red-600',
+                                                        'group flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors'
+                                                    )}
+                                                >
+                                                    <ShieldAlert className="w-4 h-4" /> Report User
+                                                </button>
+                                            )}
+                                        </Menu.Item>
+                                </Menu.Items>
                         </Transition>
                     </Menu>
                 )}
@@ -276,6 +314,23 @@ export const UserProfile: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {profile && (
+                <>
+                    <ReportUserModal
+                        isOpen={isReportModalOpen}
+                        onClose={() => setIsReportModalOpen(false)}
+                        onSubmit={(reason, customNote) => reportMutation.mutate({ reason, customNote })}
+                        targetName={profile.full_name || profile.username}
+                    />
+                    <BlockUserPromptModal
+                        isOpen={isBlockPromptOpen}
+                        onClose={() => setIsBlockPromptOpen(false)}
+                        onBlock={() => blockMutation.mutate()}
+                        targetName={profile.full_name || profile.username}
+                    />
+                </>
+            )}
         </div>
     );
 };
