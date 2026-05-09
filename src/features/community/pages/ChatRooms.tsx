@@ -264,6 +264,33 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
     }
   });
 
+
+  const reportMutation = useMutation({
+    mutationFn: (data: { reason: string, customNote: string }) => {
+        return submitReport({
+            target_id: otherParticipant!.user_id,
+            reporter_id: user!.id,
+            reason: data.reason,
+            custom_note: data.customNote,
+            evidence_data: {
+                id: otherParticipant!.user_id,
+                username: otherParticipant!.full_name || 'Unknown',
+                full_name: otherParticipant!.full_name || 'Unknown',
+                avatar_url: otherParticipant!.avatar_url,
+                bio: null // Not available in ChatRoom participants by default
+            }
+        });
+    },
+    onSuccess: () => {
+        setIsReportModalOpen(false);
+        showToast({ title: 'Report Submitted', message: 'Thank you for keeping MindFlow safe. We are reviewing this.', variant: 'success' });
+        setIsBlockPromptOpen(true);
+    },
+    onError: () => {
+        showToast({ title: 'Error', message: 'Failed to submit report. Please try again.', variant: 'error' });
+    }
+  });
+
   const title = room.type === 'direct' ? otherParticipant?.full_name || 'Unknown User' : 'Group Chat';
 
   const isOnline = usePresenceStore(state => otherParticipant ? state.isUserOnline(otherParticipant.user_id) : false);
