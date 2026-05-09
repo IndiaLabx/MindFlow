@@ -17,7 +17,10 @@ import { ChatListSkeleton } from '../components/ChatListSkeleton';
 import { ChatIntro } from './ChatIntro';
 import { ChatMessageItem } from './ChatMessageItem';
 import { ChatInputBar } from './ChatInputBar';
-import { Info } from 'lucide-react';
+import { Info, MoreVertical } from 'lucide-react';
+import { Menu, Transition } from '@headlessui/react';
+import { checkBlockStatus, blockUser, unblockUser } from '../api/communityApi';
+import { useNotification } from '../../../hooks/useNotification';
 
 export const ChatRooms: React.FC = () => {
   const { user } = useAuth();
@@ -222,7 +225,38 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
 
 
 
+
+  const { showToast } = useNotification();
   const otherParticipant = room.participants?.find(p => p.user_id !== user?.id);
+
+  const { data: blockStatus, refetch: refetchBlockStatus } = useQuery({
+    queryKey: ['blockStatus', user?.id, otherParticipant?.user_id],
+    queryFn: () => checkBlockStatus(user!.id, otherParticipant!.user_id),
+    enabled: !!user?.id && !!otherParticipant?.user_id,
+  });
+
+  const blockMutation = useMutation({
+    mutationFn: () => blockUser(user!.id, otherParticipant!.user_id),
+    onSuccess: () => {
+      showToast({ title: 'User Blocked', message: 'You have blocked this user.', variant: 'success' });
+      refetchBlockStatus();
+    },
+    onError: () => {
+      showToast({ title: 'Error', message: 'Failed to block user. Please try again.', variant: 'error' });
+    }
+  });
+
+  const unblockMutation = useMutation({
+    mutationFn: () => unblockUser(user!.id, otherParticipant!.user_id),
+    onSuccess: () => {
+      showToast({ title: 'User Unblocked', message: 'You have unblocked this user.', variant: 'success' });
+      refetchBlockStatus();
+    },
+    onError: () => {
+      showToast({ title: 'Error', message: 'Failed to unblock user. Please try again.', variant: 'error' });
+    }
+  });
+
   const title = room.type === 'direct' ? otherParticipant?.full_name || 'Unknown User' : 'Group Chat';
 
   const isOnline = usePresenceStore(state => otherParticipant ? state.isUserOnline(otherParticipant.user_id) : false);
@@ -277,9 +311,56 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
               </div>
             )}
         </div>
-        <button className="p-2 -mr-2 rounded-full hover:bg-gray-100 text-gray-800">
-            <Info size={24} strokeWidth={1.5} />
-        </button>
+
+        <Menu as="div" className="relative">
+            <Menu.Button className="p-2 -mr-2 rounded-full hover:bg-gray-100 text-gray-800 focus:outline-none">
+                <Info size={24} strokeWidth={1.5} />
+            </Menu.Button>
+            <Transition
+                as={React.Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+            >
+                <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none overflow-hidden z-50">
+                    <div className="py-1">
+                        {blockStatus?.hasBlocked ? (
+                            <Menu.Item>
+                                {({ active }) => (
+                                    <button
+                                        onClick={() => unblockMutation.mutate()}
+                                        className={cn(
+                                            active ? 'bg-gray-50 text-gray-900' : 'text-gray-700',
+                                            'block w-full text-left px-4 py-2.5 text-sm font-medium'
+                                        )}
+                                    >
+                                        Unblock User
+                                    </button>
+                                )}
+                            </Menu.Item>
+                        ) : (
+                            <Menu.Item>
+                                {({ active }) => (
+                                    <button
+                                        onClick={() => blockMutation.mutate()}
+                                        className={cn(
+                                            active ? 'bg-red-50 text-red-600' : 'text-red-600',
+                                            'block w-full text-left px-4 py-2.5 text-sm font-medium'
+                                        )}
+                                    >
+                                        Block User
+                                    </button>
+                                )}
+                            </Menu.Item>
+                        )}
+                    </div>
+                </Menu.Items>
+            </Transition>
+        </Menu>
+
       </div>
 
       {/* Messages Area (Virtualized) */}
@@ -364,6 +445,9 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
 
       {/* Input Area */}
       <ChatInputBar
+        isBlocker={blockStatus?.hasBlocked}
+        isBlocked={blockStatus?.isBlockedBy}
+        onUnblock={() => unblockMutation.mutate()}
         onSend={(text) => {
           sendMutation.mutate({
             room_id: room.id,

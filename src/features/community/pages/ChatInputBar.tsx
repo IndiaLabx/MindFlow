@@ -4,13 +4,16 @@ import { cn } from '../../../utils/cn';
 import { useNotification } from '../../../hooks/useNotification';
 
 interface ChatInputBarProps {
+  isBlocker?: boolean;
+  isBlocked?: boolean;
+  onUnblock?: () => void;
   onSend: (text: string) => void;
   onUpload: (event: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'file') => void;
   isUploading: boolean;
   onTyping: (isTyping: boolean) => void;
 }
 
-export const ChatInputBar: React.FC<ChatInputBarProps> = ({ onSend, onUpload, isUploading, onTyping }) => {
+export const ChatInputBar: React.FC<ChatInputBarProps> = ({ onSend, onUpload, isUploading, onTyping, isBlocker, isBlocked, onUnblock }) => {
   const [newMessage, setNewMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +38,35 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({ onSend, onUpload, is
 
   const hasText = newMessage.trim().length > 0;
 
+
+  if (isBlocked) {
+    return (
+      <div className="p-3 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)] relative w-full flex items-center justify-center">
+        <div className="bg-gray-100 border border-gray-200 rounded-[28px] p-3 text-center w-full text-[14px] text-gray-600 font-medium h-[52px] flex items-center justify-center">
+          You cannot reply to this conversation anymore.
+        </div>
+      </div>
+    );
+  }
+
+  if (isBlocker) {
+    return (
+      <div className="p-3 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)] relative w-full flex items-center justify-center gap-2">
+        <div className="bg-gray-100 border border-gray-200 rounded-[28px] px-4 text-center flex-1 text-[14px] text-gray-600 font-medium h-[52px] flex items-center justify-center">
+          You have blocked this user. Unblock to send a message.
+        </div>
+        <button
+          onClick={onUnblock}
+          className="h-[52px] px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[14px] rounded-[28px] transition-colors whitespace-nowrap shadow-sm"
+        >
+          Unblock
+        </button>
+      </div>
+    );
+  }
+
   return (
+
     <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)] relative w-full">
       {isUploading && (
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs font-semibold text-indigo-500 animate-pulse bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-sm border border-gray-100">
