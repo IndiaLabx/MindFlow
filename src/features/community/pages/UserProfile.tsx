@@ -4,7 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PresenceAvatar } from '../../../components/ui/PresenceAvatar';
 import { PresenceDot } from '../../../components/ui/PresenceDot';
 import { motion } from 'framer-motion';
-import { ArrowLeft, UserPlus, UserCheck, MessageSquare, Image as ImageIcon, Video, FileText } from 'lucide-react';
+import { ArrowLeft, UserPlus, UserCheck, MessageSquare, Image as ImageIcon, Video, FileText, MoreVertical } from 'lucide-react';
+import { Menu, Transition } from '@headlessui/react';
+import { checkBlockStatus, blockUser, unblockUser } from '../api/communityApi';
+import { useNotification } from '../../../hooks/useNotification';
 import { fetchUserProfile, fetchUserPosts, toggleFollow, getOrCreateChatRoom } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import { cn } from '../../../utils/cn';
@@ -13,6 +16,7 @@ export const UserProfile: React.FC = () => {
     const { username } = useParams<{ username: string }>();
     const { user: currentUser } = useAuth();
     const navigate = useNavigate();
+    const { showToast } = useNotification();
     const queryClient = useQueryClient();
 
     const { data: profile, isLoading: isProfileLoading } = useQuery({
@@ -50,6 +54,42 @@ export const UserProfile: React.FC = () => {
 
     const isOwnProfile = currentUser?.id === profile?.id;
 
+    const { data: blockStatus, refetch: refetchBlockStatus } = useQuery({
+        queryKey: ['blockStatus', currentUser?.id, profile?.id],
+        queryFn: () => checkBlockStatus(currentUser!.id, profile!.id),
+        enabled: !!currentUser?.id && !!profile?.id && !isOwnProfile,
+    });
+
+    const blockMutation = useMutation({
+        mutationFn: () => blockUser(currentUser!.id, profile!.id),
+        onSuccess: () => {
+            showToast({ title: 'User Blocked', message: 'You have blocked this user.', variant: 'success' });
+            refetchBlockStatus();
+            // Invalidate queries so that posts/comments from this user disappear
+            queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['reels'] });
+        },
+        onError: () => {
+            showToast({ title: 'Error', message: 'Failed to block user. Please try again.', variant: 'error' });
+        }
+    });
+
+    const unblockMutation = useMutation({
+        mutationFn: () => unblockUser(currentUser!.id, profile!.id),
+        onSuccess: () => {
+            showToast({ title: 'User Unblocked', message: 'You have unblocked this user.', variant: 'success' });
+            refetchBlockStatus();
+            // Invalidate queries to restore their content
+            queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['reels'] });
+        },
+        onError: () => {
+            showToast({ title: 'Error', message: 'Failed to unblock user. Please try again.', variant: 'error' });
+        }
+    });
+
     if (isProfileLoading) {
         return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-600">Loading Profile...</div>;
     }
@@ -72,6 +112,56 @@ export const UserProfile: React.FC = () => {
                     {profile.username || profile.full_name || 'User'}
                     <PresenceDot userId={profile.id} />
                 </div>
+                {!isOwnProfile && (
+                    <Menu as="div" className="relative ml-auto">
+                        <Menu.Button className="p-2 -mr-2 rounded-full hover:bg-gray-100 transition-colors">
+                            <MoreVertical size={24} className="text-gray-600" />
+                        </Menu.Button>
+                        <Transition
+                            as={React.Fragment}
+                            enter="transition ease-out duration-100"
+                            enterFrom="transform opacity-0 scale-95"
+                            enterTo="transform opacity-100 scale-100"
+                            leave="transition ease-in duration-75"
+                            leaveFrom="transform opacity-100 scale-100"
+                            leaveTo="transform opacity-0 scale-95"
+                        >
+                            <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none overflow-hidden z-50">
+                                <div className="py-1">
+                                    {blockStatus?.hasBlocked ? (
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <button
+                                                    onClick={() => unblockMutation.mutate()}
+                                                    className={cn(
+                                                        active ? 'bg-gray-50 text-gray-900' : 'text-gray-700',
+                                                        'block w-full text-left px-4 py-2.5 text-sm font-medium'
+                                                    )}
+                                                >
+                                                    Unblock User
+                                                </button>
+                                            )}
+                                        </Menu.Item>
+                                    ) : (
+                                        <Menu.Item>
+                                            {({ active }) => (
+                                                <button
+                                                    onClick={() => blockMutation.mutate()}
+                                                    className={cn(
+                                                        active ? 'bg-red-50 text-red-600' : 'text-red-600',
+                                                        'block w-full text-left px-4 py-2.5 text-sm font-medium'
+                                                    )}
+                                                >
+                                                    Block User
+                                                </button>
+                                            )}
+                                        </Menu.Item>
+                                    )}
+                                </div>
+                            </Menu.Items>
+                        </Transition>
+                    </Menu>
+                )}
             </div>
 
             {/* Profile Info */}

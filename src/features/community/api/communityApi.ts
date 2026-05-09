@@ -646,3 +646,53 @@ export const createReelComment = async (reelId: string, userId: string, content:
         replies: []
     } as ReelComment;
 };
+
+
+// --- Community Blocking Feature ---
+
+export const blockUser = async (blockerId: string, blockedId: string) => {
+    const { error } = await supabase.from('user_blocks').insert({
+        blocker_id: blockerId,
+        blocked_id: blockedId
+    });
+    if (error) throw error;
+};
+
+export const unblockUser = async (blockerId: string, blockedId: string) => {
+    const { error } = await supabase.from('user_blocks').delete().match({
+        blocker_id: blockerId,
+        blocked_id: blockedId
+    });
+    if (error) throw error;
+};
+
+// Returns if currentUserId has blocked otherUserId, and if otherUserId has blocked currentUserId
+export const checkBlockStatus = async (currentUserId: string, otherUserId: string): Promise<{ hasBlocked: boolean, isBlockedBy: boolean }> => {
+    try {
+        const { data, error } = await supabase
+            .from('user_blocks')
+            .select('blocker_id, blocked_id')
+            .or(`and(blocker_id.eq.${currentUserId},blocked_id.eq.${otherUserId}),and(blocker_id.eq.${otherUserId},blocked_id.eq.${currentUserId})`);
+
+        if (error) throw error;
+
+        let hasBlocked = false;
+        let isBlockedBy = false;
+
+        if (data && data.length > 0) {
+            data.forEach(block => {
+                if (block.blocker_id === currentUserId && block.blocked_id === otherUserId) {
+                    hasBlocked = true;
+                }
+                if (block.blocker_id === otherUserId && block.blocked_id === currentUserId) {
+                    isBlockedBy = true;
+                }
+            });
+        }
+
+        return { hasBlocked, isBlockedBy };
+    } catch (err) {
+        console.error('Error checking block status:', err);
+        return { hasBlocked: false, isBlockedBy: false };
+    }
+};
