@@ -434,7 +434,6 @@ const NavTab = ({ id, label, icon, isActive, onClick, buttonRef, hideTextOnMobil
     whileTap={{ scale: 1.05 }}
     transition={{ type: "spring", stiffness: 300, damping: 25 }}
     role="tab"
-    aria-pressed={isActive}
     aria-selected={isActive}
     className={cn(
       "relative flex flex-col items-center justify-center min-w-[4.5rem] px-2 py-1 w-auto transition-all group outline-none",
