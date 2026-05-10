@@ -5,66 +5,84 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Trigger the workflow on push to the main branch
+  # Runs when PR is created/updated against main
+  pull_request:
+    branches:
+      - main
+
+  # Runs after merge/push to main
   push:
-    branches: ["main"]
-  # Allow manual trigger from the Actions tab
+    branches:
+      - main
+
+  # Manual trigger support
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment to prevent race conditions
+# Prevent multiple deployments fighting each other
 concurrency:
   group: "pages"
   cancel-in-progress: true
 
 jobs:
-  # Build Job: Installs dependencies and builds the project
+  # =========================
+  # BUILD JOB
+  # Runs on BOTH PR and push
+  # =========================
   build:
+    name: Build Application
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache: 'npm' removed because package-lock.json is missing
 
-      - name: Install dependencies
-        # Uses legacy-peer-deps to resolve React version conflicts
+      - name: Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build
-        # Runs the production build script
+      - name: Build Project
         run: npm run build
         env:
-          # Inject secrets into the build environment
-          # These secrets must be added in Repo Settings > Secrets and variables > Actions
           API_KEY: ${{ secrets.API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Upload artifact
-        # Uploads the build output ('./dist') for the deploy job
+      - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
-  # Deploy Job: Deploys the built artifact to GitHub Pages
+  # =========================
+  # DEPLOY JOB
+  # ONLY runs on push to main
+  # =========================
   deploy:
+    name: Deploy to GitHub Pages
+
+    # Only deploy after successful build
+    needs: build
+
+    # IMPORTANT:
+    # Skip deployment for PRs
+    if: github.event_name == 'push'
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy Site
         id: deployment
         uses: actions/deploy-pages@v4
