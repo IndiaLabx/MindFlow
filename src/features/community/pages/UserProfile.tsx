@@ -317,7 +317,7 @@ export const UserProfile: React.FC = () => {
 
             {profile && (
                 <>
-                    <ReportUserModal
+                    <ReportModal
                         isOpen={isReportModalOpen}
                         onClose={() => setIsReportModalOpen(false)}
                         onSubmit={(reason: string, customNote: string) => reportMutation.mutate({ reason, customNote })}
