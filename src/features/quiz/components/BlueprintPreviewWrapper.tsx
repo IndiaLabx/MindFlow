@@ -26,7 +26,7 @@ export const BlueprintPreviewWrapper: React.FC = () => {
           .from('user_exam_blueprints')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         if (data) {

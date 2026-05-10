@@ -80,7 +80,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
         setProfile(data);

@@ -22,26 +22,32 @@ export const ReelCommentsPage: React.FC = () => {
   const { data: reel, isLoading: reelLoading } = useQuery({
     queryKey: ['community-reel', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('reels')
-        .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
-        .eq('id', id)
-        .single();
-      if (error) throw error;
+      try {
+        const { data, error } = await supabase
+          .from('reels')
+          .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
+          .eq('id', id)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data) return null;
 
       const [likesReq, commentsReq, myLikesReq] = await Promise.all([
         supabase.from('reel_likes').select('reel_id', { count: 'exact' }).eq('reel_id', id),
         supabase.from('reel_comments').select('reel_id', { count: 'exact' }).eq('reel_id', id),
-        user ? supabase.from('reel_likes').select('reel_id').eq('user_id', user.id).eq('reel_id', id).single() : Promise.resolve({ data: null })
+        user ? supabase.from('reel_likes').select('reel_id').eq('user_id', user.id).eq('reel_id', id).maybeSingle() : Promise.resolve({ data: null })
       ]);
 
-      return {
-        ...data,
-        profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
-        likes_count: likesReq.count || 0,
-        comments_count: commentsReq.count || 0,
-        is_liked_by_me: !!myLikesReq.data
-      } as Reel;
+        return {
+          ...data,
+          profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+          likes_count: likesReq.count || 0,
+          comments_count: commentsReq.count || 0,
+          is_liked_by_me: !!myLikesReq.data
+        } as Reel;
+      } catch (err) {
+        console.error('[Supabase Error - fetchReelPage]:', err);
+        throw err;
+      }
     },
     enabled: !!id
   });
