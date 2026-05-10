@@ -328,13 +328,21 @@ export type UserProfileDetails = {
     is_following: boolean;
 };
 
-export const fetchUserProfile = async (username: string, currentUserId?: string): Promise<UserProfileDetails | null> => {
+export const fetchUserProfile = async (identifier: string, currentUserId?: string): Promise<UserProfileDetails | null> => {
     try {
-        const { data: profile, error } = await supabase
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+
+        let query = supabase
             .from('profiles')
-            .select('id, full_name, username, avatar_url, created_at')
-            .eq('username', username)
-            .maybeSingle();
+            .select('id, full_name, username, avatar_url, created_at');
+
+        if (isUUID) {
+            query = query.eq('id', identifier);
+        } else {
+            query = query.eq('username', identifier);
+        }
+
+        const { data: profile, error } = await query.maybeSingle();
 
         if (error || !profile) return null;
 
