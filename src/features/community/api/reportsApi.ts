@@ -37,7 +37,7 @@ export const fetchMyReports = async (reporterId: string) => {
 export const fetchAllReports = async () => {
     const { data, error } = await supabase
         .from('reports')
-        .select('*, reporter:public_profiles!reports_reporter_id_fkey(full_name, username)')
+        .select('*, reporter:profiles!reports_reporter_id_fkey(full_name, username)')
         .order('created_at', { ascending: false });
 
     if (error) throw error;
