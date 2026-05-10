@@ -141,25 +141,11 @@ const AppRoutesContent: React.FC = () => {
 
                 {/* --- Standard Application Routes (Wrapped in QuizLayout) --- */}
                 <Route element={<QuizLayout />}>
-                                        <Route path="/blueprints" element={
-                        <ExamBlueprintsHub
-                            onBack={() => { goHome(); navTo('/dashboard'); }}
-                            onLaunchBlueprint={(bp) => {
-                                // Assume store is updated or we just navigate
-                                navTo('/blueprints/preview');
-                            }}
-                        />
-                    } />
-                    <Route path="/blueprints/preview/:id" element={<BlueprintPreviewWrapper />} />
-                    <Route path="/dashboard" element={
-                        <Dashboard
-                            onBackToIntro={() => { navTo('/dashboard'); }}
-                        />
-                    } />
+                                        <Route path="/blueprints" element={<Suspense fallback={<SynapticLoader />}><ExamBlueprintsHub onBack={() => { goHome(); navTo('/dashboard'); }} onLaunchBlueprint={(bp) => { navTo('/blueprints/preview'); }} /></Suspense>} />
+                    <Route path="/blueprints/preview/:id" element={<Suspense fallback={<SynapticLoader />}><BlueprintPreviewWrapper /></Suspense>} />
+                    <Route path="/dashboard" element={<Suspense fallback={<SynapticLoader />}><Dashboard onBackToIntro={() => { navTo('/dashboard'); }} /></Suspense>} />
 
-                    <Route path="/mcqs" element={
-                        <McqsQuizHome onBack={() => { navTo('/dashboard'); }} />
-                    } />
+                    <Route path="/mcqs" element={<Suspense fallback={<SynapticLoader />}><McqsQuizHome onBack={() => { navTo('/dashboard'); }} /></Suspense>} />
                     <Route path="/about/developer-profile" element={
                         <Suspense fallback={<SynapticLoader />}>
                             <DeveloperProfile />
@@ -194,14 +180,7 @@ const AppRoutesContent: React.FC = () => {
 
 
 
-                    <Route path="/english" element={
-                        <EnglishQuizHome
-                            onBack={() => { enterHome(); navTo('/dashboard'); }}
-                            onIdiomsClick={() => { enterIdiomsConfig(); navTo('/idioms/config'); }}
-                            onOWSClick={() => { enterOWSConfig(); navTo('/ows/config'); }}
-                            onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }}
-                        />
-                    } />
+                    <Route path="/english" element={<Suspense fallback={<SynapticLoader />}><EnglishQuizHome onBack={() => { enterHome(); navTo('/dashboard'); }} onIdiomsClick={() => { enterIdiomsConfig(); navTo('/idioms/config'); }} onOWSClick={() => { enterOWSConfig(); navTo('/ows/config'); }} onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }} /></Suspense>} />
 
                     <Route path="/quiz/saved" element={<SavedQuizzes />} />
                     <Route path="/quiz/attempted" element={<AttemptedQuizzes />} />
@@ -330,25 +309,25 @@ const AppRoutesContent: React.FC = () => {
 
 
                     {/* School Routes */}
-                    <Route path="/community" element={<ProtectedRoute><ErrorBoundary fallbackMessage="The Community feed is temporarily unavailable."><CommunityFeed /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/messages" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Messages are temporarily unavailable."><ChatRooms /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/community/reels" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Reels are temporarily unavailable."><ReelsFeed /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/community/reels/:id/comments" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Comments are temporarily unavailable."><ReelCommentsPage /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/community/search" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Search is temporarily unavailable."><CommunitySearch /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/u/:username" element={<ProtectedRoute><ErrorBoundary><UserProfile /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/community/post/:id" element={<ProtectedRoute><ErrorBoundary><PostPage /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community" element={<ProtectedRoute><ErrorBoundary fallbackMessage="The Community feed is temporarily unavailable."><Suspense fallback={<SynapticLoader />}><CommunityFeed /></Suspense></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Messages are temporarily unavailable."><Suspense fallback={<SynapticLoader />}><ChatRooms /></Suspense></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/reels" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Reels are temporarily unavailable."><Suspense fallback={<SynapticLoader />}><ReelsFeed /></Suspense></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/reels/:id/comments" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Comments are temporarily unavailable."><Suspense fallback={<SynapticLoader />}><ReelCommentsPage /></Suspense></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/search" element={<ProtectedRoute><ErrorBoundary fallbackMessage="Search is temporarily unavailable."><Suspense fallback={<SynapticLoader />}><CommunitySearch /></Suspense></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/u/:username" element={<ProtectedRoute><ErrorBoundary><Suspense fallback={<SynapticLoader />}><UserProfile /></Suspense></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/community/post/:id" element={<ProtectedRoute><ErrorBoundary><Suspense fallback={<SynapticLoader />}><PostPage /></Suspense></ErrorBoundary></ProtectedRoute>} />
 
-                    <Route path="/school" element={<SchoolHome />} />
-                    <Route path="/school/download" element={<SchoolDownloads />} />
-<Route path="/tools" element={<ToolsHome />} />
-                    <Route path="/notification" element={<NotificationsPage />} />
-                    <Route path="/ai" element={<AIHome />} />
+                    <Route path="/school" element={<Suspense fallback={<SynapticLoader />}><SchoolHome /></Suspense>} />
+                    <Route path="/school/download" element={<Suspense fallback={<SynapticLoader />}><SchoolDownloads /></Suspense>} />
+<Route path="/tools" element={<Suspense fallback={<SynapticLoader />}><ToolsHome /></Suspense>} />
+                    <Route path="/notification" element={<Suspense fallback={<SynapticLoader />}><NotificationsPage /></Suspense>} />
+                    <Route path="/ai" element={<Suspense fallback={<SynapticLoader />}><AIHome /></Suspense>} />
 
-                    <Route path="/ai/chat" element={<AIChatPage />} />
-                    <Route path="/ai/talk" element={<AITalkPage />} />
-                    <Route path="/tools/bilingual-pdf-maker" element={<BilingualPdfMaker />} />
-                    <Route path="/tools/text-exporter" element={<TextExporter />} />
-                    <Route path="/tools/quiz-pdf-ppt-generator" element={<QuizPdfPptGenerator />} />
+                    <Route path="/ai/chat" element={<Suspense fallback={<SynapticLoader />}><AIChatPage /></Suspense>} />
+                    <Route path="/ai/talk" element={<Suspense fallback={<SynapticLoader />}><AITalkPage /></Suspense>} />
+                    <Route path="/tools/bilingual-pdf-maker" element={<Suspense fallback={<SynapticLoader />}><BilingualPdfMaker /></Suspense>} />
+                    <Route path="/tools/text-exporter" element={<Suspense fallback={<SynapticLoader />}><TextExporter /></Suspense>} />
+                    <Route path="/tools/quiz-pdf-ppt-generator" element={<Suspense fallback={<SynapticLoader />}><QuizPdfPptGenerator /></Suspense>} />
                 </Route>
 
                 {/* --- Immersive Session Routes (No Layout, Fullscreen) --- */}
@@ -465,7 +444,7 @@ const AppRoutesContent: React.FC = () => {
                     />
                 } />
 
-                <Route path="/synonyms/phase1" element={<SynonymPhase1Session />} />
+                <Route path="/synonyms/phase1" element={<Suspense fallback={<SynapticLoader />}><SynonymPhase1Session /></Suspense>} />
                 <Route path="/synonyms/list" element={<SynonymClusterList data={flashcardStore.synonyms} onSelectWord={(word) => { flashcardStore.jumpToCard(flashcardStore.synonyms.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
                 <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
 
@@ -483,16 +462,16 @@ const AppRoutesContent: React.FC = () => {
                     />
                 } />
 
-                                <Route path="/tools/flashcard-maker" element={<FlashcardMaker />} />
+                                <Route path="/tools/flashcard-maker" element={<Suspense fallback={<SynapticLoader />}><FlashcardMaker /></Suspense>} />
 
                 {/* Fallback Route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
 
-                    <Route path="/admin" element={<AdminHome />} />
-                    <Route path="/admin/reports" element={<AdminReportsQueue />} />
-                                        <Route path="/admin/materials" element={<AdminManageMaterials />} />
-                    <Route path="/admin/upload" element={<AdminUploadMaterials />} />
-                    <Route path="/admin/uploadgk" element={<AdminUploadGK />} />
+                    <Route path="/admin" element={<Suspense fallback={<SynapticLoader />}><AdminHome /></Suspense>} />
+                    <Route path="/admin/reports" element={<Suspense fallback={<SynapticLoader />}><AdminReportsQueue /></Suspense>} />
+                                        <Route path="/admin/materials" element={<Suspense fallback={<SynapticLoader />}><AdminManageMaterials /></Suspense>} />
+                    <Route path="/admin/upload" element={<Suspense fallback={<SynapticLoader />}><AdminUploadMaterials /></Suspense>} />
+                    <Route path="/admin/uploadgk" element={<Suspense fallback={<SynapticLoader />}><AdminUploadGK /></Suspense>} />
               <Route path="/admin/notifications" element={
             <Suspense fallback={<div className="flex h-screen items-center justify-center"><SynapticLoader size="md" /></div>}>
               <AdminNotifications />
