@@ -1,3 +1,5 @@
+import { supabase } from '../../lib/supabase';
+import { db } from '../../lib/db';
 import React, { useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useNotification } from '../../stores/useNotificationStore';
@@ -88,8 +90,8 @@ export const PWAUpdateManager: React.FC = () => {
                      const quizState = JSON.parse(quizStateStr);
                      if (quizState.status === 'quiz') {
                          // Pause and Save to IndexedDB
-                         const { db } = await import('../../lib/db');
-                         const { supabase } = await import('../../lib/supabase');
+
+
                          const { data } = await supabase.auth.getSession();
 
                          const pausedState = { ...quizState, isPaused: true };

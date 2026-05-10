@@ -34,13 +34,13 @@ export default defineConfig(({ mode }) => {
         chunkSizeWarningLimit: 1500,
         rollupOptions: {
           output: {
-            manualChunks: {
-              'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-              'vendor-supabase': ['@supabase/supabase-js'],
-              'vendor-framer': ['framer-motion'],
-              'vendor-export': ['jspdf', 'pptxgenjs', 'html2canvas', 'jszip', 'mammoth'],
-              'vendor-markdown': ['react-markdown', 'remark-gfm', 'remark-math', 'rehype-katex', 'katex', 'react-syntax-highlighter'],
-              'vendor-ui': ['lucide-react', 'react-icons', '@headlessui/react']
+                        manualChunks: (id) => {
+              if (id.includes('node_modules/@supabase')) return 'vendor-supabase';
+              if (id.includes('node_modules/jspdf') || id.includes('node_modules/pptxgenjs') || id.includes('node_modules/html2canvas') || id.includes('node_modules/jszip') || id.includes('node_modules/mammoth')) return 'vendor-export';
+              if (id.includes('node_modules/react-markdown') || id.includes('node_modules/remark-gfm') || id.includes('node_modules/remark-math') || id.includes('node_modules/rehype-katex') || id.includes('node_modules/katex') || id.includes('node_modules/react-syntax-highlighter')) return 'vendor-markdown';
+              if (id.includes('node_modules/framer-motion')) return 'vendor-framer';
+              if (id.includes('node_modules/lucide-react') || id.includes('node_modules/react-icons') || id.includes('node_modules/@headlessui/react')) return 'vendor-ui';
+              if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) return 'vendor-react';
             }
           }
         }

@@ -182,10 +182,10 @@ const AppRoutesContent: React.FC = () => {
 
                     <Route path="/english" element={<Suspense fallback={<SynapticLoader />}><EnglishQuizHome onBack={() => { enterHome(); navTo('/dashboard'); }} onIdiomsClick={() => { enterIdiomsConfig(); navTo('/idioms/config'); }} onOWSClick={() => { enterOWSConfig(); navTo('/ows/config'); }} onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }} /></Suspense>} />
 
-                    <Route path="/quiz/saved" element={<SavedQuizzes />} />
-                    <Route path="/quiz/attempted" element={<AttemptedQuizzes />} />
-                    <Route path="/quiz/analytics" element={<PerformanceAnalytics />} />
-                    <Route path="/quiz/bookmarks" element={<BookmarksPage />} />
+                    <Route path="/quiz/saved" element={<Suspense fallback={<SynapticLoader />}><SavedQuizzes /></Suspense>} />
+                    <Route path="/quiz/attempted" element={<Suspense fallback={<SynapticLoader />}><AttemptedQuizzes /></Suspense>} />
+                    <Route path="/quiz/analytics" element={<Suspense fallback={<SynapticLoader />}><PerformanceAnalytics /></Suspense>} />
+                    <Route path="/quiz/bookmarks" element={<Suspense fallback={<SynapticLoader />}><BookmarksPage /></Suspense>} />
 
 
 
@@ -195,13 +195,13 @@ const AppRoutesContent: React.FC = () => {
 
 
                     <Route path="/synonyms/config" element={
-                        <SynonymsConfig
+                        <Suspense fallback={<SynapticLoader />}><SynonymsConfig
                             onBack={() => { enterEnglishHome(); navTo('/english'); }}
                             onStart={(data: any, filters: any) => {
                                 flashcardStore.startSynonyms(data, filters);
                                 navTo('/synonyms/session');
                             }}
-                        />
+                        /></Suspense>
                     } />
 
 
@@ -210,49 +210,49 @@ const AppRoutesContent: React.FC = () => {
 
                     <Route path="/profile" element={
                         <ProtectedRoute>
-                            <ProfilePage
+                            <Suspense fallback={<SynapticLoader />}><ProfilePage
                                 onNavigateToSettings={() => navTo('/settings')}
                                 onSignOut={() => { navTo('/dashboard'); }}
-                            />
+                            /></Suspense>
                         </ProtectedRoute>
                     } />
 
-                    <Route path="/settings/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
+                    <Route path="/settings/my-reports" element={<ProtectedRoute><Suspense fallback={<SynapticLoader />}><MyReportsPage /></Suspense></ProtectedRoute>} />
                     <Route path="/settings/deleteaccount" element={
                         <ProtectedRoute>
-                            <DeleteAccountPage />
+                            <Suspense fallback={<SynapticLoader />}><DeleteAccountPage /></Suspense>
                         </ProtectedRoute>
                     } />
                     <Route path="/settings" element={
                         <ProtectedRoute>
-                            <SettingsPage onBack={() => navTo('/profile')} />
+                            <Suspense fallback={<SynapticLoader />}><SettingsPage onBack={() => navTo('/profile')} /></Suspense>
                         </ProtectedRoute>
                     } />
 
                     <Route path="/profile/subscription" element={
                         <ProtectedRoute>
-                            <SubscriptionPage onBack={() => navTo('/profile')} />
+                            <Suspense fallback={<SynapticLoader />}><SubscriptionPage onBack={() => navTo('/profile')} /></Suspense>
                         </ProtectedRoute>
                     } />
 
                     <Route path="/profile/support" element={
                         <ProtectedRoute>
-                            <SupportPage onBack={() => navTo('/profile')} />
+                            <Suspense fallback={<SynapticLoader />}><SupportPage onBack={() => navTo('/profile')} /></Suspense>
                         </ProtectedRoute>
                     } />
                     <Route path="/profile/preferences" element={
                         <ProtectedRoute>
-                            <AppPreferencesPage />
+                            <Suspense fallback={<SynapticLoader />}><AppPreferencesPage /></Suspense>
                         </ProtectedRoute>
                     } />
 
                     <Route path="/login" element={
-                        <AuthPage onBack={() => { navTo('/dashboard'); }} />
+                        <Suspense fallback={<SynapticLoader />}><AuthPage onBack={() => { navTo('/dashboard'); }} /></Suspense>
                     } />
 
                     <Route path="/result" element={
                         state.mode === 'mock' ? (
-                            <MockQuizResult
+                            <Suspense fallback={<SynapticLoader />}><MockQuizResult
                                 score={state.score}
                                 total={state.activeQuestions.length}
                                 questions={state.activeQuestions}
@@ -261,9 +261,9 @@ const AppRoutesContent: React.FC = () => {
                                 bookmarks={state.bookmarks}
                                 onRestart={() => { restartQuiz(); navTo('/quiz/config'); }}
                                 onGoHome={navHome}
-                            />
+                            /></Suspense>
                         ) : state.mode === 'god' ? (
-                            <GodQuizResult
+                            <Suspense fallback={<SynapticLoader />}><GodQuizResult
                                 score={state.score}
                                 total={state.activeQuestions.length}
                                 questions={state.activeQuestions}
@@ -272,9 +272,9 @@ const AppRoutesContent: React.FC = () => {
                                 bookmarks={state.bookmarks}
                                 onRestart={() => { restartQuiz(); navTo('/quiz/config'); }}
                                 onGoHome={navHome}
-                            />
+                            /></Suspense>
                         ) : (
-                            <QuizResult
+                            <Suspense fallback={<SynapticLoader />}><QuizResult
                                 score={state.score}
                                 total={state.activeQuestions.length}
                                 questions={state.activeQuestions}
@@ -283,12 +283,12 @@ const AppRoutesContent: React.FC = () => {
                                 bookmarks={state.bookmarks}
                                 onRestart={() => { restartQuiz(); navTo('/quiz/config'); }}
                                 onGoHome={navHome}
-                            />
+                            /></Suspense>
                         )
                     } />
 
                     <Route path="/flashcards/summary" element={
-                        <FlashcardSummary
+                        <Suspense fallback={<SynapticLoader />}><FlashcardSummary
                             totalCards={flashcardStore.idioms.length || flashcardStore.ows.length || flashcardStore.synonyms.length || 0}
                             filters={flashcardStore.filters || {} as any}
                             swipeStats={flashcardStore.swipeStats}
@@ -304,7 +304,7 @@ const AppRoutesContent: React.FC = () => {
                                 navTo(dest);
                             }}
                             backText={flashcardStore.type === 'ows' ? 'Back To OWS Config' : flashcardStore.type === 'synonyms' ? 'Back To Synonyms Config' : 'Back To Idioms Config'}
-                        />
+                        /></Suspense>
                     } />
 
 
@@ -333,39 +333,39 @@ const AppRoutesContent: React.FC = () => {
                 {/* --- Immersive Session Routes (No Layout, Fullscreen) --- */}
 
                     <Route path="/idioms/config" element={
-                        <IdiomsConfig
+                        <Suspense fallback={<SynapticLoader />}><IdiomsConfig
                             onBack={() => { enterEnglishHome(); navTo('/english'); }}
                             onStart={(data, filters, mode) => {
                                 flashcardStore.startIdioms(data as any, filters, mode as 'basic' | 'review');
                                 navTo('/idioms/session');
                             }}
-                        />
+                        /></Suspense>
                     } />
 
                     <Route path="/ows/config" element={
-                        <OWSConfig
+                        <Suspense fallback={<SynapticLoader />}><OWSConfig
                             onBack={() => { enterEnglishHome(); navTo('/english'); }}
                             onStart={(data, filters, mode) => {
                                 flashcardStore.startOWS(data, filters, mode as 'basic' | 'review');
                                 navTo('/ows/session');
                             }}
-                        />
+                        /></Suspense>
                     } />
 
 
                     <Route path="/quiz/config" element={
-                        <QuizConfig
+                        <Suspense fallback={<SynapticLoader />}><QuizConfig
                             onBack={() => { navTo('/mcqs'); }}
                             onStart={(questions, filters, mode) => {
                                 startQuiz(questions, filters || ({} as any), mode);
                                 navTo(mode === 'mock' ? '/quiz/session/mock' : '/quiz/session/learning');
                             }}
-                        />
+                        /></Suspense>
                     } />
 
 
                 {/* Learning Mode: Interactive per-question session */}
-                <Route path="/quiz/live/:id" element={<LiveQuizRoom />} />
+                <Route path="/quiz/live/:id" element={<Suspense fallback={<SynapticLoader />}><LiveQuizRoom /></Suspense>} />
 
                 <Route path="/quiz/session/learning" element={
                     <LearningSession
@@ -445,8 +445,8 @@ const AppRoutesContent: React.FC = () => {
                 } />
 
                 <Route path="/synonyms/phase1" element={<Suspense fallback={<SynapticLoader />}><SynonymPhase1Session /></Suspense>} />
-                <Route path="/synonyms/list" element={<SynonymClusterList data={flashcardStore.synonyms} onSelectWord={(word) => { flashcardStore.jumpToCard(flashcardStore.synonyms.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} />} />
-                <Route path="/synonyms/quiz" element={<SynonymQuizSession onExit={() => navTo('/synonyms/config')} />} />
+                <Route path="/synonyms/list" element={<Suspense fallback={<SynapticLoader />}><SynonymClusterList data={flashcardStore.synonyms} onSelectWord={(word) => { flashcardStore.jumpToCard(flashcardStore.synonyms.findIndex(w => w.id === word.id) || 0); navTo('/synonyms/session'); }} onExit={() => navTo('/synonyms/config')} /></Suspense>} />
+                <Route path="/synonyms/quiz" element={<Suspense fallback={<SynapticLoader />}><SynonymQuizSession onExit={() => navTo('/synonyms/config')} /></Suspense>} />
 
 
                 <Route path="/ows/session" element={

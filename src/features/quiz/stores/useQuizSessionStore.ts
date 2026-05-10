@@ -1,3 +1,4 @@
+import { db } from '../../../lib/db';
 import { create } from 'zustand';
 import { APP_CONFIG } from '../../../constants/config';
 import { QuizState, QuizStatus, QuizMode, Question, InitialFilters } from '../types';
@@ -159,9 +160,9 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
 
     if (question) {
       if (isBookmarked) {
-        import('../../../lib/db').then(({ db }) => db.removeBookmark(questionId).catch(console.error));
+        db.removeBookmark(questionId);
       } else {
-        import('../../../lib/db').then(({ db }) => db.saveBookmark(question).catch(console.error));
+        db.saveBookmark(question);
       }
     }
 

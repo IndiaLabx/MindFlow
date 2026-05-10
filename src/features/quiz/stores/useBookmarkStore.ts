@@ -1,3 +1,4 @@
+import { db } from '../../../lib/db';
 import { create } from 'zustand';
 import { Question } from '../types';
 import { useSyncStore } from './useSyncStore';
@@ -18,7 +19,7 @@ export const useBookmarkStore = create<BookmarkState>((set, get) => ({
 
     if (isBookmarked) {
       // Remove from global bookmarks db
-      import('../../../lib/db').then(({ db }) => db.removeBookmark(question.id).catch(console.error));
+      db.removeBookmark(question.id);
       useSyncStore.getState().addEvent({
         type: 'bookmark_toggled',
         payload: { questionId: question.id, isBookmarked: false }
@@ -29,7 +30,7 @@ export const useBookmarkStore = create<BookmarkState>((set, get) => ({
       };
     } else {
       // Add to global bookmarks db
-      import('../../../lib/db').then(({ db }) => db.saveBookmark(question).catch(console.error));
+      db.saveBookmark(question);
       useSyncStore.getState().addEvent({
         type: 'bookmark_toggled',
         payload: { questionId: question.id, question, isBookmarked: true }
