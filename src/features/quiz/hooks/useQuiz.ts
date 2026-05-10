@@ -23,47 +23,58 @@ export const useQuiz = () => {
   // Directly bind state and actions from the Zustand store
   const state = useQuizSessionStore();
 
-  // Persistence Effect 1: LocalStorage (Active Session)
+  // Persistence Effect 1: LocalStorage (Active Session) - Lightweight Metadata Only
   useEffect(() => {
     if (state.status === 'quiz' || state.status === 'result' || state.status === 'flashcards' || state.status === 'ows-flashcards' || state.status === 'flashcards-complete') {
-      // Create a plain object representation to save
-      const stateToSave = { ...state };
-      // Strip out functions from the saved state to ensure valid JSON and smaller footprint
-      Object.keys(stateToSave).forEach(key => {
-        if (typeof (stateToSave as any)[key] === 'function') {
-          delete (stateToSave as any)[key];
-        }
-      });
-      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.QUIZ_SESSION, JSON.stringify(stateToSave));
+      // ONLY store lightweight metadata in synchronous LocalStorage to avoid UI blocking.
+      // The full payload is handled asynchronously by IndexedDB below.
+      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.QUIZ_SESSION, JSON.stringify({ status: state.status, quizId: state.quizId, mode: state.mode }));
     } else if (state.status === 'idle' || state.status === 'intro') {
       localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.QUIZ_SESSION);
     }
-  }, [
-    state.status, state.mode, state.currentQuestionIndex, state.score,
-    state.answers, state.timeTaken, state.remainingTimes, state.quizTimeRemaining,
-    state.bookmarks, state.markedForReview, state.hiddenOptions, state.activeQuestions,
-    state.filters, state.isPaused, state.quizId
-  ]); // Explicitly list dependencies to avoid serializing functions on every render
+  }, [state.status, state.quizId, state.mode]);
 
-  // Persistence Effect 2: IndexedDB (Saved Quizzes)
+  // Persistence Effect 2: IndexedDB (Saved Quizzes) - Instant Async Commits & Safety Nets
   useEffect(() => {
     if (state.quizId && (state.status === 'quiz' || state.status === 'result')) {
-      const saveToDb = () => {
+      const saveToDb = async () => {
         const stateToSave = { ...state };
         Object.keys(stateToSave).forEach(key => {
           if (typeof (stateToSave as any)[key] === 'function') {
             delete (stateToSave as any)[key];
           }
         });
-        db.updateQuizProgress(state.quizId!, stateToSave as any).catch(err => console.error("Failed to auto-save to DB:", err));
+
+        try {
+          await db.updateQuizProgress(state.quizId!, stateToSave as any);
+        } catch (err) {
+          console.error("Failed to auto-save to DB:", err);
+        }
       };
 
-      if (state.isPaused) {
-        saveToDb();
-      } else {
-        const timeoutId = setTimeout(saveToDb, 2000);
-        return () => clearTimeout(timeoutId);
-      }
+      // 1. Instant Async Commit (No more setTimeout death window)
+      saveToDb();
+
+      // 2. Ironclad Safety Nets (Interceptors)
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+         // Force a final synchronous-like flush if possible, or at least trigger it.
+         // Modern browsers restrict what can be done here, but IndexedDB might squeeze through.
+         saveToDb();
+      };
+
+      const handleVisibilityChange = () => {
+          if (document.visibilityState === 'hidden') {
+              saveToDb();
+          }
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+          window.removeEventListener('beforeunload', handleBeforeUnload);
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
   }, [
     state.status, state.mode, state.currentQuestionIndex, state.score,

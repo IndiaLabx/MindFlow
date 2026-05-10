@@ -11,7 +11,6 @@ import { useSettingsStore } from '../../../stores/useSettingsStore';
 import { cn } from '../../../utils/cn';
 import { APP_CONFIG } from '../../../constants/config';
 import { useGodSessionTimer } from '../hooks/useGodSessionTimer';
-import { useAutoSave } from '../hooks/useAutoSave';
 import { useAntiCheat } from '../hooks/useAntiCheat';
 import { quizEngine } from '../engine';
 
@@ -53,10 +52,6 @@ export const GodModeSession: React.FC<GodModeSessionProps> = ({ questions, initi
 
 
     // ENTERPRISE: Offline Auto-Save (IndexedDB Resilience)
-    const { clearSavedSession } = useAutoSave({
-        sessionId: 'mock_test_active',
-        state: { answers, currentIndex, markedForReview, timeSpentPerQuestion }
-    });
 
     // ENTERPRISE: Anti-Cheating System (Visibility change detection)
     useAntiCheat({
@@ -84,7 +79,6 @@ export const GodModeSession: React.FC<GodModeSessionProps> = ({ questions, initi
             document.exitFullscreen().catch(() => { });
         }
 
-        clearSavedSession();
         onComplete({
             answers,
             timeTaken: timeSpentPerQuestion,
