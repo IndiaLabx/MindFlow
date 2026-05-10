@@ -282,7 +282,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
                                     : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
                             )}
                             title="50:50 Lifeline"
-                        >
+                         aria-label="Use fifty-fifty lifeline">
                             <Percent className="w-4 h-4" />
                         </button>
 
@@ -292,7 +292,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
                             className="p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 shrink-0"
                             title="Pause Quiz"
                             data-testid="pause-button"
-                        >
+                         aria-label="Pause">
                             <Pause className="w-4 h-4" />
                         </button>
 
@@ -304,7 +304,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
                         </div>
 
                         {/* Fullscreen Toggle */}
-                        <button onClick={toggleFullScreen} className="p-1.5 rounded-lg hover:bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 flex shrink-0">
+                        <button onClick={toggleFullScreen} className="p-1.5 rounded-lg hover:bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 flex shrink-0" aria-label="Toggle fullscreen">
                             {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                         </button>
                     </div>

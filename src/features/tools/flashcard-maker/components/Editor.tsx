@@ -364,7 +364,7 @@ export const Editor: React.FC<EditorProps> = ({
               name="id"
               value={data.id || ''}
               onChange={handleInputChange}
-              className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-gray-900 dark:text-white dark:text-white"
+              className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-gray-900 dark:text-white dark:text-white text-base"
               placeholder="#"
             />
           </div>
@@ -392,7 +392,7 @@ export const Editor: React.FC<EditorProps> = ({
               name="partOfSpeech"
               value={data.partOfSpeech || ''}
               onChange={handleInputChange}
-              className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none italic"
+              className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none italic text-base"
               placeholder="e.g. Noun, Verb"
             />
           </div>
@@ -418,7 +418,7 @@ export const Editor: React.FC<EditorProps> = ({
             name="meaningHindi"
             value={data.meaningHindi}
             onChange={handleInputChange}
-            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-base"
             placeholder="e.g. चुप्पी तोड़ना"
           />
         </div>
@@ -443,7 +443,7 @@ export const Editor: React.FC<EditorProps> = ({
             value={data.etymology}
             onChange={handleInputChange}
             rows={2}
-            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-base"
           />
         </div>
 
@@ -455,7 +455,7 @@ export const Editor: React.FC<EditorProps> = ({
             value={data.mnemonic}
             onChange={handleInputChange}
             rows={2}
-            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-base"
           />
         </div>
 
@@ -482,7 +482,7 @@ export const Editor: React.FC<EditorProps> = ({
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                className="hidden"
+                className="hidden text-base"
                 onChange={handleImageUpload}
               />
            </div>
@@ -497,7 +497,7 @@ export const Editor: React.FC<EditorProps> = ({
         >
           <Upload className="w-4 h-4" /> Import
         </button>
-        <input ref={jsonInputRef} type="file" accept=".json" className="hidden" onChange={handleJsonImport} />
+        <input ref={jsonInputRef} type="file" accept=".json" className="hidden text-base" onChange={handleJsonImport} />
 
         <button
           onClick={() => setShowPasteModal(true)}
@@ -540,7 +540,7 @@ export const Editor: React.FC<EditorProps> = ({
               <textarea
                 value={pasteContent}
                 onChange={handlePasteChange}
-                className="w-full flex-1 min-h-[200px] p-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 font-mono text-sm resize-none focus:ring-2 focus:ring-indigo-500 rounded-lg outline-none"
+                className="w-full flex-1 min-h-[200px] p-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 font-mono text-base resize-none focus:ring-2 focus:ring-indigo-500 rounded-lg outline-none"
                 placeholder='[{"content": {"word": "Abbreviation", ...}}]'
               />
 

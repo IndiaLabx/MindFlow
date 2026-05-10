@@ -255,14 +255,14 @@ JSON Schema:
                                             onClick={handleCopy}
                                             className="p-1.5 rounded-lg bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow shadow-sm transition-all border border-gray-200 dark:border-gray-700"
                                             title="Copy Text"
-                                        >
+                                         aria-label="Copy text">
                                             <Copy className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={handleDownload}
                                             className="p-1.5 rounded-lg bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:shadow shadow-sm transition-all border border-gray-200 dark:border-gray-700 mr-2"
                                             title="Download as Image"
-                                        >
+                                         aria-label="Download file">
                                             <Download className="w-4 h-4" />
                                         </button>
                                     </>

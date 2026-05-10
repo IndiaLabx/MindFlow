@@ -200,7 +200,7 @@ export const GodModeSession: React.FC<GodModeSessionProps> = ({ questions, initi
                     <button onClick={() => setZoomLevel(z => Math.min(1.6, z + 0.1))} className="p-1.5 hover:bg-slate-700 text-slate-400 active:bg-slate-600"><ZoomIn className="w-4 h-4" /></button>
                 </div>
 
-                <button onClick={toggleFullScreen} className="p-2 hover:bg-slate-800 text-slate-400 rounded-lg transition-colors shrink-0">
+                <button onClick={toggleFullScreen} className="p-2 hover:bg-slate-800 text-slate-400 rounded-lg transition-colors shrink-0" aria-label="Toggle fullscreen">
                     {isFullScreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
                 </button>
 
@@ -229,7 +229,7 @@ export const GodModeSession: React.FC<GodModeSessionProps> = ({ questions, initi
                             : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:bg-gray-900"
                     )}
                     title="Mark for Review"
-                >
+                 aria-label="Toggle review panel">
                     <Flag className="w-5 h-5 fill-current" />
                 </button>
 

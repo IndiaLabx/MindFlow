@@ -378,7 +378,7 @@ export const SynonymPhase1Session: React.FC = () => {
             <button
                 onClick={toggleNav}
                 className="fixed top-5 left-5 w-14 h-14 bg-white/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white text-xl z-30 shadow-lg hover:bg-white/30 hover:scale-110 transition-all"
-            >
+             aria-label="Toggle navigation menu">
                 {isNavOpen ? '✕' : '☰'}
             </button>
 
@@ -528,7 +528,7 @@ export const SynonymPhase1Session: React.FC = () => {
                                 disabled={!canShowDetails}
                                 className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-amber-100 to-amber-600 text-slate-900 font-bold text-xs md:text-sm leading-tight shadow-xl disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-center p-1 md:p-2 flex-shrink-0"
                                 style={{ background: canShowDetails ? 'linear-gradient(135deg, #e7dfdb 0%, #b49b79 100%)' : 'gray' }}
-                            >
+                             aria-label="Toggle details">
                                 {detailsVisible ? 'Hide Details' : 'Show Details'}
                             </button>
 

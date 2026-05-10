@@ -219,7 +219,7 @@ export const LiveQuizRoom: React.FC = () => {
                                 ? "bg-indigo-600/20 text-indigo-100 scale-100 cursor-default border-indigo-500/30"
                                 : isMuted ? "bg-red-600/20 text-red-100 border-red-500/30" : "bg-emerald-600/20 text-emerald-100 border-emerald-500/30"
                         )}
-                    >
+                     aria-label="Toggle connection">
                         {connectionState === 'connecting' ? (
                             <Loader2 className="w-12 h-12 animate-spin text-stone-400" />
                         ) : connectionState === 'connected' ? (
@@ -278,7 +278,7 @@ export const LiveQuizRoom: React.FC = () => {
                             onClick={handleToggleConnection}
                             className="p-6 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-lg hover:shadow-red-900/50 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center border-4 border-stone-900"
                             title="End Conversation"
-                        >
+                         aria-label="Toggle connection">
                             <PhoneOff className="w-8 h-8" />
                         </button>
 
@@ -292,7 +292,7 @@ export const LiveQuizRoom: React.FC = () => {
                                     : 'bg-stone-800 text-emerald-400 border-emerald-900/30 hover:bg-stone-700 hover:text-emerald-300'
                             )}
                             title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
-                        >
+                         aria-label="Toggle microphone">
                             {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
                         </button>
 

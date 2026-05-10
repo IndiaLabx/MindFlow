@@ -163,11 +163,11 @@ const NodeItem = ({ node, updateNode, deleteNode, depth = 0, metadataIndex, pare
         <div className="flex-1 min-w-[10px]" />
 
         {node.type !== 'subTopic' && (
-          <button onClick={handleAddChild} className="p-1.5 text-blue-400 hover:bg-blue-400/20 rounded transition-colors" title="Add Child Node">
+          <button onClick={handleAddChild} className="p-1.5 text-blue-400 hover:bg-blue-400/20 rounded transition-colors" title="Add Child Node" aria-label="Add item">
             <Plus className="w-4 h-4" />
           </button>
         )}
-        <button onClick={deleteNode} className="p-1.5 text-red-400 hover:bg-red-400/20 rounded transition-colors">
+        <button onClick={deleteNode} className="p-1.5 text-red-400 hover:bg-red-400/20 rounded transition-colors" aria-label="Delete item">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>

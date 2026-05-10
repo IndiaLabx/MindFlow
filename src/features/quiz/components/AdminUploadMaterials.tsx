@@ -206,7 +206,7 @@ export const AdminUploadMaterials: React.FC = () => {
                             type="file"
                             accept=".pdf"
                             onChange={handleFileChange}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 text-base"
                         />
                         {file ? (
                             <div className="flex flex-col items-center text-center">
@@ -229,7 +229,7 @@ export const AdminUploadMaterials: React.FC = () => {
                     type="submit"
                     disabled={isUploading}
                     className="mt-4 w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold text-lg shadow-lg hover:shadow-cyan-500/30 transition-all active:scale-95 flex items-center justify-center disabled:opacity-70 disabled:active:scale-100"
-                >
+                 aria-label="Submit search">
                     {isUploading ? (
                         <>
                             <Loader2 className="w-6 h-6 animate-spin mr-2" />

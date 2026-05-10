@@ -252,14 +252,14 @@ export function QuizQuestionDisplay({
                            onClick={handleCopy}
                            className="flex items-center justify-center mt-3 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm"
                            title="Copy Question & Options"
-                       >
+                        aria-label="Copy text">
                            {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                        </button>
                        <button
                            onClick={handleDownload}
                            className="flex items-center justify-center mt-3 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm"
                            title="Download Question Card"
-                       >
+                        aria-label="Download file">
                            <Download className="w-4 h-4" />
                        </button>
                        <AiExplanationButton question={question} selectedAnswer={selectedAnswer} />

@@ -80,22 +80,22 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({ onSend, onUpload, is
           value={newMessage}
           onChange={handleTyping}
           placeholder="Message..."
-          className="flex-1 bg-transparent border-none text-[15px] text-gray-900 focus:ring-0 outline-none placeholder:text-gray-500 min-h-[40px] py-2"
+          className="flex-1 bg-transparent border-none text-[15px] text-gray-900 focus:ring-0 outline-none placeholder:text-gray-500 min-h-[40px] py-2 text-base"
         />
 
-        <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={(e) => onUpload(e, 'image')} />
-        <input type="file" ref={fileInputRef} accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => onUpload(e, 'file')} />
+        <input type="file" ref={imageInputRef} accept="image/*" className="hidden text-base" onChange={(e) => onUpload(e, 'image')} />
+        <input type="file" ref={fileInputRef} accept=".pdf,.doc,.docx" className="hidden text-base" onChange={(e) => onUpload(e, 'file')} />
 
         <div className="flex items-center gap-1.5 h-10 shrink-0">
           {!hasText ? (
             <>
-              <button type="button" onClick={handleComingSoon} className="p-2 text-gray-400 hover:text-gray-600 rounded-full transition-colors">
+              <button type="button" onClick={handleComingSoon} className="p-2 text-gray-400 hover:text-gray-600 rounded-full transition-colors" aria-label="Toggle microphone">
                 <Mic size={22} strokeWidth={1.5} />
               </button>
               <button type="button" onClick={() => imageInputRef.current?.click()} className="p-2 text-gray-400 hover:text-gray-600 rounded-full transition-colors">
                 <ImageIcon size={22} strokeWidth={1.5} />
               </button>
-              <button type="button" onClick={handleComingSoon} className="p-2 text-gray-400 hover:text-gray-600 rounded-full transition-colors">
+              <button type="button" onClick={handleComingSoon} className="p-2 text-gray-400 hover:text-gray-600 rounded-full transition-colors" aria-label="Perform action">
                 <Sticker size={22} strokeWidth={1.5} />
               </button>
             </>

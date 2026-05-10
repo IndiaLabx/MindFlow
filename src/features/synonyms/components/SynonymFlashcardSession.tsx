@@ -176,7 +176,7 @@ export const SynonymFlashcardSession: React.FC<SynonymFlashcardSessionProps> = (
         <div className="flex-none z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={onExit} className="p-2 hover:bg-gray-100 dark:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-colors">
+              <button onClick={onExit} className="p-2 hover:bg-gray-100 dark:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-colors" aria-label="Exit session">
                 <Home className="w-5 h-5" />
               </button>
               <div>
@@ -194,7 +194,7 @@ export const SynonymFlashcardSession: React.FC<SynonymFlashcardSessionProps> = (
               <button onClick={() => setIsNavOpen(true)} className="p-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg transition-colors" aria-label="Open Map">
                 <Menu className="w-5 h-5" />
               </button>
-              <button onClick={toggleFullScreen} className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-gray-600 dark:text-gray-300">
+              <button onClick={toggleFullScreen} className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-gray-600 dark:text-gray-300" aria-label="Toggle fullscreen">
                 <Maximize2 className="w-5 h-5" />
               </button>
             </div>
@@ -209,7 +209,7 @@ export const SynonymFlashcardSession: React.FC<SynonymFlashcardSessionProps> = (
       <div className="flex-1 relative flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
 
         {isFullScreen && (
-          <button onClick={toggleFullScreen} className="absolute top-4 right-4 z-30 p-3 bg-white dark:bg-gray-800/20 backdrop-blur-md rounded-full text-gray-800 dark:text-gray-100 shadow-lg hover:bg-white dark:hover:bg-gray-800/40 transition-colors">
+          <button onClick={toggleFullScreen} className="absolute top-4 right-4 z-30 p-3 bg-white dark:bg-gray-800/20 backdrop-blur-md rounded-full text-gray-800 dark:text-gray-100 shadow-lg hover:bg-white dark:hover:bg-gray-800/40 transition-colors" aria-label="Toggle fullscreen">
             <Minimize2 className="w-6 h-6" />
           </button>
         )}

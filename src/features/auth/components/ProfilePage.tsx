@@ -238,7 +238,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
               <button onClick={() => setImageSrc(null)} disabled={uploading} className="px-6 py-2 bg-slate-600 text-white font-bold rounded-lg shadow-md hover:bg-slate-700 transition-colors flex items-center gap-2">
                   <X className="w-5 h-5" /> Cancel
               </button>
-              <button onClick={handleAvatarUpload} disabled={uploading} className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+              <button onClick={handleAvatarUpload} disabled={uploading} className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2" aria-label="Upload profile picture">
                   {uploading ? <><Loader2 className="w-5 h-5 animate-spin"/> Cropping...</> : <> <CheckCircle className="w-5 h-5" /> Apply </>}
               </button>
           </div>
@@ -260,7 +260,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
                     altText="Profile"
                     className="w-28 h-28 rounded-full border-4 border-white dark:border-slate-800 shadow-lg"
                   />
-                  <input type="file" ref={avatarInputRef} className="hidden" onChange={handleFileSelect} accept="image/png, image/jpeg" />
+                  <input type="file" ref={avatarInputRef} className="hidden text-base" onChange={handleFileSelect} accept="image/png, image/jpeg" />
                   <button
                       onClick={handleAvatarClick}
                       className="absolute bottom-1 right-1 w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white border-2 border-white hover:bg-indigo-700 transition-all duration-300 shadow-md group"
