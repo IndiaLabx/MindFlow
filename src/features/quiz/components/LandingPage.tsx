@@ -111,7 +111,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
             <MobileOnboarding
               onComplete={handleOnboardingComplete}
               onInstallClick={handleInstallClick}
-              shouldShowInstallButton={shouldShowInstallButton}
+              shouldShowInstallButton={false}
             />
           ) : (
         <div className="relative min-h-screen flex flex-col items-center justify-start pb-0 overflow-x-hidden bg-slate-50 dark:bg-slate-800/50 selection:bg-indigo-100 selection:text-indigo-900 font-sans pt-[env(safe-area-inset-top)]">
@@ -140,14 +140,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
         <div className="flex items-center gap-6">
            
            {/* PWA Install Button (Visible if installable) */}
-           {shouldShowInstallButton && (
-              <button 
-                onClick={handleInstallClick}
-                className="flex items-center gap-2 px-3 py-2 md:px-4 rounded-full border border-indigo-200 bg-white dark:bg-gray-800 text-indigo-700 font-bold text-[10px] md:text-xs uppercase tracking-wide hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm whitespace-nowrap"
-              >
-                <Download className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden xs:inline">Download App</span><span className="xs:hidden">App</span>
-              </button>
-           )}
+           <a href="https://play.google.com/store/apps/details?id=com.aklabxmindflow.app" target="_blank" rel="noopener noreferrer" className="hidden md:block transition-transform hover:scale-105 active:scale-95">
+              <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" className="h-10 md:h-12 w-auto" />
+           </a>
 
            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600 dark:text-slate-400">
               <a href="#" className="hover:text-indigo-600 transition-colors">Features</a>
@@ -267,14 +262,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
             </button>
 
             {/* Mobile-Only Download App Button (Below Start) */}
-            {shouldShowInstallButton && (
-              <button
-                onClick={handleInstallClick}
-                className="flex md:hidden w-full items-center justify-center gap-2 px-6 py-3 rounded-full bg-indigo-50 text-indigo-700 font-bold text-sm border border-indigo-200 shadow-sm hover:bg-indigo-100 transition-all active:scale-95"
-              >
-                <Download className="w-4 h-4" /> Install App
-              </button>
-            )}
+            <a href="https://play.google.com/store/apps/details?id=com.aklabxmindflow.app" target="_blank" rel="noopener noreferrer" className="flex md:hidden w-full justify-center transition-transform hover:scale-105 active:scale-95 mt-2">
+              <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" className="h-12 w-auto" />
+            </a>
 
             <button className="group hidden sm:flex items-center gap-3 px-6 py-4 text-slate-600 dark:text-slate-400 font-semibold transition-all w-full sm:w-auto justify-center rounded-full hover:bg-white dark:bg-gray-800 hover:text-indigo-700 border border-transparent hover:border-indigo-100 dark:border-indigo-900/30">
               <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300 text-slate-900 dark:text-slate-100 group-hover:text-indigo-600">
