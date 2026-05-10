@@ -149,6 +149,13 @@ export const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, onTabChan
                                 </div>
                             </div>
 
+                            {/* --- Top/Mid: Google Play Badge --- */}
+                            <div className="px-6 pb-4 w-full flex justify-center border-b border-gray-100 dark:border-gray-800/50 mb-2">
+                                <a href="https://play.google.com/store/apps/details?id=com.aklabxmindflow.app" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-105 active:scale-95">
+                                    <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" className="h-12 w-auto drop-shadow-sm" />
+                                </a>
+                            </div>
+
                             {/* --- Middle: Navigation Links (Staggered) --- */}
                             <div className="flex-1 overflow-y-auto py-4 px-3 space-y-3 custom-scrollbar">
                                 {menuItems.map((item, idx) => (
@@ -185,11 +192,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, onTabChan
 
                             {/* --- Bottom: Branding & Legal --- */}
                             <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/20">
-                                <div className="mb-6 w-full flex justify-center">
-                                    <a href="https://play.google.com/store/apps/details?id=com.aklabxmindflow.app" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-105 active:scale-95">
-                                        <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" className="h-12 w-auto drop-shadow-sm" />
-                                    </a>
-                                </div>
+
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="bg-indigo-600 p-1.5 rounded-xl shadow-inner border border-indigo-500">
                                         <img src="./mindflow-icon.svg" alt="MindFlow Logo" className="w-6 h-6" onError={(e) => {

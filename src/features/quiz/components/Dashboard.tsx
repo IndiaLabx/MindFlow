@@ -117,19 +117,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBackToIntro }) => {
         {/* --- Google Play App Banner --- */}
         <motion.div
           variants={itemVariants}
-          className="relative w-full max-w-7xl mx-auto overflow-hidden rounded-[32px] sm:rounded-[40px] p-[1px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 cursor-pointer shadow-xl"
+          className="relative w-full max-w-lg mx-auto sm:ml-0 overflow-hidden rounded-3xl p-[1px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 cursor-pointer shadow-lg mb-2"
           onClick={() => window.open('https://play.google.com/store/apps/details?id=com.aklabxmindflow.app', '_blank')}
         >
           <div className="absolute inset-0 bg-white/20 dark:bg-black/20 backdrop-blur-3xl z-0"></div>
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between p-6 sm:p-8 gap-4 bg-white/40 dark:bg-slate-900/40 rounded-[31px] sm:rounded-[39px]">
-            <div className="flex flex-col text-center sm:text-left text-slate-900 dark:text-white">
-              <h3 className="text-xl sm:text-2xl font-black mb-1 drop-shadow-sm">Get MindFlow on Android!</h3>
-              <p className="text-sm sm:text-base font-semibold opacity-90">Enjoy a faster, smoother, and more native experience.</p>
+          <div className="relative z-10 flex items-center justify-between p-4 gap-3 bg-white/50 dark:bg-slate-900/50 rounded-[23px]">
+            <div className="flex flex-col text-left text-slate-900 dark:text-white">
+              <h3 className="text-sm sm:text-base font-bold drop-shadow-sm">Get the Android App</h3>
+              <p className="text-xs font-medium opacity-90">Faster & smoother experience</p>
             </div>
             <img
               alt="Get it on Google Play"
               src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-              className="h-12 sm:h-16 w-auto transition-transform hover:scale-105 active:scale-95 drop-shadow-lg"
+              className="h-8 sm:h-10 w-auto transition-transform hover:scale-105 active:scale-95 drop-shadow-md"
             />
           </div>
         </motion.div>
