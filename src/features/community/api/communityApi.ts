@@ -113,7 +113,7 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
     const nextCursor = formattedData.length === limit ? formattedData[formattedData.length - 1].created_at : null;
     return { data: formattedData, nextCursor };
   } catch (err) {
-    console.error('Fetch posts error:', err);
+    console.error('[Supabase Error - fetchPosts]:', err);
     return { data: [], nextCursor: null };
   }
 };
@@ -187,16 +187,21 @@ export const fetchComments = async (postId: string, userId?: string): Promise<Co
         return rootComments;
 
     } catch (err) {
-        console.error('Fetch comments error:', err);
+        console.error('[Supabase Error - fetchComments]:', err);
         return [];
     }
 };
 
 export const toggleLikeComment = async (commentId: string, userId: string, currentlyLiked: boolean) => {
-    if (currentlyLiked) {
-        return await supabase.from('comment_likes').delete().match({ comment_id: commentId, user_id: userId });
-    } else {
-        return await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: userId });
+    try {
+        if (currentlyLiked) {
+            return await supabase.from('comment_likes').delete().match({ comment_id: commentId, user_id: userId });
+        } else {
+            return await supabase.from('comment_likes').insert({ comment_id: commentId, user_id: userId });
+        }
+    } catch (err) {
+        console.error('[Supabase Error - toggleLikeComment]:', err);
+        throw err;
     }
 };
 
@@ -224,11 +229,16 @@ export const createComment = async (postId: string, userId: string, content: str
 
 
 export const toggleLikePost = async (postId: string, userId: string, currentlyLiked: boolean) => {
-  if (currentlyLiked) {
-    return await supabase.from('post_likes').delete().match({ post_id: postId, user_id: userId });
-  } else {
-    return await supabase.from('post_likes').insert({ post_id: postId, user_id: userId });
-  }
+    try {
+        if (currentlyLiked) {
+            return await supabase.from('post_likes').delete().match({ post_id: postId, user_id: userId });
+        } else {
+            return await supabase.from('post_likes').insert({ post_id: postId, user_id: userId });
+        }
+    } catch (err) {
+        console.error('[Supabase Error - toggleLikePost]:', err);
+        throw err;
+    }
 };
 
 export const searchProfiles = async (query: string, currentUserId?: string): Promise<SearchProfile[]> => {
@@ -267,34 +277,44 @@ export const searchProfiles = async (query: string, currentUserId?: string): Pro
 
         return results;
     } catch (err) {
-        console.error('Search error:', err);
+        console.error('[Supabase Error - searchProfiles]:', err);
         return [];
     }
 };
 
 export const toggleFollow = async (followerId: string, followingId: string, currentlyFollowing: boolean) => {
-    if (currentlyFollowing) {
-        return await supabase.from('user_followers')
-            .delete()
-            .match({ follower_id: followerId, following_id: followingId });
-    } else {
-        return await supabase.from('user_followers')
-            .insert({ follower_id: followerId, following_id: followingId });
+    try {
+        if (currentlyFollowing) {
+            return await supabase.from('user_followers')
+                .delete()
+                .match({ follower_id: followerId, following_id: followingId });
+        } else {
+            return await supabase.from('user_followers')
+                .insert({ follower_id: followerId, following_id: followingId });
+        }
+    } catch (err) {
+        console.error('[Supabase Error - toggleFollow]:', err);
+        throw err;
     }
 };
 
 export const createPost = async (userId: string, content: string, type: 'text' | 'image' | 'video' | 'reel' = 'text', mediaUrl?: string) => {
-    let media_url = mediaUrl || null;
+    try {
+        let media_url = mediaUrl || null;
 
-    const { data, error } = await supabase.from('posts').insert({
-        user_id: userId,
-        content: content.trim() ? content.trim() : null,
-        type,
-        media_url
-    }).select().single();
+        const { data, error } = await supabase.from('posts').insert({
+            user_id: userId,
+            content: content.trim() ? content.trim() : null,
+            type,
+            media_url
+        }).select().single();
 
-    if (error) throw error;
-    return data;
+        if (error) throw error;
+        return data;
+    } catch (err) {
+        console.error('[Supabase Error - createPost]:', err);
+        throw err;
+    }
 };
 
 export type UserProfileDetails = {
@@ -314,14 +334,14 @@ export const fetchUserProfile = async (username: string, currentUserId?: string)
             .from('profiles')
             .select('id, full_name, username, avatar_url, created_at')
             .eq('username', username)
-            .single();
+            .maybeSingle();
 
         if (error || !profile) return null;
 
         const [followersReq, followingReq, isFollowingReq] = await Promise.all([
             supabase.from('user_followers').select('follower_id', { count: 'exact' }).eq('following_id', profile.id),
             supabase.from('user_followers').select('following_id', { count: 'exact' }).eq('follower_id', profile.id),
-            currentUserId ? supabase.from('user_followers').select('follower_id').match({ follower_id: currentUserId, following_id: profile.id }).single() : Promise.resolve({ data: null })
+            currentUserId ? supabase.from('user_followers').select('follower_id').match({ follower_id: currentUserId, following_id: profile.id }).maybeSingle() : Promise.resolve({ data: null })
         ]);
 
         return {
@@ -331,7 +351,7 @@ export const fetchUserProfile = async (username: string, currentUserId?: string)
             is_following: !!isFollowingReq.data
         };
     } catch (err) {
-        console.error('Fetch user profile error:', err);
+        console.error('[Supabase Error - fetchUserProfile]:', err);
         return null;
     }
 };
@@ -380,7 +400,7 @@ export const fetchUserPosts = async (profileId: string, limit = 20): Promise<Pos
             is_liked_by_me: myLikedPostIds.has(p.id)
         }));
     } catch (err) {
-        console.error('Fetch user posts error:', err);
+        console.error('[Supabase Error - fetchUserPosts]:', err);
         return [];
     }
 };
@@ -396,7 +416,7 @@ export const getOrCreateChatRoom = async (user1Id: string, user2Id: string): Pro
             const commonRoom = rooms2.find((r: any) => r1Ids.has(r.room_id));
             if (commonRoom) {
                 // verify it's a direct room
-                const { data: roomDetails } = await supabase.from('chat_rooms').select('type').eq('id', commonRoom.room_id).single();
+                const { data: roomDetails } = await supabase.from('chat_rooms').select('type').eq('id', commonRoom.room_id).maybeSingle();
                 if (roomDetails && roomDetails.type === 'direct') {
                     return commonRoom.room_id;
                 }
@@ -415,7 +435,7 @@ export const getOrCreateChatRoom = async (user1Id: string, user2Id: string): Pro
 
         return newRoom.id;
     } catch (err) {
-        console.error('Error getting/creating chat room:', err);
+        console.error('[Supabase Error - getOrCreateChatRoom]:', err);
         return null;
     }
 };
@@ -505,7 +525,7 @@ export const fetchReels = async (limit = 20, cursor?: string): Promise<{ data: R
       nextCursor: reelsData.length === limit ? reelsData[reelsData.length - 1].created_at : null
     };
   } catch (err) {
-    console.error('Fetch reels error:', err);
+    console.error('[Supabase Error - fetchReels]:', err);
     return { data: [], nextCursor: null };
   }
 };
@@ -516,7 +536,7 @@ export const fetchReel = async (id: string, currentUserId?: string): Promise<Ree
             .from('reels')
             .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
             .eq('id', id)
-            .single();
+            .maybeSingle();
 
         if (error) throw error;
         if (!data) return null;
@@ -524,7 +544,7 @@ export const fetchReel = async (id: string, currentUserId?: string): Promise<Ree
         const [likesReq, commentsReq, myLikesReq] = await Promise.all([
             supabase.from('reel_likes').select('reel_id', { count: 'exact' }).eq('reel_id', id),
             supabase.from('reel_comments').select('reel_id', { count: 'exact' }).eq('reel_id', id),
-            currentUserId ? supabase.from('reel_likes').select('reel_id').eq('user_id', currentUserId).eq('reel_id', id).single() : Promise.resolve({ data: null })
+            currentUserId ? supabase.from('reel_likes').select('reel_id').eq('user_id', currentUserId).eq('reel_id', id).maybeSingle() : Promise.resolve({ data: null })
         ]);
 
         return {
@@ -535,28 +555,38 @@ export const fetchReel = async (id: string, currentUserId?: string): Promise<Ree
             is_liked_by_me: !!myLikesReq.data
         } as Reel;
     } catch (err) {
-        console.error('Fetch reel error:', err);
+        console.error('[Supabase Error - fetchReel]:', err);
         return null;
     }
 };
 
 export const toggleLikeReel = async (reelId: string, userId: string, currentlyLiked: boolean) => {
-    if (currentlyLiked) {
-        return await supabase.from('reel_likes').delete().match({ reel_id: reelId, user_id: userId });
-    } else {
-        return await supabase.from('reel_likes').insert({ reel_id: reelId, user_id: userId });
+    try {
+        if (currentlyLiked) {
+            return await supabase.from('reel_likes').delete().match({ reel_id: reelId, user_id: userId });
+        } else {
+            return await supabase.from('reel_likes').insert({ reel_id: reelId, user_id: userId });
+        }
+    } catch (err) {
+        console.error('[Supabase Error - toggleLikeReel]:', err);
+        throw err;
     }
 };
 
 export const createReel = async (userId: string, videoUrl: string, caption?: string) => {
-    const { data, error } = await supabase.from('reels').insert({
-        user_id: userId,
-        video_url: videoUrl,
-        caption: caption?.trim() || null
-    }).select().single();
+    try {
+        const { data, error } = await supabase.from('reels').insert({
+            user_id: userId,
+            video_url: videoUrl,
+            caption: caption?.trim() || null
+        }).select().single();
 
-    if (error) throw error;
-    return data;
+        if (error) throw error;
+        return data;
+    } catch (err) {
+        console.error('[Supabase Error - createReel]:', err);
+        throw err;
+    }
 };
 
 export const fetchReelComments = async (reelId: string, userId?: string): Promise<ReelComment[]> => {
@@ -612,58 +642,78 @@ export const fetchReelComments = async (reelId: string, userId?: string): Promis
         return rootComments;
 
     } catch (err) {
-        console.error('Fetch reel comments error:', err);
+        console.error('[Supabase Error - fetchReelComments]:', err);
         return [];
     }
 };
 
 export const toggleLikeReelComment = async (commentId: string, userId: string, currentlyLiked: boolean) => {
-    if (currentlyLiked) {
-        return await supabase.from('reel_comment_likes').delete().match({ comment_id: commentId, user_id: userId });
-    } else {
-        return await supabase.from('reel_comment_likes').insert({ comment_id: commentId, user_id: userId });
+    try {
+        if (currentlyLiked) {
+            return await supabase.from('reel_comment_likes').delete().match({ comment_id: commentId, user_id: userId });
+        } else {
+            return await supabase.from('reel_comment_likes').insert({ comment_id: commentId, user_id: userId });
+        }
+    } catch (err) {
+        console.error('[Supabase Error - toggleLikeReelComment]:', err);
+        throw err;
     }
 };
 
 export const createReelComment = async (reelId: string, userId: string, content: string, parentCommentId: string | null = null) => {
-    const { data, error } = await supabase.from('reel_comments').insert({
-        reel_id: reelId,
-        user_id: userId,
-        content: content.trim(),
-        parent_comment_id: parentCommentId
-    }).select(`
-        *,
-        profiles:user_id(id, full_name, username, avatar_url)
-    `).single();
+    try {
+        const { data, error } = await supabase.from('reel_comments').insert({
+            reel_id: reelId,
+            user_id: userId,
+            content: content.trim(),
+            parent_comment_id: parentCommentId
+        }).select(`
+            *,
+            profiles:user_id(id, full_name, username, avatar_url)
+        `).single();
 
-    if (error) throw error;
+        if (error) throw error;
 
-    return {
-        ...data,
-        profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
-        likes_count: 0,
-        is_liked_by_me: false,
-        replies: []
-    } as ReelComment;
+        return {
+            ...data,
+            profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+            likes_count: 0,
+            is_liked_by_me: false,
+            replies: []
+        } as ReelComment;
+    } catch (err) {
+        console.error('[Supabase Error - createReelComment]:', err);
+        throw err;
+    }
 };
 
 
 // --- Community Blocking Feature ---
 
 export const blockUser = async (blockerId: string, blockedId: string) => {
-    const { error } = await supabase.from('user_blocks').insert({
-        blocker_id: blockerId,
-        blocked_id: blockedId
-    });
-    if (error) throw error;
+    try {
+        const { error } = await supabase.from('user_blocks').insert({
+            blocker_id: blockerId,
+            blocked_id: blockedId
+        });
+        if (error) throw error;
+    } catch (err) {
+        console.error('[Supabase Error - blockUser]:', err);
+        throw err;
+    }
 };
 
 export const unblockUser = async (blockerId: string, blockedId: string) => {
-    const { error } = await supabase.from('user_blocks').delete().match({
-        blocker_id: blockerId,
-        blocked_id: blockedId
-    });
-    if (error) throw error;
+    try {
+        const { error } = await supabase.from('user_blocks').delete().match({
+            blocker_id: blockerId,
+            blocked_id: blockedId
+        });
+        if (error) throw error;
+    } catch (err) {
+        console.error('[Supabase Error - unblockUser]:', err);
+        throw err;
+    }
 };
 
 // Returns if currentUserId has blocked otherUserId, and if otherUserId has blocked currentUserId
@@ -692,7 +742,7 @@ export const checkBlockStatus = async (currentUserId: string, otherUserId: strin
 
         return { hasBlocked, isBlockedBy };
     } catch (err) {
-        console.error('Error checking block status:', err);
+        console.error('[Supabase Error - checkBlockStatus]:', err);
         return { hasBlocked: false, isBlockedBy: false };
     }
 };

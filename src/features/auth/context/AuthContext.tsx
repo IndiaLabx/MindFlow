@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       if (session?.user) {
         try {
-            const { data } = await supabase.from('profiles').select('status, delete_requested_at').eq('id', session.user.id).single();
+            const { data } = await supabase.from('profiles').select('status, delete_requested_at').eq('id', session.user.id).maybeSingle();
             if (data) {
                 setProfileStatus(data.status);
                 setDeleteRequestedAt(data.delete_requested_at);
@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setUser(finalUser);
         try {
-            const { data } = await supabase.from('profiles').select('status, delete_requested_at').eq('id', finalUser.id).single();
+            const { data } = await supabase.from('profiles').select('status, delete_requested_at').eq('id', finalUser.id).maybeSingle();
             if (data) {
                 setProfileStatus(data.status);
                 setDeleteRequestedAt(data.delete_requested_at);

@@ -27,7 +27,7 @@ export const SocialHeader: React.FC = () => {
     queryKey: ['my-username', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+      const { data } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle();
       return data?.username || null;
     },
     enabled: !!user,

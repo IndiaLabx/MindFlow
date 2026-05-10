@@ -29,7 +29,7 @@ export function useNotificationPreferences() {
           .from('notification_preferences')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           if (error.code === 'PGRST116') {

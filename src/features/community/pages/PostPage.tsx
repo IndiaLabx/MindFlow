@@ -23,26 +23,32 @@ export const PostPage: React.FC = () => {
   const { data: post, isLoading: postLoading } = useQuery({
     queryKey: ['community-post', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
-        .eq('id', id)
-        .single();
-      if (error) throw error;
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
+          .eq('id', id)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data) return null;
 
       const [likesReq, commentsReq, myLikesReq] = await Promise.all([
         supabase.from('post_likes').select('post_id', { count: 'exact' }).eq('post_id', id),
         supabase.from('post_comments').select('post_id', { count: 'exact' }).eq('post_id', id),
-        user ? supabase.from('post_likes').select('post_id').eq('user_id', user.id).eq('post_id', id).single() : Promise.resolve({ data: null })
+        user ? supabase.from('post_likes').select('post_id').eq('user_id', user.id).eq('post_id', id).maybeSingle() : Promise.resolve({ data: null })
       ]);
 
-      return {
-        ...data,
-        profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
-        likes_count: likesReq.count || 0,
-        comments_count: commentsReq.count || 0,
-        is_liked_by_me: !!myLikesReq.data
-      } as Post;
+        return {
+          ...data,
+          profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+          likes_count: likesReq.count || 0,
+          comments_count: commentsReq.count || 0,
+          is_liked_by_me: !!myLikesReq.data
+        } as Post;
+      } catch (err) {
+        console.error('[Supabase Error - fetchPostPage]:', err);
+        throw err;
+      }
     },
     enabled: !!id
   });
