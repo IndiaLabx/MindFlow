@@ -114,6 +114,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBackToIntro }) => {
           </p>
         </div>
 
+        {/* --- Google Play App Banner --- */}
+        <motion.div
+          variants={itemVariants}
+          className="relative w-full max-w-7xl mx-auto overflow-hidden rounded-[32px] sm:rounded-[40px] p-[1px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 cursor-pointer shadow-xl"
+          onClick={() => window.open('https://play.google.com/store/apps/details?id=com.aklabxmindflow.app', '_blank')}
+        >
+          <div className="absolute inset-0 bg-white/20 dark:bg-black/20 backdrop-blur-3xl z-0"></div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between p-6 sm:p-8 gap-4 bg-white/40 dark:bg-slate-900/40 rounded-[31px] sm:rounded-[39px]">
+            <div className="flex flex-col text-center sm:text-left text-slate-900 dark:text-white">
+              <h3 className="text-xl sm:text-2xl font-black mb-1 drop-shadow-sm">Get MindFlow on Android!</h3>
+              <p className="text-sm sm:text-base font-semibold opacity-90">Enjoy a faster, smoother, and more native experience.</p>
+            </div>
+            <img
+              alt="Get it on Google Play"
+              src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+              className="h-12 sm:h-16 w-auto transition-transform hover:scale-105 active:scale-95 drop-shadow-lg"
+            />
+          </div>
+        </motion.div>
+
         {/* Cards Grid */}
         <motion.div
           variants={containerVariants}
