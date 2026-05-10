@@ -506,6 +506,21 @@ const ActiveChatRoom: React.FC<{ room: ChatRoom; onBack: () => void }> = ({ room
         isUploading={isUploading}
         onTyping={(isTyping) => sendTypingStatus(room.id, isTyping)}
       />
+
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmit={(reason, customNote) => reportMutation.mutate({ reason, customNote })}
+        targetName={otherParticipant?.full_name || 'User'}
+        targetType="user"
+      />
+
+      <BlockUserPromptModal
+        isOpen={isBlockPromptOpen}
+        onClose={() => setIsBlockPromptOpen(false)}
+        onBlock={() => blockMutation.mutate()}
+        targetName={otherParticipant?.full_name || 'User'}
+      />
     </div>
   );
 };
