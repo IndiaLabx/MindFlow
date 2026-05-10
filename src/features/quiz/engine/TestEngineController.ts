@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useMockTimer } from '../hooks/useMockTimer';
 import { useAntiCheat } from '../hooks/useAntiCheat';
-import { useAutoSave } from '../hooks/useAutoSave';
 
 interface ControllerConfig {
     sessionId: string;
@@ -35,10 +34,6 @@ export function useTestEngineController({
     });
 
     // 2. Initialize Offline Auto-Save (IndexedDB)
-    const { clearSavedSession } = useAutoSave({
-        sessionId,
-        state
-    });
 
     // 3. Initialize Anti-Cheat System
     const { violations } = useAntiCheat({
@@ -81,9 +76,9 @@ export function useTestEngineController({
     // 5. Submit Flow
     const submitTest = useCallback(async () => {
         // Clear offline saved session as we are submitting
-        await clearSavedSession();
+
         onFinish();
-    }, [clearSavedSession, onFinish]);
+    }, [onFinish]);
 
     return {
         timer: { timeLeft, formatTime },
