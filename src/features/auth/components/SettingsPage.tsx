@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../../components/Button/Button';
-import { ArrowLeft, User, Mail, Lock, Loader2, Check, AlertTriangle, Pencil, X, Phone, Calendar, Target, FileText, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Mail, Lock, Loader2, Check, AlertTriangle, Pencil, X, Phone, Calendar, Target, FileText, Trash2, ShieldAlert, ChevronRight } from 'lucide-react';
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -67,6 +68,7 @@ const EditableField: React.FC<{
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
+  const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const [profile, setProfile] = useState<any>(null);
@@ -192,7 +194,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
 
   const handleDeleteAccount = () => {
     // Navigate to the dedicated delete account page
-    window.location.hash = '#/settings/deleteaccount';
+    navigate('/settings/deleteaccount');
   };
 
   return (
@@ -257,6 +259,26 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
             </div>
 
           </div>
+        </div>
+
+
+        {/* --- Safety & Activity Card --- */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200/80 shadow-sm p-6">
+           <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-5">Safety & Activity</h2>
+           <div className="space-y-2">
+              <button onClick={() => navigate('/settings/my-reports')} className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors group">
+                  <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center text-red-600 dark:text-red-400">
+                          <ShieldAlert className="w-5 h-5" />
+                      </div>
+                      <div className="text-left">
+                          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">My Reports</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Track the status of your reports</p>
+                      </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors" />
+              </button>
+           </div>
         </div>
 
         {/* --- Security Settings Card --- */}
