@@ -1,3 +1,4 @@
+import { db } from '../../../lib/db';
 import { QuizState, QuizAction } from '../types/store';
 import { APP_CONFIG } from '../../../constants/config';
 
@@ -196,10 +197,10 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
       if (question) {
         if (isBookmarked) {
           // Remove from global bookmarks
-          import('../../../lib/db').then(({ db }) => db.removeBookmark(questionId).catch(console.error));
+          db.removeBookmark(questionId);
         } else {
           // Add to global bookmarks
-          import('../../../lib/db').then(({ db }) => db.saveBookmark(question).catch(console.error));
+          db.saveBookmark(question);
         }
       }
 

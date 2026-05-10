@@ -1,3 +1,4 @@
+import { useNotificationStore } from './stores/useNotificationStore';
 import React, { useState, useEffect } from 'react';
 import { HashRouter } from 'react-router-dom';
 import { AppProvider } from './providers/AppProvider';
@@ -33,12 +34,10 @@ const App: React.FC = () => {
          localStorage.removeItem('mindflow_auto_updated');
          // We inject a small delay to ensure providers and stores are mounted
          setTimeout(() => {
-             import('./stores/useNotificationStore').then(({ useNotificationStore }) => {
-                 useNotificationStore.getState().showToast({
-                     title: "App Updated",
-                     message: "Successfully updated! Resuming your quiz... 😎",
-                     variant: "success"
-                 });
+             useNotificationStore.getState().showToast({
+                 title: "App Updated",
+                 message: "Successfully updated! Resuming your quiz... 😎",
+                 variant: "success"
              });
          }, 1000);
       }
