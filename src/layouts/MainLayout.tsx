@@ -227,7 +227,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <Settings className="w-5 h-5" />
               </button>
             )}
-            <button onClick={() => setIsSidePanelOpen(true)} className="p-2 -mr-2 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
+            <button onClick={() => setIsSidePanelOpen(true)} aria-label="Open Menu" className="p-2 -mr-2 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 transition-colors">
               <Menu className="w-6 h-6" />
             </button>
           </div>
@@ -368,7 +368,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <button 
                 ref={aiRef}
                 onClick={() => onTabChange('ai')}
-                className="relative -top-5 group z-30"
+                role="tab" aria-label="AI Assistant" className="relative -top-5 group z-30"
               >
                 <div className={cn(
                   "relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 border-white dark:border-slate-900",

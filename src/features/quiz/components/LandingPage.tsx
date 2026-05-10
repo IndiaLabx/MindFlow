@@ -141,7 +141,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
            
            {/* PWA Install Button (Visible if installable) */}
            <a href="https://play.google.com/store/apps/details?id=com.aklabxmindflow.app" target="_blank" rel="noopener noreferrer" className="hidden md:block transition-transform hover:scale-105 active:scale-95">
-              <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" className="h-10 md:h-12 w-auto" />
+              <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="83" height="32" className="h-10 md:h-12 w-auto" />
            </a>
 
            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600 dark:text-slate-400">
@@ -263,7 +263,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLoginC
 
             {/* Mobile-Only Download App Button (Below Start) */}
             <a href="https://play.google.com/store/apps/details?id=com.aklabxmindflow.app" target="_blank" rel="noopener noreferrer" className="flex md:hidden w-full justify-center transition-transform hover:scale-105 active:scale-95 mt-2">
-              <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" className="h-12 w-auto" />
+              <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="83" height="32" className="h-12 w-auto" />
             </a>
 
             <button className="group hidden sm:flex items-center gap-3 px-6 py-4 text-slate-600 dark:text-slate-400 font-semibold transition-all w-full sm:w-auto justify-center rounded-full hover:bg-white dark:bg-gray-800 hover:text-indigo-700 border border-transparent hover:border-indigo-100 dark:border-indigo-900/30">

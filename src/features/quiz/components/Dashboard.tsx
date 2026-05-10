@@ -129,7 +129,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBackToIntro }) => {
             <img
               alt="Get it on Google Play"
               src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-              className="h-8 sm:h-10 w-auto transition-transform hover:scale-105 active:scale-95 drop-shadow-md"
+              width="83" height="32" className="h-8 sm:h-10 w-auto transition-transform hover:scale-105 active:scale-95 drop-shadow-md"
             />
           </div>
         </motion.div>
