@@ -1,11 +1,13 @@
 import React from 'react';
-import { ArrowLeft, HelpCircle, MessageCircle, Share2, Award, ExternalLink, ShieldCheck, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, HelpCircle, MessageCircle, Share2, Award, ExternalLink, ShieldCheck, FileText, ShieldAlert } from 'lucide-react';
 
 interface SupportPageProps {
   onBack: () => void;
 }
 
 const SupportPage: React.FC<SupportPageProps> = ({ onBack }) => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-full bg-slate-50 p-4 sm:p-6 lg:p-8 animate-fade-in pb-32 md:pb-20">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -51,6 +53,19 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBack }) => {
                 </div>
               </div>
               <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+            </button>
+
+            <button onClick={() => navigate('/settings/my-reports')} className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center text-red-500">
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Report History</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Track the status of users and content you've reported.</p>
+                </div>
+              </div>
+              <ExternalLink className="w-5 h-5 text-slate-300 group-hover:text-red-500 transition-colors" />
             </button>
           </div>
         </div>
