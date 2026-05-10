@@ -1,4 +1,4 @@
-import * as tus from 'tus-js-client';
+import { Upload } from 'tus-js-client';
 import { supabase } from '../../../lib/supabase';
 
 // Helper for TUS Uploads directly to Supabase Storage
@@ -19,7 +19,7 @@ export const uploadMediaWithProgress = async (
 
       const uploadUrl = `https://${projectId}.supabase.co/storage/v1/upload/resumable`;
 
-      const upload = new tus.Upload(file, {
+      const upload = new Upload(file, {
         endpoint: uploadUrl,
         retryDelays: [0, 3000, 5000, 10000, 20000],
         headers: {
@@ -35,11 +35,11 @@ export const uploadMediaWithProgress = async (
           cacheControl: '3600',
         },
         chunkSize: 6 * 1024 * 1024, // 6 MB chunk size
-        onError: function (error) {
+        onError: function (error: any) {
           console.error('Failed because: ' + error);
           reject(error);
         },
-        onProgress: function (bytesUploaded, bytesTotal) {
+        onProgress: function (bytesUploaded: number, bytesTotal: number) {
           const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
           onProgress(parseFloat(percentage));
         },
@@ -51,7 +51,7 @@ export const uploadMediaWithProgress = async (
       });
 
       // Check if there are any previous uploads to continue.
-      upload.findPreviousUploads().then(function (previousUploads) {
+      upload.findPreviousUploads().then(function (previousUploads: any[]) {
         // Found previous uploads so we select the first one.
         if (previousUploads.length) {
           upload.resumeFromPreviousUpload(previousUploads[0]);

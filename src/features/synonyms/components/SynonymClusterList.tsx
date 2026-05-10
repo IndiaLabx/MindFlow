@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { SynonymWord, Synonym } from '../../quiz/types';
 import { useSynonymProgress } from '../hooks/useSynonymProgress';
-import { FiSearch, FiChevronLeft } from 'react-icons/fi';
+import { FiSearch } from 'react-icons/fi';
+import { FiChevronLeft } from 'react-icons/fi';
 import { WordDetailModal } from './WordDetailModal';
 
 interface SynonymClusterListProps {

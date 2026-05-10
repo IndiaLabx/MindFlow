@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../../../lib/supabase';
 import defaultAvatar from '../../../assets/default-avatar.svg';
 import { syncService } from '../../../lib/syncService';

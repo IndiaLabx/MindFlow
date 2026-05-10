@@ -8,7 +8,7 @@ import { DemoCard } from './Landing/DemoCard';
 import { MobileDemoCard } from './Landing/MobileDemoCard';
 import { usePWAInstall } from '../../../hooks/usePWAInstall';
 import InstallPwaModal from '../../../components/common/InstallPwaModal';
-import { User } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import founderImage from '../../../assets/aalok.jpg';
 import { CinematicIntro } from './Landing/CinematicIntro';
 import { MobileOnboarding } from './Landing/MobileOnboarding';
