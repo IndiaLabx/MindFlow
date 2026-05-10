@@ -263,7 +263,7 @@ export const PostCard: React.FC<{
                 type="submit"
                 disabled={!commentText.trim() || commentMutation.isPending}
                 className="p-2 rounded-full bg-indigo-600 text-white disabled:opacity-50"
-              >
+               aria-label="Submit search">
                 <Send size={18} />
               </button>
             </div>

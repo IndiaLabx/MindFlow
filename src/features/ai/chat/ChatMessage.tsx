@@ -218,7 +218,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
  onClick={handleCopy}
  className="rounded p-1 hover:bg-gray-100 :bg-gray-700 transition-colors"
  title="Copy message"
- >
+  aria-label="Copy text">
  {isCopied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
  </button>
  <button
@@ -228,7 +228,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
  isPlaying && "text-indigo-600 bg-indigo-50 "
  )}
  title={isPlaying ? "Stop listening" : "Listen"}
- >
+  aria-label="Play audio">
  <Volume2 className="h-3 w-3" />
  </button>
  {onRegenerate && (
@@ -236,7 +236,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onRegenerate,
  onClick={onRegenerate}
  className="rounded p-1 hover:bg-gray-100 :bg-gray-700 transition-colors"
  title="Regenerate response"
- >
+  aria-label="Regenerate response">
  <RotateCcw className="h-3 w-3" />
  </button>
  )}

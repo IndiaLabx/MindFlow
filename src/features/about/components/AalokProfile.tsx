@@ -83,7 +83,7 @@ export const AalokProfile: React.FC = () => {
                                         onClick={handleAdminFill}
                                         className="p-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors border border-purple-200 dark:border-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center justify-center shrink-0"
                                         title="Auto-fill Admin Email"
-                                    >
+                                     aria-label="Perform action">
                                         <KeyRound className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -105,7 +105,7 @@ export const AalokProfile: React.FC = () => {
                                 type="submit"
                                 disabled={isLoading}
                                 className={`w-full group relative flex justify-center items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-4 rounded-xl hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-all duration-300 shadow-md ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                            >
+                             aria-label="Submit search">
                                 {isLoading ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (

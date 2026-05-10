@@ -229,7 +229,7 @@ export const AdminNotifications: React.FC = () => {
               type="submit"
               disabled={status === 'loading'}
               className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors disabled:opacity-70"
-            >
+             aria-label="Submit search">
               {status === 'loading' ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (

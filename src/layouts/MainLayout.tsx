@@ -223,7 +223,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <button
                 onClick={onOpenSettings}
                 className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-800 dark:text-slate-400 dark:hover:bg-slate-800 rounded-full transition-colors"
-              >
+               aria-label="Open Settings">
                 <Settings className="w-5 h-5" />
               </button>
             )}

@@ -50,7 +50,7 @@ const EditableField: React.FC<{
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                 {isEditing ? (
                     <>
-                        <button onClick={handleSave} disabled={loading} className="p-1.5 rounded-md hover:bg-green-100 text-green-600">
+                        <button onClick={handleSave} disabled={loading} className="p-1.5 rounded-md hover:bg-green-100 text-green-600" aria-label="Perform action">
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                         </button>
                         <button onClick={() => { setIsEditing(false); setCurrentValue(value); }} className="p-1.5 rounded-md hover:bg-red-100 text-red-600">
@@ -202,7 +202,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
       <div className="max-w-2xl mx-auto space-y-6">
         
         <div className="flex items-center mb-6">
-            <button onClick={onBack} className="p-2 rounded-full hover:bg-slate-200 transition-colors"><ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" /></button>
+            <button onClick={onBack} className="p-2 rounded-full hover:bg-slate-200 transition-colors" aria-label="Go back"><ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" /></button>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 ml-4">Profile Settings</h1>
         </div>
 
@@ -253,7 +253,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                        type="email"
                        value={user?.email || ''}
                        readOnly
-                       className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                       className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 dark:text-slate-400 cursor-not-allowed text-base"
                    />
                </div>
             </div>

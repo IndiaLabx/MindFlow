@@ -93,7 +93,7 @@ export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({ blueprint, o
     <div className="min-h-screen bg-[#0a0a0a] text-white p-4 sm:p-6 pb-24">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center space-x-3">
-          <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+          <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition-colors" aria-label="Go back">
             <ArrowLeft className="w-5 h-5 text-gray-400" />
           </button>
           <h1 className="text-2xl font-bold">Blueprint Compilation Report</h1>

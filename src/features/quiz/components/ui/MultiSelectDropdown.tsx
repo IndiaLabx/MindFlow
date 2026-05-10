@@ -198,7 +198,7 @@ export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
               <input
                 type="checkbox"
                 id={`select-all-${label?.replace(/\s+/g, '-')}`}
-                className="w-3.5 h-3.5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                className="w-3.5 h-3.5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer text-base"
                 checked={
                   options.length > 0 &&
                   options.filter(opt => (counts?.[opt] || 0) > 0).length > 0 &&

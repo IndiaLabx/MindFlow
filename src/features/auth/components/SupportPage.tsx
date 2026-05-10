@@ -12,7 +12,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ onBack }) => {
     <div className="min-h-full bg-slate-50 p-4 sm:p-6 lg:p-8 animate-fade-in pb-32 md:pb-20">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center mb-6">
-            <button onClick={onBack} className="p-2 rounded-full hover:bg-slate-200 transition-colors">
+            <button onClick={onBack} className="p-2 rounded-full hover:bg-slate-200 transition-colors" aria-label="Go back">
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             </button>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 ml-4">Help & Support</h1>

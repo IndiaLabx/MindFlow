@@ -138,7 +138,7 @@ export const IdiomsConfig: React.FC<IdiomsConfigProps> = ({ onStart, onBack }) =
                 <button
                     onClick={onBack}
                     className="p-3 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
-                >
+                 aria-label="Go back">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
                 <div>

@@ -144,7 +144,7 @@ export const ExamBlueprintsHub: React.FC<ExamBlueprintsHubProps> = ({ onBack, on
             <button
               onClick={onBack}
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
+             aria-label="Go back">
               <ArrowLeft className="w-5 h-5 text-gray-400" />
             </button>
             <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">

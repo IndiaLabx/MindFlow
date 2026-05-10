@@ -315,7 +315,7 @@ const SingleUpload: React.FC = () => {
                     <span className="text-xs text-slate-500 flex items-center gap-1">
                         <Save className="w-3 h-3" /> Auto-saving draft
                     </span>
-                    <button onClick={handleClear} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
+                    <button onClick={handleClear} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" aria-label="Clear input">
                         <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
@@ -328,7 +328,7 @@ const SingleUpload: React.FC = () => {
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">v1_id</label>
                         <div className="relative">
-                            <input required name="v1_id" value={formData.v1_id} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="v1_id" value={formData.v1_id} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                             <div className="absolute right-3 top-2.5">
                                 {isCheckingV1Id ? <Loader2 className="w-4 h-4 animate-spin text-slate-400" /> :
                                  v1IdStatus === 'available' ? <CheckCircle className="w-4 h-4 text-emerald-500" /> :
@@ -339,15 +339,15 @@ const SingleUpload: React.FC = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
-                        <input required name="subject" value={formData.subject} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="subject" value={formData.subject} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Topic</label>
-                        <input required name="topic" value={formData.topic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="topic" value={formData.topic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sub-Topic</label>
-                        <input required name="subTopic" value={formData.subTopic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="subTopic" value={formData.subTopic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                 </div>
 
@@ -355,15 +355,15 @@ const SingleUpload: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Name</label>
-                        <input required name="examName" value={formData.examName} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="examName" value={formData.examName} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Year</label>
-                        <input required type="number" name="examYear" value={formData.examYear} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required type="number" name="examYear" value={formData.examYear} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Date & Shift</label>
-                        <input required name="examDateShift" value={formData.examDateShift} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="examDateShift" value={formData.examDateShift} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                 </div>
 
@@ -379,11 +379,11 @@ const SingleUpload: React.FC = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Question Type</label>
-                        <input required name="questionType" value={formData.questionType} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="questionType" value={formData.questionType} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                      <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tags (Comma Separated)</label>
-                        <input required name="tags" value={formData.tags} onChange={handleChange} placeholder="Biology, Genetics" className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="tags" value={formData.tags} onChange={handleChange} placeholder="Biology, Genetics" className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
                 </div>
 
@@ -391,11 +391,11 @@ const SingleUpload: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Question (English)</label>
-                        <textarea required name="question" value={formData.question} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none" />
+                        <textarea required name="question" value={formData.question} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none text-base" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Question (Hindi)</label>
-                        <textarea required name="question_hi" value={formData.question_hi} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none" />
+                        <textarea required name="question_hi" value={formData.question_hi} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none text-base" />
                     </div>
                 </div>
 
@@ -403,17 +403,17 @@ const SingleUpload: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Options (JSON Array)</label>
-                        <textarea required name="options" value={formData.options} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-sm" />
+                        <textarea required name="options" value={formData.options} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-base" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Options Hindi (JSON Array)</label>
-                        <textarea required name="options_hi" value={formData.options_hi} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-sm" />
+                        <textarea required name="options_hi" value={formData.options_hi} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-base" />
                     </div>
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Correct Answer (Exact Match)</label>
-                    <input required name="correct" value={formData.correct} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                    <input required name="correct" value={formData.correct} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                 </div>
 
                 {/* Smart JSON Textarea */}
@@ -640,7 +640,7 @@ const BulkUpload: React.FC = () => {
                     type="file"
                     accept=".json"
                     onChange={handleFileChange}
-                    className="block w-full max-w-sm text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-900/30 dark:file:text-emerald-400 cursor-pointer"
+                    className="block w-full max-w-sm text-base text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-base file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-900/30 dark:file:text-emerald-400 cursor-pointer"
                 />
             </div>
 
@@ -873,7 +873,7 @@ const EditQuestion: React.FC = () => {
                     type="submit"
                     disabled={isSearching}
                     className="px-6 py-3 sm:py-0 w-full sm:w-auto justify-center rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 transition-all disabled:opacity-50 flex items-center gap-2"
-                >
+                 aria-label="Submit search">
                     {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search'}
                 </button>
             </form>
@@ -886,19 +886,19 @@ const EditQuestion: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">v1_id (Locked)</label>
-                            <input disabled name="v1_id" value={formData.v1_id} className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-slate-500 cursor-not-allowed rounded-xl px-4 py-2 outline-none" />
+                            <input disabled name="v1_id" value={formData.v1_id} className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-slate-500 cursor-not-allowed rounded-xl px-4 py-2 outline-none text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
-                            <input required name="subject" value={formData.subject} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="subject" value={formData.subject} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Topic</label>
-                            <input required name="topic" value={formData.topic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="topic" value={formData.topic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sub-Topic</label>
-                            <input required name="subTopic" value={formData.subTopic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="subTopic" value={formData.subTopic} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                     </div>
 
@@ -906,15 +906,15 @@ const EditQuestion: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Name</label>
-                            <input required name="examName" value={formData.examName} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="examName" value={formData.examName} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Year</label>
-                            <input required type="number" name="examYear" value={formData.examYear} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required type="number" name="examYear" value={formData.examYear} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Date & Shift</label>
-                            <input required name="examDateShift" value={formData.examDateShift} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="examDateShift" value={formData.examDateShift} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                     </div>
 
@@ -930,11 +930,11 @@ const EditQuestion: React.FC = () => {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Question Type</label>
-                            <input required name="questionType" value={formData.questionType} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="questionType" value={formData.questionType} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tags (Comma Separated)</label>
-                            <input required name="tags" value={formData.tags} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                            <input required name="tags" value={formData.tags} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                         </div>
                     </div>
 
@@ -942,11 +942,11 @@ const EditQuestion: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Question (English)</label>
-                            <textarea required name="question" value={formData.question} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none" />
+                            <textarea required name="question" value={formData.question} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Question (Hindi)</label>
-                            <textarea required name="question_hi" value={formData.question_hi} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none" />
+                            <textarea required name="question_hi" value={formData.question_hi} onChange={handleChange} rows={4} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none resize-none text-base" />
                         </div>
                     </div>
 
@@ -954,17 +954,17 @@ const EditQuestion: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Options (JSON Array)</label>
-                            <textarea required name="options" value={formData.options} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-sm" />
+                            <textarea required name="options" value={formData.options} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-base" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Options Hindi (JSON Array)</label>
-                            <textarea required name="options_hi" value={formData.options_hi} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-sm" />
+                            <textarea required name="options_hi" value={formData.options_hi} onChange={handleChange} rows={3} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-base" />
                         </div>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Correct Answer (Exact Match)</label>
-                        <input required name="correct" value={formData.correct} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                        <input required name="correct" value={formData.correct} onChange={handleChange} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-base" />
                     </div>
 
                     {/* Smart JSON Textarea */}

@@ -123,7 +123,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBackToIntro }) => {
           <div className="absolute inset-0 bg-white/20 dark:bg-black/20 backdrop-blur-3xl z-0"></div>
           <div className="relative z-10 flex items-center justify-between p-4 gap-3 bg-white/50 dark:bg-slate-900/50 rounded-[23px]">
             <div className="flex flex-col text-left text-slate-900 dark:text-white">
-              <h3 className="text-sm sm:text-base font-bold drop-shadow-sm">Get the Android App</h3>
+              <h2 className="text-sm sm:text-base font-bold drop-shadow-sm">Get the Android App</h2>
               <p className="text-xs font-medium opacity-90">Faster & smoother experience</p>
             </div>
             <img

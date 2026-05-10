@@ -182,7 +182,7 @@ const BilingualPdfMaker: React.FC = () => {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                         accept=".json"
-                        className="hidden"
+                        className="hidden text-base"
                     />
 
                     {!file ? (

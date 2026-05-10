@@ -190,7 +190,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
                 <input
                   type="file"
                   ref={fileInputRef}
-                  className="hidden"
+                  className="hidden text-base"
                   onChange={(e) => handleFileSelect(e, postType as any)}
                 />
 

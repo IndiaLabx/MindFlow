@@ -215,7 +215,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
  type="file"
  accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
  multiple
- className="hidden"
+ className="hidden text-base"
  onChange={handleDocumentUpload}
  disabled={isLoading || disabled || isProcessingFile}
  />
@@ -226,7 +226,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
  <input
  type="file"
  accept="image/*"
- className="hidden"
+ className="hidden text-base"
  onChange={handleImageUpload}
  disabled={isLoading || disabled}
  />
@@ -255,7 +255,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
  disabled={disabled}
  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 :bg-emerald-900/40"
  title="Live Talk"
- >
+  aria-label="Toggle connection">
  <AudioWaveform className="h-5 w-5" />
  </button>
  )}
