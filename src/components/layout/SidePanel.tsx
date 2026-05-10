@@ -152,7 +152,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, onTabChan
                             {/* --- Top/Mid: Google Play Badge --- */}
                             <div className="px-6 pb-4 w-full flex justify-center border-b border-gray-100 dark:border-gray-800/50 mb-2">
                                 <a href="https://play.google.com/store/apps/details?id=com.aklabxmindflow.app" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-105 active:scale-95">
-                                    <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" className="h-12 w-auto drop-shadow-sm" />
+                                    <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="83" height="32" className="h-12 w-auto drop-shadow-sm" />
                                 </a>
                             </div>
 
