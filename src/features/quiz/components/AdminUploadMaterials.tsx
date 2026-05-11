@@ -64,7 +64,7 @@ export const AdminUploadMaterials: React.FC = () => {
         try {
             // 1. Upload to Supabase Storage Bucket
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const fileName = `${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
             const filePath = `${selectedClass}/${subject}/${fileName}`; // Organized structure
 
             const { error: uploadError, data: uploadData } = await supabase.storage
