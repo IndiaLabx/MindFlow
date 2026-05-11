@@ -5,6 +5,7 @@ import { db } from '../../../lib/db';
 import { SavedQuiz } from '../types';
 import { SavedQuizCard } from './SavedQuizCard';
 import { useQuizContext } from '../context/QuizContext';
+import { useSyncStore } from '../stores/useSyncStore';
 import { syncService } from '../../../lib/syncService';
 import { SynapticLoader } from '../../../components/ui/SynapticLoader';
 import { motion } from 'framer-motion';
@@ -99,6 +100,8 @@ export const SavedQuizzes: React.FC = () => {
             try {
                 await db.deleteQuiz(id);
                 setQuizzes(prev => prev.filter(q => q.id !== id));
+                // Add soft delete event to offline queue
+                useSyncStore.getState().addEvent({ type: 'quiz_deleted', payload: { quizId: id } });
             } catch (error) {
                 console.error("Failed to delete quiz:", error);
             }

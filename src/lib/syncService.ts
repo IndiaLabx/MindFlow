@@ -214,10 +214,10 @@ export const syncService = {
    */
   deleteSavedQuiz: async (userId: string, quizId: string) => {
     const { error } = await supabase.from('saved_quizzes')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .match({ id: quizId, user_id: userId });
 
-    if (error) console.error('Error deleting saved quiz from Supabase:', error);
+    if (error) console.error('Error soft-deleting saved quiz from Supabase:', error);
   },
 
   /**
@@ -243,6 +243,9 @@ export const syncService = {
             break;
           case 'quiz_completed':
             await syncService.pushQuizHistory(userId, event.payload.history, event.payload.attempts);
+            break;
+          case 'quiz_deleted':
+            await syncService.deleteSavedQuiz(userId, event.payload.quizId);
             break;
           case 'bookmark_toggled':
             if (event.payload.isBookmarked) {
@@ -289,7 +292,7 @@ export const syncService = {
         { data: remoteOWS },
         { data: remoteIdioms }
       ] = await Promise.all([
-        supabase.from('saved_quizzes').select('*, bridge_saved_quiz_questions(question_id, sort_order)').eq('user_id', userId),
+        supabase.from('saved_quizzes').select('*, bridge_saved_quiz_questions(question_id, sort_order)').eq('user_id', userId).is('deleted_at', null),
         supabase.from('quiz_history').select('*').eq('user_id', userId),
         supabase.from('user_bookmarks').select('question_id').eq('user_id', userId),
         Promise.resolve({ data: [] }), // supabase.from('user_synonym_interactions').select('*').eq('user_id', userId),
