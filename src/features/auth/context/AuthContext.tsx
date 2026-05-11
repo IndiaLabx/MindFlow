@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import defaultAvatar from '../../../assets/default-avatar.svg';
 import { syncService } from '../../../lib/syncService';
 import { db } from '../../../lib/db';
+import { useNotificationStore } from '../../../stores/useNotificationStore';
 
 /**
  * Interface for the Auth Context value.
@@ -22,6 +23,8 @@ interface AuthContextType {
   /** Function to manually refresh user data from the server. */
   refreshUser: () => Promise<void>;
 }
+
+const SESSION_ID_KEY = 'mindflow_device_session_id';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -45,6 +48,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [deleteRequestedAt, setDeleteRequestedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const lastSyncedUserId = useRef<string | null>(null);
+
+  useEffect(() => {
+    let sessionSub: any = null;
+
+    if (user) {
+      // 1. Check/Generate Local Session ID
+      let localSessionId = localStorage.getItem(SESSION_ID_KEY);
+      if (!localSessionId) {
+        localSessionId = crypto.randomUUID();
+        localStorage.setItem(SESSION_ID_KEY, localSessionId);
+      }
+
+      // 2. Upsert the current session to Supabase
+      const updateSession = async () => {
+        const { error } = await supabase
+          .from('user_active_sessions')
+          .upsert({ user_id: user.id, session_token: localSessionId, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+
+        if (error) {
+          console.error("Failed to update active session token:", error);
+        }
+      };
+
+      updateSession();
+
+      // 3. Realtime Watcher
+      sessionSub = supabase
+        .channel('active_session_watcher')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_active_sessions',
+            filter: `user_id=eq.${user.id}`
+          },
+          async (payload) => {
+            const remoteSessionToken = (payload.new as any).session_token;
+            const currentLocalToken = localStorage.getItem(SESSION_ID_KEY);
+
+            // If the tokens do NOT match, it means another device logged in!
+            if (currentLocalToken && remoteSessionToken !== currentLocalToken) {
+              console.warn("Session hijacked! Another device logged in.");
+
+              // Evict the user
+              await signOut();
+
+              useNotificationStore.getState().showToast({
+
+                title: 'Session Ended',
+                message: 'You have been logged out because your account was accessed from another device.',
+                variant: 'warning',
+                duration: 0 // persistent
+              });
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (sessionSub) {
+        supabase.removeChannel(sessionSub);
+      }
+    };
+  }, [user]);
+
 
   useEffect(() => {
     // --- ROBUST PWA AUTH FIX: STORAGE EVENT LISTENER ---
@@ -149,6 +219,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   /** Signs out the current user. */
   const signOut = async () => {
+    localStorage.removeItem(SESSION_ID_KEY);
     await supabase.auth.signOut();
     // Clear all sensitive user data from local IndexedDB
     await db.clearAllUserData();
