@@ -129,7 +129,10 @@ export const PostCard: React.FC<{
           </div>
         </div>
         <Menu as="div" className="relative">
-          <Menu.Button className="text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100 focus:outline-none">
+          <Menu.Button
+            className="text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            aria-label="More post options"
+          >
             <MoreVertical size={20} />
           </Menu.Button>
           <Transition
@@ -172,7 +175,7 @@ export const PostCard: React.FC<{
       </div>
 
       <div
-        className="text-gray-900 mb-4 whitespace-pre-wrap select-none cursor-pointer"
+        className="text-gray-900 mb-4 whitespace-pre-wrap select-none cursor-pointer [touch-action:manipulation]"
         onMouseUp={handleTouchEnd}
         onTouchEnd={handleTouchEnd}
         onClick={() => navigate(`/community/post/${post.id}`)}
@@ -182,7 +185,7 @@ export const PostCard: React.FC<{
 
       {post.media_url && (
         <div
-          className="w-full rounded-2xl overflow-hidden mb-4 bg-gray-50 relative select-none cursor-pointer"
+          className="w-full rounded-2xl overflow-hidden mb-4 bg-gray-50 relative select-none cursor-pointer [touch-action:manipulation]"
           onMouseUp={handleTouchEnd}
           onTouchEnd={handleTouchEnd}
           onClick={() => navigate(`/community/post/${post.id}`)}
@@ -201,6 +204,7 @@ export const PostCard: React.FC<{
         <button
           onClick={() => onLike(post.id, !!post.is_liked_by_me)}
           className="flex items-center gap-2 group"
+          aria-label={post.is_liked_by_me ? "Unlike post" : "Like post"}
         >
           <motion.div
             whileTap={{ scale: 0.8 }}
@@ -219,6 +223,8 @@ export const PostCard: React.FC<{
         <button
             onClick={() => setShowCommentBox(!showCommentBox)}
             className="flex items-center gap-2 group"
+            aria-expanded={showCommentBox}
+            aria-label="Toggle comment section"
         >
           <div className="p-2.5 rounded-full bg-gray-50 text-gray-600 group-hover:bg-gray-100 transition-all duration-300 group-hover:text-indigo-400">
             <MessageCircle size={20} />
@@ -226,7 +232,7 @@ export const PostCard: React.FC<{
           <span className="text-sm font-medium text-gray-600">{post.comments_count || 0}</span>
         </button>
 
-        <button className="flex items-center gap-2 group ml-auto">
+        <button className="flex items-center gap-2 group ml-auto" aria-label="Share post">
           <div className="p-2.5 rounded-full bg-gray-50 text-gray-600 group-hover:bg-gray-100 transition-all duration-300 hover:text-gray-900">
             <Share2 size={20} />
           </div>

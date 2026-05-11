@@ -38,7 +38,7 @@ export const ReelsFeed: React.FC = () => {
   return (
     <div className="h-[100dvh] w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
       {/* Absolute Back Button */}
-      <div className="absolute top-safe left-4 z-50 mt-4">
+      <div className="absolute top-safe left-4 z-50 mt-4 pt-[env(safe-area-inset-top)]">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10 shadow-md">
           <ArrowLeft size={24} />
         </button>
@@ -220,23 +220,33 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
       {/* Side Action Bar */}
-      <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-10" onClick={(e: any) => e.stopPropagation()}>
-        <button onClick={handleLike} className="flex flex-col items-center gap-1 group">
-          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform">
+      <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-10 pb-[env(safe-area-inset-bottom)]" onClick={(e: any) => e.stopPropagation()}>
+        <button onClick={handleLike}
+          className="flex flex-col items-center gap-1 group"
+          aria-label={reel.is_liked_by_me ? "Unlike reel" : "Like reel"}>
+          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label="More reel options"
+            >
             <Heart size={28} className={cn(reel.is_liked_by_me && "fill-red-500 text-red-500")} />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-md">{reel.likes_count || 0}</span>
         </button>
 
-        <button onClick={() => navigate(`/community/reels/${reel.id}/comments`)} className="flex flex-col items-center gap-1 group">
-          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform">
+        <button onClick={() => navigate(`/community/reels/${reel.id}/comments`)}
+          className="flex flex-col items-center gap-1 group"
+          aria-label="View comments">
+          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label="More reel options"
+            >
             <MessageCircle size={28} />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-md">{reel.comments_count || 0}</span>
         </button>
 
-        <button className="flex flex-col items-center gap-1 group">
-          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform">
+        <button className="flex flex-col items-center gap-1 group" aria-label="Share reel">
+          <div className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label="More reel options"
+            >
             <Share2 size={28} />
           </div>
           <span className="text-white text-xs font-semibold drop-shadow-md">Share</span>
@@ -252,7 +262,9 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
                       setIsPlaying(false);
                   }
               }}
-              className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform">
+              className="p-3 bg-gray-900/40 backdrop-blur-md rounded-full text-white border border-white/10 active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label="More reel options"
+            >
               <MoreVertical size={28} />
             </Menu.Button>
             <Transition
@@ -304,7 +316,7 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
       </div>
 
       {/* Bottom Content Area */}
-      <div className="absolute bottom-0 left-0 right-16 p-4 z-10" onClick={(e: any) => e.stopPropagation()}>
+      <div className="absolute bottom-0 left-0 right-16 p-4 z-10 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e: any) => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-3 cursor-pointer" onClick={() => navigate(`/u/${reel.profiles?.username || reel.user_id}`)}>
           <div className="w-10 h-10 rounded-full bg-gray-200 border border-white/20 overflow-hidden">
             {reel.profiles?.avatar_url ? (

@@ -68,11 +68,13 @@ export const ChatInputBar: React.FC<ChatInputBarProps> = ({ onSend, onUpload, is
   return (
 
     <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)] relative w-full">
-      {isUploading && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs font-semibold text-indigo-500 animate-pulse bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-sm border border-gray-100">
-          Uploading media...
-        </div>
-      )}
+      <div aria-live="polite" aria-atomic="true">
+        {isUploading && (
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs font-semibold text-indigo-500 animate-pulse bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-sm border border-gray-100">
+            Uploading media...
+          </div>
+        )}
+      </div>
 
       <div className="flex items-end gap-2 bg-gray-100 border border-gray-200 rounded-[28px] p-1.5 pl-4 pr-1.5 relative overflow-hidden focus-within:ring-2 focus-within:ring-indigo-100 focus-within:bg-white transition-all duration-300">
         <input
