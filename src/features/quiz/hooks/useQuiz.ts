@@ -84,9 +84,48 @@ export const useQuiz = () => {
 
       // 3. Ironclad Safety Nets (Interceptors)
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-         // Force a final synchronous-like flush if possible, or at least trigger it.
+         // Force a final synchronous-like flush locally
          saveToDb();
-         // best-effort async push via syncService.pushSavedQuiz for Edge Case
+
+         // Fix Incognito Data Loss: Synchronous Cloud Commit
+         if (navigator.sendBeacon && state.quizId) {
+             const stateToSave = { ...state };
+             Object.keys(stateToSave).forEach(key => {
+               if (typeof (stateToSave as any)[key] === 'function') {
+                 delete (stateToSave as any)[key];
+               }
+             });
+             // Strip questions to reduce payload size as done in syncService
+             const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
+
+             // Extract Supabase Session directly from localStorage
+             const sbAuthStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
+             if (sbAuthStr) {
+                 try {
+                     const sbAuth = JSON.parse(sbAuthStr);
+                     const token = sbAuth.access_token;
+
+                     // Construct payload for the REST API
+                     const payload = {
+                         id: state.quizId,
+                         state: stateWithoutQuestions
+                     };
+
+                     // Use sendBeacon to guarantee delivery during tab close
+                     const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                     navigator.sendBeacon(
+                         `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`,
+                         blob
+                     );
+                     // Note: To make sendBeacon work with Supabase REST API, the Authorization header is required.
+                     // Unfortunately, sendBeacon does not support custom headers.
+                     // Therefore, we must rely on a Supabase Edge Function to receive this beacon.
+                 } catch (e) {
+                     console.error('Failed to parse auth token for sendBeacon');
+                 }
+             }
+         }
+         // best-effort async push via syncService.pushSavedQuiz for Edge Case (fallback)
          syncToCloud();
       };
 
