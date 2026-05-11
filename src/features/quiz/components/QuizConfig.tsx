@@ -203,13 +203,9 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
 
       await db.saveQuiz(newQuiz);
 
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          await syncService.pushSavedQuiz(session.user.id, newQuiz);
-        }
-      } catch (e) {
-        console.error('Failed to sync newly created quiz to cloud:', e);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        syncService.pushSavedQuiz(session.user.id, newQuiz).catch(console.error);
       }
 
       navigate('/quiz/saved');

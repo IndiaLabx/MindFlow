@@ -117,18 +117,20 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
       ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, questions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
       : 0;
 
+    const resolvedQuizId = quizId || crypto.randomUUID();
+
     set({
-      ...initialState,
-      status: 'quiz',
-      mode: mode,
-      activeQuestions: questions,
-      filters: filters,
-      quizTimeRemaining: globalTime,
-      remainingTimes: mode === 'learning'
-        ? questions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
-        : {},
-      quizId
-    });
+  ...initialState,
+  status: 'quiz',
+  mode: mode,
+  activeQuestions: questions,
+  filters: filters,
+  quizId: resolvedQuizId,
+  quizTimeRemaining: globalTime,
+  remainingTimes: mode === 'learning'
+    ? questions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
+    : {}
+});
   },
 
   answerQuestion: (questionId, answer, timeTaken) => set((state) => {
@@ -237,12 +239,14 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
     const globalTime = (state.mode === 'mock' || state.mode === 'god')
       ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, state.activeQuestions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
       : 0;
+    const resolvedQuizId = crypto.randomUUID();
     return {
       ...initialState,
       status: 'quiz',
       mode: state.mode,
       activeQuestions: state.activeQuestions,
       filters: state.filters,
+      quizId: resolvedQuizId,
       quizTimeRemaining: globalTime,
       remainingTimes: state.mode === 'learning'
         ? state.activeQuestions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
@@ -272,7 +276,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   loadSavedQuiz: (savedState) => set((state) => {
     if (savedState.activeQuestions) {
       const uniqueQuestions = Array.from(new Map(savedState.activeQuestions.map(q => [q.id, q])).values());
-      return { ...savedState, activeQuestions: uniqueQuestions };
+      return { ...savedState, activeQuestions: uniqueQuestions, quizId: savedState.quizId };
     }
     return savedState;
   }),
