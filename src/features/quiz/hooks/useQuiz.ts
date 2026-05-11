@@ -7,6 +7,8 @@ import { useQuizSessionStore } from '../stores/useQuizSessionStore';
 import { Question, InitialFilters, QuizMode, Idiom, OneWord, SynonymWord, QuizState, QuizHistoryRecord, SubjectStats } from '../types';
 import { db } from '../../../lib/db';
 import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '../../../lib/supabase';
+import { syncService } from '../../../lib/syncService';
 
 /**
  * Custom hook to manage the global quiz application state.
@@ -55,16 +57,44 @@ export const useQuiz = () => {
       // 1. Instant Async Commit (No more setTimeout death window)
       saveToDb();
 
-      // 2. Ironclad Safety Nets (Interceptors)
+      // Implement the 30s navigator.onLine sync and the best-effort unload listeners
+      const syncToCloud = async () => {
+        if (!navigator.onLine) return;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.user) return;
+
+          const quizId = state.quizId;
+          if (!quizId) return;
+
+          const quiz = await db.getQuiz(quizId);
+          if (quiz) {
+            // best-effort async push via syncService.pushSavedQuiz
+            await syncService.pushSavedQuiz(session.user.id, quiz);
+          }
+        } catch (err) {
+          console.error("Failed to sync partial progress to Supabase:", err);
+        }
+      };
+
+      // 2. 30-Second Debounced Background Sync
+      const syncInterval = setInterval(() => {
+         syncToCloud();
+      }, 30000);
+
+      // 3. Ironclad Safety Nets (Interceptors)
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
          // Force a final synchronous-like flush if possible, or at least trigger it.
-         // Modern browsers restrict what can be done here, but IndexedDB might squeeze through.
          saveToDb();
+         // best-effort async push via syncService.pushSavedQuiz for Edge Case
+         syncToCloud();
       };
 
       const handleVisibilityChange = () => {
           if (document.visibilityState === 'hidden') {
               saveToDb();
+              // Immediately push to cloud on minimize/hide
+              syncToCloud();
           }
       };
 
@@ -72,6 +102,7 @@ export const useQuiz = () => {
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
       return () => {
+          clearInterval(syncInterval);
           window.removeEventListener('beforeunload', handleBeforeUnload);
           document.removeEventListener('visibilitychange', handleVisibilityChange);
       };

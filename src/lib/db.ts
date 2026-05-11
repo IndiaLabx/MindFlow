@@ -194,7 +194,7 @@ export const db = {
             const request = store.put(quiz);
 
             request.onsuccess = () => {
-                db._pushToSupabase('quiz', quiz);
+                // db._pushToSupabase('quiz', quiz); // Removed to prevent API spam, handled by debounced sync in useQuiz.ts
                 resolve();
             };
             request.onerror = () => reject(request.error);
@@ -291,7 +291,7 @@ export const db = {
                     quiz.state = state;
                     const putRequest = store.put(quiz);
                     putRequest.onsuccess = () => {
-                        db._pushToSupabase('quiz', quiz);
+                        // db._pushToSupabase('quiz', quiz); // Removed to prevent API spam, handled by debounced sync in useQuiz.ts
                         resolve();
                     };
                     putRequest.onerror = () => reject(putRequest.error);
