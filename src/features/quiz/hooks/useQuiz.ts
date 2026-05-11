@@ -36,6 +36,28 @@ export const useQuiz = () => {
     }
   }, [state.status, state.quizId, state.mode]);
 
+
+  const flushSync = useCallback(() => {
+    if (!state.quizId) return;
+
+    const stateToSave = { ...state };
+    Object.keys(stateToSave).forEach(key => {
+      if (typeof (stateToSave as any)[key] === 'function') {
+        delete (stateToSave as any)[key];
+      }
+    });
+
+    db.updateQuizProgress(state.quizId, stateToSave as any).catch(console.error);
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && state.quizId) {
+        db.getQuiz(state.quizId).then(quiz => {
+          if (quiz) syncService.pushSavedQuiz(session.user.id, quiz).catch(console.error);
+        });
+      }
+    });
+  }, [state]);
+
   // Persistence Effect 2: IndexedDB (Saved Quizzes) - Instant Async Commits & Safety Nets
   useEffect(() => {
     if (state.quizId && (state.status === 'quiz' || state.status === 'result')) {
@@ -87,46 +109,49 @@ export const useQuiz = () => {
          // Force a final synchronous-like flush locally
          saveToDb();
 
-         // Fix Incognito Data Loss: Synchronous Cloud Commit
-         if (navigator.sendBeacon && state.quizId) {
+         // Raw fetch with keepalive for ironclad safety net (Incognito / tab close)
+         if (navigator.onLine && state.quizId) {
              const stateToSave = { ...state };
              Object.keys(stateToSave).forEach(key => {
                if (typeof (stateToSave as any)[key] === 'function') {
                  delete (stateToSave as any)[key];
                }
              });
-             // Strip questions to reduce payload size as done in syncService
              const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
 
-             // Extract Supabase Session directly from localStorage
-             const sbAuthStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
-             if (sbAuthStr) {
+             // We use supabase.auth.getSession synchronously here which isn't possible,
+             // so we extract the access token from localStorage.
+             const authStorageStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
+             if (authStorageStr) {
                  try {
-                     const sbAuth = JSON.parse(sbAuthStr);
-                     const token = sbAuth.access_token;
+                     const authStorage = JSON.parse(authStorageStr);
+                     const token = authStorage?.access_token;
+                     const userId = authStorage?.user?.id;
 
-                     // Construct payload for the REST API
-                     const payload = {
-                         id: state.quizId,
-                         state: stateWithoutQuestions
-                     };
+                     if (token && userId) {
+                         const payload = {
+                             id: state.quizId,
+                             user_id: userId,
+                             state: stateWithoutQuestions
+                         };
 
-                     // Use sendBeacon to guarantee delivery during tab close
-                     const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                     navigator.sendBeacon(
-                         `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`,
-                         blob
-                     );
-                     // Note: To make sendBeacon work with Supabase REST API, the Authorization header is required.
-                     // Unfortunately, sendBeacon does not support custom headers.
-                     // Therefore, we must rely on a Supabase Edge Function to receive this beacon.
-                 } catch (e) {
-                     console.error('Failed to parse auth token for sendBeacon');
-                 }
+                         const headers = new Headers();
+                         headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+                         headers.append("Authorization", `Bearer ${token}`);
+                         headers.append("Content-Type", "application/json");
+                         headers.append("Prefer", "resolution=merge-duplicates");
+
+                         // Fire and forget with keepalive
+                         fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
+                             method: 'POST',
+                             headers: headers,
+                             body: JSON.stringify(payload),
+                             keepalive: true
+                         }).catch(() => {});
+                     }
+                 } catch (e) {}
              }
          }
-         // best-effort async push via syncService.pushSavedQuiz for Edge Case (fallback)
-         syncToCloud();
       };
 
       const handleVisibilityChange = () => {
@@ -154,14 +179,14 @@ export const useQuiz = () => {
   ]);
 
   // Wrap startQuiz to include analytics
-  const startQuiz = useCallback((filteredQuestions: Question[], filters: InitialFilters, mode: QuizMode = 'learning') => {
+  const startQuiz = useCallback((filteredQuestions: Question[], filters: InitialFilters, mode: QuizMode = 'learning', quizId?: string) => {
     logEvent('quiz_started', {
       subject: filters.subject,
       difficulty: filters.difficulty,
       question_count: filteredQuestions.length,
       mode: mode
     });
-    state.startQuiz(filteredQuestions, filters, mode);
+    state.startQuiz(filteredQuestions, filters, mode, quizId);
   }, [state.startQuiz]);
 
   // Wrap submitSessionResults to include complex logic previously in useQuiz
@@ -244,6 +269,42 @@ export const useQuiz = () => {
     ? ((state.currentQuestionIndex + 1) / totalQuestions) * 100
     : 0;
 
+  // Wrap navigation handlers to include a flushSync call
+  const goHome = useCallback(() => {
+    flushSync();
+    state.goHome();
+  }, [flushSync, state.goHome]);
+
+  const finishQuiz = useCallback(() => {
+    flushSync();
+    state.finishQuiz();
+  }, [flushSync, state.finishQuiz]);
+
+  const enterHome = useCallback(() => {
+    flushSync();
+    state.enterHome();
+  }, [flushSync, state.enterHome]);
+
+  const goToIntro = useCallback(() => {
+    flushSync();
+    state.goToIntro();
+  }, [flushSync, state.goToIntro]);
+
+  const enterConfig = useCallback(() => {
+    flushSync();
+    state.enterConfig();
+  }, [flushSync, state.enterConfig]);
+
+  const enterProfile = useCallback(() => {
+    flushSync();
+    state.enterProfile();
+  }, [flushSync, state.enterProfile]);
+
+  const enterLogin = useCallback(() => {
+    flushSync();
+    state.enterLogin();
+  }, [flushSync, state.enterLogin]);
+
   return {
     isReviewMode,
     setIsReviewMode,
@@ -251,15 +312,15 @@ export const useQuiz = () => {
     currentQuestion,
     totalQuestions,
     progress,
-    enterHome: state.enterHome,
-    enterConfig: state.enterConfig,
+    enterHome,
+    enterConfig,
     enterEnglishHome: state.enterEnglishHome,
     enterIdiomsConfig: state.enterIdiomsConfig,
     enterOWSConfig: state.enterOWSConfig,
     enterSynonymsConfig: state.enterSynonymsConfig,
-    enterProfile: state.enterProfile,
-    enterLogin: state.enterLogin,
-    goToIntro: state.goToIntro,
+    enterProfile,
+    enterLogin,
+    goToIntro,
     startQuiz,
     submitSessionResults,
     answerQuestion: state.answerQuestion,
@@ -274,9 +335,9 @@ export const useQuiz = () => {
     useFiftyFifty: state.useFiftyFifty,
     pauseQuiz: state.pauseQuiz,
     resumeQuiz: state.resumeQuiz,
-    finishQuiz: state.finishQuiz,
+    finishQuiz,
     restartQuiz: state.restartQuiz,
-    goHome: state.goHome,
+    goHome,
     loadSavedQuiz: state.loadSavedQuiz,
     reorderActiveQuestions: state.reorderActiveQuestions
   };

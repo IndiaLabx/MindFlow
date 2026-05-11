@@ -16,8 +16,8 @@ export const PostCard: React.FC<{
   navigate: any;
   post: Post;
   user: any;
-  onLike: () => void;
-  onDoubleTap: (x: number, y: number) => void;
+  onLike: (postId: string, isLiked: boolean) => void;
+  onDoubleTap: (postId: string, isLiked: boolean, x: number, y: number) => void;
 }> = React.memo(({ post, onLike, onDoubleTap, navigate, user }) => {
   const lastTapRef = useRef<number>(0);
   const [showCommentBox, setShowCommentBox] = useState(false);
@@ -80,7 +80,7 @@ export const PostCard: React.FC<{
         clientX = (e as React.MouseEvent).clientX;
         clientY = (e as React.MouseEvent).clientY;
       }
-      onDoubleTap(clientX, clientY);
+      onDoubleTap(post.id, !!post.is_liked_by_me, clientX, clientY);
     }
     lastTapRef.current = now;
   };
@@ -202,7 +202,7 @@ export const PostCard: React.FC<{
 
       <div className="flex items-center gap-6 mt-2 pt-4 border-t border-gray-100">
         <button
-          onClick={onLike}
+          onClick={() => onLike(post.id, !!post.is_liked_by_me)}
           className="flex items-center gap-2 group"
           aria-label={post.is_liked_by_me ? "Unlike post" : "Like post"}
         >

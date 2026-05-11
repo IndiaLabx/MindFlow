@@ -6,6 +6,7 @@ import { fetchPosts, toggleLikePost, createComment, Post } from '../api/communit
 import { useSocialRealtime } from '../hooks/useSocialRealtime';
 import { useAuth } from '../../auth/context/AuthContext';
 import { Heart, MessageCircle, Share2, MoreVertical, Plus, Send, Loader2 } from 'lucide-react';
+import { Virtuoso } from 'react-virtuoso';
 import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { useNavigate } from 'react-router-dom';
@@ -102,7 +103,12 @@ export const CommunityFeed: React.FC = () => {
     }
   });
 
-  const handleDoubleTapLike = (postId: string, currentlyLiked: boolean, x: number, y: number) => {
+  const handleLikeClick = useCallback((postId: string, currentlyLiked: boolean) => {
+    if (!user) return;
+    likeMutation.mutate({ postId, currentlyLiked });
+  }, [user, likeMutation]);
+
+  const handleDoubleTapLike = useCallback((postId: string, currentlyLiked: boolean, x: number, y: number) => {
     if (!currentlyLiked) {
       if (user) {
          likeMutation.mutate({ postId, currentlyLiked });
@@ -111,7 +117,7 @@ export const CommunityFeed: React.FC = () => {
       setParticles(prev => [...prev, newParticle]);
       if (navigator.vibrate) navigator.vibrate(50);
     }
-  };
+  }, [user, likeMutation]);
 
   const removeParticle = useCallback((id: number) => {
     setParticles(prev => prev.filter(p => p.id !== id));
@@ -138,27 +144,31 @@ export const CommunityFeed: React.FC = () => {
         ))}
       </AnimatePresence>
 
-      {data?.pages.map((page: any, i: number) => (
-        <React.Fragment key={i}>
-          {page.data.map((post: Post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onLike={() => {
-                if (!user) return;
-                likeMutation.mutate({ postId: post.id, currentlyLiked: !!post.is_liked_by_me });
-              }}
-              onDoubleTap={(x, y) => handleDoubleTapLike(post.id, !!post.is_liked_by_me, x, y)}
-              navigate={navigate}
-              user={user}
-            />
-          ))}
-        </React.Fragment>
-      ))}
-
-      {/* Loading Indicator for Next Page */}
-      <div ref={ref} className="w-full flex justify-center py-4">
-        {isFetchingNextPage && <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />}
+      <div className="w-full flex-grow flex flex-col">
+          <Virtuoso
+            useWindowScroll
+            data={data?.pages.flatMap((page: any) => page.data) || []}
+            endReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            itemContent={(index, post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={handleLikeClick}
+                  onDoubleTap={handleDoubleTapLike}
+                  navigate={navigate}
+                  user={user}
+                />
+            )}
+            components={{
+              Footer: () => (
+                <div ref={ref} className="w-full flex justify-center py-4">
+                  {isFetchingNextPage && <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />}
+                </div>
+              )
+            }}
+          />
       </div>
 
       <button
