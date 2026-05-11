@@ -120,18 +120,17 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
     const resolvedQuizId = quizId || crypto.randomUUID();
 
     set({
-      ...initialState,
-      status: 'quiz',
-      mode: mode,
-      activeQuestions: questions,
-      filters: filters,
-      quizId: resolvedQuizId,
-      quizTimeRemaining: globalTime,
-      remainingTimes: mode === 'learning'
-        ? questions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
-        : {},
-      quizId
-    });
+  ...initialState,
+  status: 'quiz',
+  mode: mode,
+  activeQuestions: questions,
+  filters: filters,
+  quizId: resolvedQuizId,
+  quizTimeRemaining: globalTime,
+  remainingTimes: mode === 'learning'
+    ? questions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
+    : {}
+});
   },
 
   answerQuestion: (questionId, answer, timeTaken) => set((state) => {
