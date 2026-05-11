@@ -112,7 +112,8 @@ export const CommentThread: React.FC<{
       <div className="flex flex-col items-center justify-start ml-auto pl-3 pt-2">
         <button
           onClick={() => currentUserId && likeCommentMutation.mutate(!!comment.is_liked_by_me)}
-          className={cn("p-1 transition-all", comment.is_liked_by_me ? "text-red-500 scale-110" : "text-gray-400 hover:text-gray-600")}
+          className={cn("p-3 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-3 transition-all", comment.is_liked_by_me ? "text-red-500 scale-110" : "text-gray-400 hover:text-gray-600")}
+          aria-label={comment.is_liked_by_me ? "Unlike comment" : "Like comment"}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={comment.is_liked_by_me ? "currentColor" : "none"} stroke="currentColor" strokeWidth={comment.is_liked_by_me ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
