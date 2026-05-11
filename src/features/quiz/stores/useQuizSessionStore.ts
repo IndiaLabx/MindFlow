@@ -1,4 +1,6 @@
 import { db } from '../../../lib/db';
+import { syncService } from '../../../lib/syncService';
+import { supabase } from '../../../lib/supabase';
 import { create } from 'zustand';
 import { APP_CONFIG } from '../../../constants/config';
 import { QuizState, QuizStatus, QuizMode, Question, InitialFilters } from '../types';
@@ -15,7 +17,7 @@ interface QuizSessionState extends QuizState {
   enterProfile: () => void;
   enterLogin: () => void;
   goToIntro: () => void;
-  startQuiz: (questions: Question[], filters: InitialFilters, mode: QuizMode) => void;
+  startQuiz: (questions: Question[], filters: InitialFilters, mode: QuizMode, quizId?: string) => void;
   answerQuestion: (questionId: string, answer: string, timeTaken: number) => void;
   logTimeSpent: (questionId: string, timeTaken: number) => void;
   saveTimer: (questionId: string, time: number) => void;
@@ -70,10 +72,36 @@ const getInitialState = (): QuizState => {
   return initialState;
 };
 
+
+const flushToCloud = async (state: QuizState) => {
+  if (typeof window === 'undefined' || !navigator.onLine || !state.quizId) return;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    // Save locally first
+    const stateToSave = { ...state };
+    Object.keys(stateToSave).forEach(key => {
+      if (typeof (stateToSave as any)[key] === 'function') {
+        delete (stateToSave as any)[key];
+      }
+    });
+    await db.updateQuizProgress(state.quizId, stateToSave as any);
+
+    // Push full quiz object
+    const quiz = await db.getQuiz(state.quizId);
+    if (quiz) {
+      await syncService.pushSavedQuiz(session.user.id, quiz);
+    }
+  } catch (err) {
+    console.error("Failed explicit flush to cloud:", err);
+  }
+};
+
 export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   ...getInitialState(),
 
-  enterHome: () => set({ ...initialState, status: 'idle' }),
+  enterHome: () => { flushToCloud(get()); set({ ...initialState, status: 'idle' }); },
   enterConfig: () => set({ status: 'config' }),
   enterBlueprints: () => set({ status: 'blueprints' as any }),
   enterEnglishHome: () => set({ status: 'english-home' }),
@@ -84,7 +112,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   enterLogin: () => set({ status: 'login' }),
   goToIntro: () => set({ ...initialState, status: 'intro' }),
 
-  startQuiz: (questions, filters, mode) => {
+  startQuiz: (questions, filters, mode, quizId) => {
     const globalTime = (mode === 'mock' || mode === 'god')
       ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, questions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
       : 0;
@@ -98,7 +126,8 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
       quizTimeRemaining: globalTime,
       remainingTimes: mode === 'learning'
         ? questions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
-        : {}
+        : {},
+      quizId
     });
   },
 
@@ -199,15 +228,10 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
 
   resumeQuiz: () => set({ isPaused: false }),
 
-  finishQuiz: () => set({ status: 'result' }),
+  finishQuiz: () => { set({ status: 'result' }); flushToCloud(get()); },
 
-  submitSessionResults: (results) => set((state) => ({
-    answers: results.answers,
-    timeTaken: Object.keys(results.timeTaken).length > 0 ? results.timeTaken : state.timeTaken,
-    score: results.score,
-    bookmarks: results.bookmarks,
-    status: 'result'
-  })),
+  submitSessionResults: (results) => { set((state) => ({ answers: results.answers, timeTaken: Object.keys(results.timeTaken).length > 0 ? results.timeTaken : state.timeTaken, score: results.score, bookmarks: results.bookmarks, status: 'result' })); flushToCloud(get()); },
+
 
   restartQuiz: () => set((state) => {
     const globalTime = (state.mode === 'mock' || state.mode === 'god')
@@ -226,7 +250,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
     };
   }),
 
-  goHome: () => set({ ...initialState, status: 'idle' }),
+  goHome: () => { flushToCloud(get()); set({ ...initialState, status: 'idle' }); },
 
   reorderActiveQuestions: (newOrder) => set((state) => {
     const currentQuestion = state.activeQuestions[state.currentQuestionIndex];

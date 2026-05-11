@@ -40,6 +40,8 @@ import { ExamBlueprintsHub } from './ExamBlueprintsHub';
 import { useQuestionIndex, filterQuestionsByIndex } from '../hooks/useQuestionIndex';
 import { useOptimizedFilterCounts } from '../hooks/useOptimizedFilterCounts';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
+import { supabase } from '../../../lib/supabase';
+import { syncService } from '../../../lib/syncService';
 
 interface QuizConfigProps {
   onStart: (questions: Question[], filters?: InitialFilters, mode?: QuizMode) => void;
@@ -200,6 +202,16 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
       };
 
       await db.saveQuiz(newQuiz);
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await syncService.pushSavedQuiz(session.user.id, newQuiz);
+        }
+      } catch (e) {
+        console.error('Failed to sync newly created quiz to cloud:', e);
+      }
+
       navigate('/quiz/saved');
 
     } catch (err) {
