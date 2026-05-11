@@ -50,7 +50,8 @@ export const BlueprintPreviewWrapper: React.FC = () => {
 
   const handleStartExam = (questions: Question[]) => {
     // Launching in native God Mode for strict exam simulation
-    startQuiz(questions, { subject: [], topic: [], subTopic: [], difficulty: [], isGodMode: true } as any, 'god');
+    const quizId = crypto.randomUUID();
+    startQuiz(questions, { subject: [], topic: [], subTopic: [], difficulty: [], isGodMode: true } as any, 'god', quizId);
     navigate('/quiz/session/god');
   };
 
