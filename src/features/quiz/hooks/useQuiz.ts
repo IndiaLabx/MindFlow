@@ -36,6 +36,28 @@ export const useQuiz = () => {
     }
   }, [state.status, state.quizId, state.mode]);
 
+
+  const flushSync = useCallback(() => {
+    if (!state.quizId) return;
+
+    const stateToSave = { ...state };
+    Object.keys(stateToSave).forEach(key => {
+      if (typeof (stateToSave as any)[key] === 'function') {
+        delete (stateToSave as any)[key];
+      }
+    });
+
+    db.updateQuizProgress(state.quizId, stateToSave as any).catch(console.error);
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && state.quizId) {
+        db.getQuiz(state.quizId).then(quiz => {
+          if (quiz) syncService.pushSavedQuiz(session.user.id, quiz).catch(console.error);
+        });
+      }
+    });
+  }, [state]);
+
   // Persistence Effect 2: IndexedDB (Saved Quizzes) - Instant Async Commits & Safety Nets
   useEffect(() => {
     if (state.quizId && (state.status === 'quiz' || state.status === 'result')) {
@@ -247,6 +269,42 @@ export const useQuiz = () => {
     ? ((state.currentQuestionIndex + 1) / totalQuestions) * 100
     : 0;
 
+  // Wrap navigation handlers to include a flushSync call
+  const goHome = useCallback(() => {
+    flushSync();
+    state.goHome();
+  }, [flushSync, state.goHome]);
+
+  const finishQuiz = useCallback(() => {
+    flushSync();
+    state.finishQuiz();
+  }, [flushSync, state.finishQuiz]);
+
+  const enterHome = useCallback(() => {
+    flushSync();
+    state.enterHome();
+  }, [flushSync, state.enterHome]);
+
+  const goToIntro = useCallback(() => {
+    flushSync();
+    state.goToIntro();
+  }, [flushSync, state.goToIntro]);
+
+  const enterConfig = useCallback(() => {
+    flushSync();
+    state.enterConfig();
+  }, [flushSync, state.enterConfig]);
+
+  const enterProfile = useCallback(() => {
+    flushSync();
+    state.enterProfile();
+  }, [flushSync, state.enterProfile]);
+
+  const enterLogin = useCallback(() => {
+    flushSync();
+    state.enterLogin();
+  }, [flushSync, state.enterLogin]);
+
   return {
     isReviewMode,
     setIsReviewMode,
@@ -254,15 +312,15 @@ export const useQuiz = () => {
     currentQuestion,
     totalQuestions,
     progress,
-    enterHome: state.enterHome,
-    enterConfig: state.enterConfig,
+    enterHome,
+    enterConfig,
     enterEnglishHome: state.enterEnglishHome,
     enterIdiomsConfig: state.enterIdiomsConfig,
     enterOWSConfig: state.enterOWSConfig,
     enterSynonymsConfig: state.enterSynonymsConfig,
-    enterProfile: state.enterProfile,
-    enterLogin: state.enterLogin,
-    goToIntro: state.goToIntro,
+    enterProfile,
+    enterLogin,
+    goToIntro,
     startQuiz,
     submitSessionResults,
     answerQuestion: state.answerQuestion,
@@ -277,9 +335,9 @@ export const useQuiz = () => {
     useFiftyFifty: state.useFiftyFifty,
     pauseQuiz: state.pauseQuiz,
     resumeQuiz: state.resumeQuiz,
-    finishQuiz: state.finishQuiz,
+    finishQuiz,
     restartQuiz: state.restartQuiz,
-    goHome: state.goHome,
+    goHome,
     loadSavedQuiz: state.loadSavedQuiz,
     reorderActiveQuestions: state.reorderActiveQuestions
   };
