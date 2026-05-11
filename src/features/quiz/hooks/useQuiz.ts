@@ -84,10 +84,52 @@ export const useQuiz = () => {
 
       // 3. Ironclad Safety Nets (Interceptors)
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-         // Force a final synchronous-like flush if possible, or at least trigger it.
+         // Force a final synchronous-like flush locally
          saveToDb();
-         // best-effort async push via syncService.pushSavedQuiz for Edge Case
-         syncToCloud();
+
+         // Raw fetch with keepalive for ironclad safety net (Incognito / tab close)
+         if (navigator.onLine && state.quizId) {
+             const stateToSave = { ...state };
+             Object.keys(stateToSave).forEach(key => {
+               if (typeof (stateToSave as any)[key] === 'function') {
+                 delete (stateToSave as any)[key];
+               }
+             });
+             const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
+
+             // We use supabase.auth.getSession synchronously here which isn't possible,
+             // so we extract the access token from localStorage.
+             const authStorageStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
+             if (authStorageStr) {
+                 try {
+                     const authStorage = JSON.parse(authStorageStr);
+                     const token = authStorage?.access_token;
+                     const userId = authStorage?.user?.id;
+
+                     if (token && userId) {
+                         const payload = {
+                             id: state.quizId,
+                             user_id: userId,
+                             state: stateWithoutQuestions
+                         };
+
+                         const headers = new Headers();
+                         headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+                         headers.append("Authorization", `Bearer ${token}`);
+                         headers.append("Content-Type", "application/json");
+                         headers.append("Prefer", "resolution=merge-duplicates");
+
+                         // Fire and forget with keepalive
+                         fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
+                             method: 'POST',
+                             headers: headers,
+                             body: JSON.stringify(payload),
+                             keepalive: true
+                         }).catch(() => {});
+                     }
+                 } catch (e) {}
+             }
+         }
       };
 
       const handleVisibilityChange = () => {
@@ -115,14 +157,14 @@ export const useQuiz = () => {
   ]);
 
   // Wrap startQuiz to include analytics
-  const startQuiz = useCallback((filteredQuestions: Question[], filters: InitialFilters, mode: QuizMode = 'learning') => {
+  const startQuiz = useCallback((filteredQuestions: Question[], filters: InitialFilters, mode: QuizMode = 'learning', quizId?: string) => {
     logEvent('quiz_started', {
       subject: filters.subject,
       difficulty: filters.difficulty,
       question_count: filteredQuestions.length,
       mode: mode
     });
-    state.startQuiz(filteredQuestions, filters, mode);
+    state.startQuiz(filteredQuestions, filters, mode, quizId);
   }, [state.startQuiz]);
 
   // Wrap submitSessionResults to include complex logic previously in useQuiz

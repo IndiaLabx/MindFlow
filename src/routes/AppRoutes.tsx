@@ -357,7 +357,8 @@ const AppRoutesContent: React.FC = () => {
                         <Suspense fallback={<SynapticLoader />}><QuizConfig
                             onBack={() => { navTo('/mcqs'); }}
                             onStart={(questions, filters, mode) => {
-                                startQuiz(questions, filters || ({} as any), mode);
+                                // Note: QuizConfig uses saveQuiz directly and navigates, so this might not be hit, but we pass random UUID just in case
+                                startQuiz(questions, filters || ({} as any), mode, crypto.randomUUID());
                                 navTo(mode === 'mock' ? '/quiz/session/mock' : '/quiz/session/learning');
                             }}
                         /></Suspense>
