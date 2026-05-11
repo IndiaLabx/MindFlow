@@ -15,7 +15,7 @@ interface QuizSessionState extends QuizState {
   enterProfile: () => void;
   enterLogin: () => void;
   goToIntro: () => void;
-  startQuiz: (questions: Question[], filters: InitialFilters, mode: QuizMode) => void;
+  startQuiz: (questions: Question[], filters: InitialFilters, mode: QuizMode, quizId?: string) => void;
   answerQuestion: (questionId: string, answer: string, timeTaken: number) => void;
   logTimeSpent: (questionId: string, timeTaken: number) => void;
   saveTimer: (questionId: string, time: number) => void;
@@ -84,10 +84,12 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   enterLogin: () => set({ status: 'login' }),
   goToIntro: () => set({ ...initialState, status: 'intro' }),
 
-  startQuiz: (questions, filters, mode) => {
+  startQuiz: (questions, filters, mode, quizId) => {
     const globalTime = (mode === 'mock' || mode === 'god')
       ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, questions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
       : 0;
+
+    const resolvedQuizId = quizId || crypto.randomUUID();
 
     set({
       ...initialState,
@@ -95,6 +97,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
       mode: mode,
       activeQuestions: questions,
       filters: filters,
+      quizId: resolvedQuizId,
       quizTimeRemaining: globalTime,
       remainingTimes: mode === 'learning'
         ? questions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
@@ -213,12 +216,14 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
     const globalTime = (state.mode === 'mock' || state.mode === 'god')
       ? Math.max(APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION, state.activeQuestions.length * APP_CONFIG.TIMERS.MOCK_MODE_DEFAULT_PER_QUESTION)
       : 0;
+    const resolvedQuizId = crypto.randomUUID();
     return {
       ...initialState,
       status: 'quiz',
       mode: state.mode,
       activeQuestions: state.activeQuestions,
       filters: state.filters,
+      quizId: resolvedQuizId,
       quizTimeRemaining: globalTime,
       remainingTimes: state.mode === 'learning'
         ? state.activeQuestions.reduce((acc, q) => ({ ...acc, [q.id]: APP_CONFIG.TIMERS.LEARNING_MODE_DEFAULT }), {})
@@ -248,7 +253,7 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   loadSavedQuiz: (savedState) => set((state) => {
     if (savedState.activeQuestions) {
       const uniqueQuestions = Array.from(new Map(savedState.activeQuestions.map(q => [q.id, q])).values());
-      return { ...savedState, activeQuestions: uniqueQuestions };
+      return { ...savedState, activeQuestions: uniqueQuestions, quizId: savedState.quizId };
     }
     return savedState;
   }),
