@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (data && data.session_token !== localSessionId) {
             // We were kicked out while offline!
             console.warn("Session hijacked while offline! Another device logged in.");
-            await signOut();
+            await forceEvict();
             useNotificationStore.getState().showToast({
               title: 'Session Ended',
               message: 'You have been logged out because your account was accessed from another device.',
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 console.warn("Session hijacked! Another device logged in.");
 
                 // Evict the user
-                await signOut();
+                await forceEvict();
 
                 useNotificationStore.getState().showToast({
                   title: 'Session Ended',
@@ -255,21 +255,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  /** Signs out the current user. */
+  /** Signs out the current user (Intentional Logout). */
   const signOut = async () => {
     const localSessionId = localStorage.getItem(SESSION_ID_KEY);
     localStorage.removeItem(SESSION_ID_KEY);
 
     // Only delete from DB if we actually have a user, to clean up on explicit logout
     if (user && localSessionId) {
-      // Best effort deletion. If we were kicked out, we don't care if this fails.
+      // Best effort deletion.
       supabase.from('user_active_sessions').delete().eq('user_id', user.id).eq('session_token', localSessionId).then();
     }
 
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'global' });
     // Clear all sensitive user data from local IndexedDB
     await db.clearAllUserData();
     // Dispatch event to notify UI components to refresh/clear their state
+    window.dispatchEvent(new Event('mindflow-sync-complete'));
+  };
+
+  /** Forces an eviction without touching global DB state or other devices (Hijack scenario). */
+  const forceEvict = async () => {
+    localStorage.removeItem(SESSION_ID_KEY);
+    await supabase.auth.signOut({ scope: 'local' });
+    await db.clearAllUserData();
     window.dispatchEvent(new Event('mindflow-sync-complete'));
   };
 
