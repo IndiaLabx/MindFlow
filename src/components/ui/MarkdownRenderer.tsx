@@ -3,8 +3,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { cn } from '../../utils/cn';
@@ -23,21 +21,6 @@ interface MarkdownRendererProps {
  * It automatically applies Tailwind prose styles and safely parses HTML.
  */
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className }) => {
-
-    const sanitizeSchema = {
-        ...defaultSchema,
-        tagNames: [
-            'p', 'b', 'i', 'em', 'strong', 'br', 'ul', 'ol', 'li',
-            'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'div',
-            'sup', 'sub', 'code', 'pre', 'math'
-        ],
-        attributes: {
-            ...defaultSchema.attributes,
-            // Keep safe attributes for allowed tags (like className for span/div)
-            '*': ['className', 'style', 'id']
-        }
-    };
-
     return (
         <div className={cn(
             "prose prose-sm md:prose-base max-w-none break-words",
@@ -49,7 +32,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
                 // @ts-ignore - rehypeRaw types can sometimes mismatch, but it works correctly
-                rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeKatex]}
+                rehypePlugins={[rehypeRaw, rehypeKatex]}
                 components={{
                     // Override default margins from prose to make it blend better in tight UI spaces
                     p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
