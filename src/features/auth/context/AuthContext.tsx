@@ -4,6 +4,8 @@ import { supabase } from '../../../lib/supabase';
 import defaultAvatar from '../../../assets/default-avatar.svg';
 import { syncService } from '../../../lib/syncService';
 import { db } from '../../../lib/db';
+import { AlertTriangle, LogOut, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 
 /**
@@ -47,6 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profileStatus, setProfileStatus] = useState<string | null>(null);
   const [deleteRequestedAt, setDeleteRequestedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionConflict, setSessionConflict] = useState(false);
   const lastSyncedUserId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -57,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         let localSessionId = localStorage.getItem(SESSION_ID_KEY);
 
         if (localSessionId) {
-          // If we already have a local session ID (e.g., app reopened), verify it against the DB FIRST
+          // Reopening the app on an existing device
           const { data, error } = await supabase
             .from('user_active_sessions')
             .select('session_token')
@@ -70,30 +73,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
 
           if (data && data.session_token !== localSessionId) {
-            // We were kicked out while offline!
+            // Kicked out while offline
             console.warn("Session hijacked while offline! Another device logged in.");
             await forceEvict();
             useNotificationStore.getState().showToast({
               title: 'Session Ended',
               message: 'You have been logged out because your account was accessed from another device.',
               variant: 'warning',
-              duration: 0 // persistent
+              duration: 0
             });
-            return; // STOP EXECUTION HERE, do not set up watcher or upsert
+            return;
           } else if (!data) {
-             // Edge case: No data in DB, but we have local token. Maybe they signed out on another device.
-             // We'll re-claim the session to be safe.
+             // Ghost token scenario, reclaim it
              await upsertSession(localSessionId);
           }
+          setupWatcher(); // Safe to watch
         } else {
-          // No local session ID (e.g., fresh login). Generate one and claim the session.
+          // Fresh login (No local session ID). Check if DB already has a session
+          const { data } = await supabase
+            .from('user_active_sessions')
+            .select('session_token')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (data && data.session_token) {
+             // Conflict! Another device is currently active
+             setSessionConflict(true);
+             // Do NOT setup watcher or upsert yet. Wait for user decision.
+             return;
+          }
+
+          // No conflict, safe to claim
           localSessionId = crypto.randomUUID();
           localStorage.setItem(SESSION_ID_KEY, localSessionId);
           await upsertSession(localSessionId);
+          setupWatcher();
         }
-
-        // Set up the Realtime Watcher AFTER initial validation
-        setupWatcher();
       };
 
       const upsertSession = async (token: string) => {
@@ -281,6 +296,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     window.dispatchEvent(new Event('mindflow-sync-complete'));
   };
 
+
+  const handleTakeoverSession = async () => {
+    if (!user) return;
+    setSessionConflict(false);
+
+    // Generate new ID and aggressively claim the session
+    const localSessionId = crypto.randomUUID();
+    localStorage.setItem(SESSION_ID_KEY, localSessionId);
+
+    const { error } = await supabase
+      .from('user_active_sessions')
+      .upsert({ user_id: user.id, session_token: localSessionId, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+
+    if (error) {
+      console.error("Takeover failed:", error);
+    }
+
+    // Subscribe to watcher
+    supabase
+      .channel('active_session_watcher')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_active_sessions', filter: `user_id=eq.${user.id}` },
+        async (payload) => {
+          if (payload.eventType === 'DELETE') return;
+          const remoteSessionToken = (payload.new as any).session_token;
+          const currentLocalToken = localStorage.getItem(SESSION_ID_KEY);
+          if (currentLocalToken && remoteSessionToken !== currentLocalToken) {
+            await forceEvict();
+            useNotificationStore.getState().showToast({
+              title: 'Session Ended',
+              message: 'You have been logged out because your account was accessed from another device.',
+              variant: 'warning',
+              duration: 0
+            });
+          }
+        }
+      ).subscribe();
+  };
+
+  const handleCancelTakeover = async () => {
+    setSessionConflict(false);
+    await forceEvict();
+  };
+
   /** Refreshes the user object from Supabase. */
   const refreshUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -297,7 +357,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     refreshUser,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+
+      <AnimatePresence>
+        {sessionConflict && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-gray-700"
+            >
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4 mx-auto">
+                  <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-500" />
+                </div>
+
+                <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                  Session Already Active
+                </h3>
+
+                <p className="text-gray-600 dark:text-gray-300 text-center mb-6 text-sm">
+                  You are already logged in on another device. Would you like to sign out from the other device and continue here?
+                </p>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={handleTakeoverSession}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors"
+                  >
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span>Yes, Continue Here</span>
+                  </button>
+
+                  <button
+                    onClick={handleCancelTakeover}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl font-medium transition-colors"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span>Cancel & Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </AuthContext.Provider>
+  );
 };
 
 /**
