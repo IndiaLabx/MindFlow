@@ -7,18 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { searchProfiles, toggleFollow, SearchProfile } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import { cn } from '../../../utils/cn';
-
-// Custom debounce hook
-function useDebounce<T>(value: T, delay: number): T {
-    const [debouncedValue, setDebouncedValue] = useState<T>(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => clearTimeout(handler);
-    }, [value, delay]);
-    return debouncedValue;
-}
+import { useDebounce } from '../../../hooks/useDebounce';
 
 export const CommunitySearch: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
