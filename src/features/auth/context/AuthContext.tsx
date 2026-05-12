@@ -76,12 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // Kicked out while offline
             console.warn("Session hijacked while offline! Another device logged in.");
             await forceEvict();
-            useNotificationStore.getState().showToast({
-              title: 'Session Ended',
-              message: 'You have been logged out because your account was accessed from another device.',
-              variant: 'warning',
-              duration: 0
-            });
+
             return;
           } else if (!data) {
              // Ghost token scenario, reclaim it
@@ -146,12 +141,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // Evict the user
                 await forceEvict();
 
-                useNotificationStore.getState().showToast({
-                  title: 'Session Ended',
-                  message: 'You have been logged out because your account was accessed from another device.',
-                  variant: 'warning',
-                  duration: 0 // persistent
-                });
+
               }
             }
           )
@@ -282,18 +272,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     await supabase.auth.signOut({ scope: 'global' });
-    // Clear all sensitive user data from local IndexedDB
+
+    // Standard cleanup without hard reload
     await db.clearAllUserData();
-    // Dispatch event to notify UI components to refresh/clear their state
+
+    // Also remove Zustand persist cache
+    const keysToRemove = [
+      'mindflow_quiz_session',
+      'mindflow-social-mode',
+      'mindflow_analytics',
+      'mindflow_idiom_session',
+      'mindflow_ows_session',
+      'mindflow_synonym_session',
+      'mindflow_sync_queue',
+      'mindflow_bookmarks',
+      'mindflow_flashcard_filters',
+      'mindflow_is_signup'
+    ];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
     window.dispatchEvent(new Event('mindflow-sync-complete'));
+  };
+
+
+  /**
+   * Helper to deeply scrub all client-side data (Zustand persists, IndexedDB, etc.)
+   * without destroying essential UI preferences (like theme).
+   */
+  const clearClientCaches = async () => {
+    // 1. Wipe IndexedDB (Offline storage, Saved Quizzes, History, Interactions)
+    await db.clearAllUserData();
+
+    // 2. Wipe specific localStorage items used by Zustand and manual flags
+    const keysToRemove = [
+      'mindflow_quiz_session',
+      'mindflow-social-mode',
+      'mindflow_analytics',
+      'mindflow_idiom_session',
+      'mindflow_ows_session',
+      'mindflow_synonym_session',
+      'mindflow_sync_queue',
+      'mindflow_bookmarks',
+      'mindflow_flashcard_filters',
+      'mindflow_is_signup'
+    ];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // 3. Keep safe keys like 'theme' or 'mindflow_intro_seen'
+
+    // 4. Force a hard reload to completely flush React memory, Query cache, and Zustand in-memory states.
+    // To ensure the "kicked out" toast survives the reload, we use sessionStorage
+    sessionStorage.setItem('mindflow_eviction_notice', 'true');
+    window.location.href = '/';
   };
 
   /** Forces an eviction without touching global DB state or other devices (Hijack scenario). */
   const forceEvict = async () => {
     localStorage.removeItem(SESSION_ID_KEY);
     await supabase.auth.signOut({ scope: 'local' });
-    await db.clearAllUserData();
-    window.dispatchEvent(new Event('mindflow-sync-complete'));
+    await clearClientCaches();
   };
 
 
@@ -325,12 +362,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const currentLocalToken = localStorage.getItem(SESSION_ID_KEY);
           if (currentLocalToken && remoteSessionToken !== currentLocalToken) {
             await forceEvict();
-            useNotificationStore.getState().showToast({
-              title: 'Session Ended',
-              message: 'You have been logged out because your account was accessed from another device.',
-              variant: 'warning',
-              duration: 0
-            });
+
           }
         }
       ).subscribe();

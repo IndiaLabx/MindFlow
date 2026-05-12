@@ -391,18 +391,6 @@ export const db = {
         });
     },
 
-    deleteQuizHistory: async (id: string): Promise<void> => {
-        const dbInstance = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = dbInstance.transaction(HISTORY_STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(HISTORY_STORE_NAME);
-            const request = store.delete(id);
-
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    },
-
     getQuizHistory: async (): Promise<QuizHistoryRecord[]> => {
         const dbInstance = await openDB();
         return new Promise((resolve, reject) => {
