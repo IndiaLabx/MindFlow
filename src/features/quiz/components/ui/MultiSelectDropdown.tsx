@@ -2,22 +2,11 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import React, { useState, useRef, useEffect, useMemo, KeyboardEvent } from 'react';
 import { ChevronDown, Check, X, Search, Info } from 'lucide-react';
 import { cn } from '../../../../utils/cn';
+import { useDebounce } from '../../../../hooks/useDebounce';
 
 /**
  * A custom multi-select dropdown component with search, filtering, and count display.
  */
-
-// Simple debounce hook for search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-}
 
 export const MultiSelectDropdown = React.memo(function MultiSelectDropdown({
   label,
