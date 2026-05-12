@@ -62,10 +62,10 @@ export const CommunityFeed: React.FC = () => {
   });
 
   useEffect(() => {
-    if (inView && hasNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const likeMutation = useMutation({
     mutationFn: ({ postId, currentlyLiked }: { postId: string, currentlyLiked: boolean }) => 
