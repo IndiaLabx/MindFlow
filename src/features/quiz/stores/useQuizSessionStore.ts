@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { APP_CONFIG } from '../../../constants/config';
 import { QuizState, QuizStatus, QuizMode, Question, InitialFilters } from '../types';
+import { deduplicateQuestions } from '../utils/quizUtils';
 
 interface QuizSessionState extends QuizState {
   // Actions
@@ -60,7 +61,12 @@ const getInitialState = (): QuizState => {
       const parsed = JSON.parse(saved);
       // Only restore if we are in a valid active/result state to prevent stuck UIs
       if (parsed.status === 'quiz' || parsed.status === 'result') {
-        return { ...initialState, ...parsed };
+        const restoredState = { ...initialState, ...parsed };
+        // Deduplicate activeQuestions to prevent accumulation bugs during hydration
+        if (restoredState.activeQuestions) {
+          restoredState.activeQuestions = deduplicateQuestions(restoredState.activeQuestions);
+        }
+        return restoredState;
       }
     }
   } catch (e) {
@@ -246,8 +252,10 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
 
   loadSavedQuiz: (savedState) => set((state) => {
     if (savedState.activeQuestions) {
-      const uniqueQuestions = Array.from(new Map(savedState.activeQuestions.map(q => [q.id, q])).values());
-      return { ...savedState, activeQuestions: uniqueQuestions };
+      return {
+        ...savedState,
+        activeQuestions: deduplicateQuestions(savedState.activeQuestions)
+      };
     }
     return savedState;
   }),

@@ -55,4 +55,34 @@ describe('quizReducer', () => {
 
         expect(newState.isPaused).toBe(false);
     });
+
+    it('should deduplicate activeQuestions when handling LOAD_SAVED_QUIZ', () => {
+        const duplicateQuestion = {
+            id: 'q1',
+            question: 'Question 1',
+            options: ['A', 'B'],
+            correct: 'A',
+            sourceInfo: { examName: 'Test', examYear: 2023 },
+            classification: { subject: 'Test', topic: 'Test' },
+            tags: [],
+            properties: { difficulty: 'Easy', questionType: 'MCQ' },
+            explanation: {}
+        };
+
+        const savedState: QuizState = {
+            ...initialState,
+            status: 'quiz',
+            activeQuestions: [duplicateQuestion, duplicateQuestion] as any
+        };
+
+        const action = {
+            type: 'LOAD_SAVED_QUIZ' as const,
+            payload: savedState
+        };
+
+        const newState = quizReducer(initialState, action);
+
+        expect(newState.activeQuestions).toHaveLength(1);
+        expect(newState.activeQuestions[0].id).toBe('q1');
+    });
 });

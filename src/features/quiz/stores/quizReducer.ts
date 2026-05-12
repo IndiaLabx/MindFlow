@@ -1,5 +1,6 @@
 import { QuizState, QuizAction } from '../types/store';
 import { APP_CONFIG } from '../../../constants/config';
+import { deduplicateQuestions } from '../utils/quizUtils';
 
 /**
  * The initial state for the Quiz Reducer.
@@ -38,7 +39,12 @@ export const loadState = (defaultState: QuizState): QuizState => {
       const parsed = JSON.parse(saved);
       // Only restore if we are in a valid active/result state to prevent stuck UIs
       if (parsed.status === 'quiz' || parsed.status === 'result') {
-        return { ...defaultState, ...parsed };
+        const restoredState = { ...defaultState, ...parsed };
+        // Deduplicate activeQuestions to prevent accumulation bugs during hydration
+        if (restoredState.activeQuestions) {
+          restoredState.activeQuestions = deduplicateQuestions(restoredState.activeQuestions);
+        }
+        return restoredState;
       }
     }
   } catch (e) {
@@ -296,8 +302,10 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
       const savedState = action.payload;
       // Deduplicate activeQuestions to prevent accumulation bugs during hydration
       if (savedState.activeQuestions) {
-        const uniqueQuestions = Array.from(new Map(savedState.activeQuestions.map(q => [q.id, q])).values());
-        return { ...savedState, activeQuestions: uniqueQuestions };
+        return {
+          ...savedState,
+          activeQuestions: deduplicateQuestions(savedState.activeQuestions)
+        };
       }
       return savedState;
     }
