@@ -221,6 +221,17 @@ export const syncService = {
   },
 
   /**
+   * Deletes a quiz history record from Supabase.
+   */
+  deleteQuizHistoryRecord: async (userId: string, historyId: string) => {
+    const { error } = await supabase.from('quiz_history')
+      .delete()
+      .match({ id: historyId, user_id: userId });
+
+    if (error) console.error('Error deleting quiz history from Supabase:', error);
+  },
+
+  /**
    * Runs an initial bidirectional sync after login.
    * Pulls remote data down and pushes any local-only data up.
    */
@@ -246,6 +257,7 @@ export const syncService = {
             break;
           case 'quiz_deleted':
             await syncService.deleteSavedQuiz(userId, event.payload.quizId);
+            await syncService.deleteQuizHistoryRecord(userId, event.payload.quizId);
             break;
           case 'bookmark_toggled':
             if (event.payload.isBookmarked) {

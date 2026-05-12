@@ -241,7 +241,7 @@ export const useQuiz = () => {
         : (state.filters?.difficulty || 'Mixed');
 
     const historyRecord: QuizHistoryRecord = {
-      id: uuidv4(),
+      id: state.quizId || uuidv4(),
       date: Date.now(),
       totalQuestions: state.activeQuestions.length,
       totalCorrect,
