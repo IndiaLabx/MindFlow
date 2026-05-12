@@ -53,59 +53,97 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let sessionSub: any = null;
 
     if (user) {
-      // 1. Check/Generate Local Session ID
-      let localSessionId = localStorage.getItem(SESSION_ID_KEY);
-      if (!localSessionId) {
-        localSessionId = crypto.randomUUID();
-        localStorage.setItem(SESSION_ID_KEY, localSessionId);
-      }
+      const initSessionTracker = async () => {
+        let localSessionId = localStorage.getItem(SESSION_ID_KEY);
 
-      // 2. Upsert the current session to Supabase
-      const updateSession = async () => {
+        if (localSessionId) {
+          // If we already have a local session ID (e.g., app reopened), verify it against the DB FIRST
+          const { data, error } = await supabase
+            .from('user_active_sessions')
+            .select('session_token')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (error) {
+            console.error('Error fetching active session:', error);
+            return;
+          }
+
+          if (data && data.session_token !== localSessionId) {
+            // We were kicked out while offline!
+            console.warn("Session hijacked while offline! Another device logged in.");
+            await signOut();
+            useNotificationStore.getState().showToast({
+              title: 'Session Ended',
+              message: 'You have been logged out because your account was accessed from another device.',
+              variant: 'warning',
+              duration: 0 // persistent
+            });
+            return; // STOP EXECUTION HERE, do not set up watcher or upsert
+          } else if (!data) {
+             // Edge case: No data in DB, but we have local token. Maybe they signed out on another device.
+             // We'll re-claim the session to be safe.
+             await upsertSession(localSessionId);
+          }
+        } else {
+          // No local session ID (e.g., fresh login). Generate one and claim the session.
+          localSessionId = crypto.randomUUID();
+          localStorage.setItem(SESSION_ID_KEY, localSessionId);
+          await upsertSession(localSessionId);
+        }
+
+        // Set up the Realtime Watcher AFTER initial validation
+        setupWatcher();
+      };
+
+      const upsertSession = async (token: string) => {
         const { error } = await supabase
           .from('user_active_sessions')
-          .upsert({ user_id: user.id, session_token: localSessionId, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+          .upsert({ user_id: user.id, session_token: token, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
 
         if (error) {
           console.error("Failed to update active session token:", error);
         }
       };
 
-      updateSession();
+      const setupWatcher = () => {
+        sessionSub = supabase
+          .channel('active_session_watcher')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'user_active_sessions',
+              filter: `user_id=eq.${user.id}`
+            },
+            async (payload) => {
+              // Ignore DELETE events to prevent empty payload crashes
+              if (payload.eventType === 'DELETE') return;
 
-      // 3. Realtime Watcher
-      sessionSub = supabase
-        .channel('active_session_watcher')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'user_active_sessions',
-            filter: `user_id=eq.${user.id}`
-          },
-          async (payload) => {
-            const remoteSessionToken = (payload.new as any).session_token;
-            const currentLocalToken = localStorage.getItem(SESSION_ID_KEY);
+              const remoteSessionToken = (payload.new as any).session_token;
+              const currentLocalToken = localStorage.getItem(SESSION_ID_KEY);
 
-            // If the tokens do NOT match, it means another device logged in!
-            if (currentLocalToken && remoteSessionToken !== currentLocalToken) {
-              console.warn("Session hijacked! Another device logged in.");
+              // If the tokens do NOT match, it means another device logged in!
+              if (currentLocalToken && remoteSessionToken !== currentLocalToken) {
+                console.warn("Session hijacked! Another device logged in.");
 
-              // Evict the user
-              await signOut();
+                // Evict the user
+                await signOut();
 
-              useNotificationStore.getState().showToast({
-
-                title: 'Session Ended',
-                message: 'You have been logged out because your account was accessed from another device.',
-                variant: 'warning',
-                duration: 0 // persistent
-              });
+                useNotificationStore.getState().showToast({
+                  title: 'Session Ended',
+                  message: 'You have been logged out because your account was accessed from another device.',
+                  variant: 'warning',
+                  duration: 0 // persistent
+                });
+              }
             }
-          }
-        )
-        .subscribe();
+          )
+          .subscribe();
+      };
+
+      initSessionTracker();
     }
 
     return () => {
@@ -219,7 +257,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   /** Signs out the current user. */
   const signOut = async () => {
+    const localSessionId = localStorage.getItem(SESSION_ID_KEY);
     localStorage.removeItem(SESSION_ID_KEY);
+
+    // Only delete from DB if we actually have a user, to clean up on explicit logout
+    if (user && localSessionId) {
+      // Best effort deletion. If we were kicked out, we don't care if this fails.
+      supabase.from('user_active_sessions').delete().eq('user_id', user.id).eq('session_token', localSessionId).then();
+    }
+
     await supabase.auth.signOut();
     // Clear all sensitive user data from local IndexedDB
     await db.clearAllUserData();
