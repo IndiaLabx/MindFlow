@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchReels, toggleLikeReel, Reel } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import { Heart, MessageCircle, Share2, ArrowLeft } from 'lucide-react';
-import { Virtuoso } from 'react-virtuoso';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../../utils/cn';
@@ -55,15 +54,9 @@ export const ReelsFeed: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="w-full h-[100dvh]">
-            <Virtuoso
-                style={{ height: '100%', width: '100%' }}
-                data={reels}
-                itemContent={(index, reel) => (
-                    <ReelItem key={reel.id} reel={reel} currentUser={user} />
-                )}
-            />
-        </div>
+        reels.map((reel) => (
+          <ReelItem key={reel.id} reel={reel} currentUser={user} />
+        ))
       )}
 
       {/* Floating Action Button for Create Reel */}
