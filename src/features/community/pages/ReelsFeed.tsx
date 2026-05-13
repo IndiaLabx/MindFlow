@@ -33,14 +33,14 @@ export const ReelsFeed: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="h-[100dvh] w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
+      <div className="h-full w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
          <ReelSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
+    <div className="h-full w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
       {/* Absolute Back Button */}
       <div className="fixed top-safe left-4 z-50 mt-4 pt-[env(safe-area-inset-top)]">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10 shadow-md">
@@ -215,11 +215,11 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIn
     <AnimatePresence>
       {!isHiddenLocally && (
         <motion.div
-          initial={{ opacity: 1, height: '100dvh' }}
+          initial={{ opacity: 1, height: "100%" }}
           exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
           transition={{ duration: 0.3 }}
           ref={containerRef}
-          className="h-[100dvh] w-full snap-start relative bg-black flex items-center justify-center cursor-pointer overflow-hidden"
+          className="h-full w-full snap-start relative bg-black flex items-center justify-center cursor-pointer overflow-hidden"
           onClick={togglePlay}
         >
       {/* Background Media (Video) using Byte-Range Requests */}
@@ -261,7 +261,7 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIn
       </div>
 
       {/* Side Action Bar */}
-      <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-10 pb-[env(safe-area-inset-bottom)]" onClick={(e: any) => e.stopPropagation()}>
+      <div className="absolute right-4 bottom-6 flex flex-col items-center gap-6 z-10" onClick={(e: any) => e.stopPropagation()}>
         <button onClick={handleLike}
           className="flex flex-col items-center gap-1 group"
           aria-label={reel.is_liked_by_me ? "Unlike reel" : "Like reel"}>
@@ -357,7 +357,7 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIn
       </div>
 
       {/* Bottom Content Area */}
-      <div className="absolute bottom-0 left-0 right-16 p-4 z-10 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e: any) => e.stopPropagation()}>
+      <div className="absolute bottom-0 left-0 right-16 p-4 z-10 pb-6" onClick={(e: any) => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-3 cursor-pointer" onClick={() => navigate(`/u/${reel.profiles?.username || reel.user_id}`)}>
           <div className="w-10 h-10 rounded-full bg-gray-200 border border-white/20 overflow-hidden">
             {reel.profiles?.avatar_url ? (
