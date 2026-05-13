@@ -8,13 +8,15 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '../../../utils/cn';
 import { CreatePostModal } from '../components/CreatePostModal';
 import { ReelUploadModal } from '../components/ReelUploadModal';
-import { Plus } from 'lucide-react';
+import { Plus, Volume2, VolumeX } from 'lucide-react';
 import { ReelSkeleton } from '../components/ReelSkeleton';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { Menu, Transition } from '@headlessui/react';
 import { ShieldAlert, MoreVertical } from 'lucide-react';
 import { ReportModal } from '../components/reports/ReportModal';
 import { submitReport } from '../api/reportsApi';
+
+let sharedIsMuted = true; // Shared mute state across all reels
 
 export const ReelsFeed: React.FC = () => {
   const navigate = useNavigate();
@@ -40,7 +42,7 @@ export const ReelsFeed: React.FC = () => {
   return (
     <div className="h-[100dvh] w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
       {/* Absolute Back Button */}
-      <div className="absolute top-safe left-4 z-50 mt-4 pt-[env(safe-area-inset-top)]">
+      <div className="fixed top-safe left-4 z-50 mt-4 pt-[env(safe-area-inset-top)]">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10 shadow-md">
           <ArrowLeft size={24} />
         </button>
@@ -49,12 +51,7 @@ export const ReelsFeed: React.FC = () => {
       {reels.length === 0 ? (
         <div className="h-full w-full flex flex-col items-center justify-center text-slate-500">
           <p className="mb-4">No reels available</p>
-          <button
-             onClick={() => setIsCreateModalOpen(true)}
-             className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold shadow-lg hover:bg-indigo-500 transition-colors"
-          >
-             Create the first Reel!
-          </button>
+
         </div>
       ) : (
         reels.map((reel, index) => (
@@ -65,24 +62,26 @@ export const ReelsFeed: React.FC = () => {
              index={index}
              activeIndex={activeIndex}
              onVisible={() => setActiveIndex(index)}
+             sharedIsMuted={sharedIsMuted}
+             setSharedIsMuted={(val) => { sharedIsMuted = val; }}
           />
         ))
       )}
 
-      {/* Floating Action Button for Create Reel */}
-      <button
-        onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-24 md:bottom-20 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
-      >
-        <Plus size={28} />
-      </button>
 
-      <ReelUploadModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSuccess={() => refetch()} />
+
+
     </div>
   );
 };
 
-const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIndex: number, onVisible: () => void }> = ({ reel, currentUser, index, activeIndex, onVisible }) => {
+const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIndex: number, onVisible: () => void, sharedIsMuted: boolean, setSharedIsMuted: (val: boolean) => void }> = ({ reel, currentUser, index, activeIndex, onVisible, sharedIsMuted, setSharedIsMuted }) => {
+  const [isMuted, setIsMuted] = useState(sharedIsMuted);
+
+  // Sync local mute state when shared state changes
+  useEffect(() => {
+    setIsMuted(sharedIsMuted);
+  }, [sharedIsMuted]);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -233,6 +232,7 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIn
           loop
           playsInline
           preload={index === activeIndex + 1 ? "auto" : "none"}
+          muted={isMuted}
         />
       ) : (
           /* Thumbnail placeholder for off-screen reels to save memory */
@@ -243,6 +243,22 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIn
 
       {/* Overlay Gradient for Text Readability */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+
+
+      {/* Top Controls Overlay */}
+      <div className="absolute top-safe right-4 z-50 mt-4 pt-[env(safe-area-inset-top)] flex gap-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const newMuted = !isMuted;
+            setIsMuted(newMuted);
+            setSharedIsMuted(newMuted);
+          }}
+          className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10 shadow-md"
+        >
+          {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+        </button>
+      </div>
 
       {/* Side Action Bar */}
       <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-10 pb-[env(safe-area-inset-bottom)]" onClick={(e: any) => e.stopPropagation()}>
