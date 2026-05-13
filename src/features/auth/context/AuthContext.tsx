@@ -268,7 +268,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Only delete from DB if we actually have a user, to clean up on explicit logout
     if (user && localSessionId) {
       // Best effort deletion.
-      supabase.from('user_active_sessions').delete().eq('user_id', user.id).eq('session_token', localSessionId).then();
+      supabase.from('user_active_sessions').delete().eq('user_id', user.id).eq('session_token', localSessionId).then(({ error }) => { if (error) console.error('Error deleting active session:', error); });
     }
 
     await supabase.auth.signOut({ scope: 'global' });
@@ -323,7 +323,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // 4. Force a hard reload to completely flush React memory, Query cache, and Zustand in-memory states.
     // To ensure the "kicked out" toast survives the reload, we use sessionStorage
     sessionStorage.setItem('mindflow_eviction_notice', 'true');
-    window.location.href = '/';
+    window.location.href = import.meta.env.BASE_URL + '#/dashboard';
   };
 
   /** Forces an eviction without touching global DB state or other devices (Hijack scenario). */
