@@ -18,12 +18,19 @@ export const CommentThread: React.FC<{
   const navigate = useNavigate();
   const { showToast } = useNotificationStore();
   const likeCommentMutation = useMutation({
-    mutationFn: (currentlyLiked: boolean) => toggleLikeComment(comment.id, currentUserId!, currentlyLiked),
+    mutationFn: (currentlyLiked: boolean) =>
+      isReelComment
+        ? toggleLikeReelComment(comment.id, currentUserId!, currentlyLiked)
+        : toggleLikeComment(comment.id, currentUserId!, currentlyLiked),
     onMutate: async (currentlyLiked) => {
-      await queryClient.cancelQueries({ queryKey: ['community-comments', comment.post_id] });
-      const previousData = queryClient.getQueryData(['community-comments', comment.post_id]);
+      const queryKey = isReelComment
+        ? ['community-reel-comments', comment.reel_id]
+        : ['community-comments', comment.post_id];
 
-      queryClient.setQueryData(['community-comments', comment.post_id], (old: any) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData(queryKey);
+
+      queryClient.setQueryData(queryKey, (old: any) => {
           if (!old) return old;
           return old.map((c: any) => {
              if (c.id === comment.id) {
@@ -32,11 +39,11 @@ export const CommentThread: React.FC<{
              return c;
           });
       });
-      return { previousData };
+      return { previousData, queryKey };
     },
     onError: (err, newTodo, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(['community-comments', comment.post_id], context.previousData);
+      if (context?.previousData && context?.queryKey) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
       }
       showToast({ title: 'Error', message: 'Failed to like comment', variant: 'error' });
     }
