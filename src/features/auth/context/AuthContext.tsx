@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const upsertSession = async (token: string) => {
         const { error } = await supabase
           .from('user_active_sessions')
-          .upsert({ user_id: user.id, session_token: token, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+          .upsert({ user_id: user.id, session_token: token, updated_at: new Date().toISOString() }, { onConflict: 'user_id', ignoreDuplicates: false });
 
         if (error) {
           console.error("Failed to update active session token:", error);
@@ -344,28 +344,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { error } = await supabase
       .from('user_active_sessions')
-      .upsert({ user_id: user.id, session_token: localSessionId, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      .update({ session_token: localSessionId, updated_at: new Date().toISOString() }).eq('user_id', user.id).select().maybeSingle();
 
-    if (error) {
-      console.error("Takeover failed:", error);
+    if (!error) {
+       // Check if local tracking listener is initialized by forcing a reload to cleanly restart the session flow
+       window.location.reload();
     }
 
-    // Subscribe to watcher
-    supabase
-      .channel('active_session_watcher')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_active_sessions', filter: `user_id=eq.${user.id}` },
-        async (payload) => {
-          if (payload.eventType === 'DELETE') return;
-          const remoteSessionToken = (payload.new as any).session_token;
-          const currentLocalToken = localStorage.getItem(SESSION_ID_KEY);
-          if (currentLocalToken && remoteSessionToken !== currentLocalToken) {
-            await forceEvict();
-
-          }
-        }
-      ).subscribe();
   };
 
   const handleCancelTakeover = async () => {
