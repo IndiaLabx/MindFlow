@@ -27,7 +27,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const reelInputRef = useRef<HTMLInputElement>(null);
 
   const resetState = () => {
     setContent('');
@@ -36,6 +37,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
     setPostType('text');
     setIsUploading(false);
     setUploadProgress(0);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+    if (reelInputRef.current) reelInputRef.current.value = '';
   };
 
   const handleClose = () => {
@@ -80,9 +83,12 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
 
   const triggerFileInput = (type: 'image' | 'reel') => {
     setPostType(type);
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = type === 'image' ? 'image/*' : 'video/*';
-      fileInputRef.current.click();
+    if (type === 'image' && imageInputRef.current) {
+      imageInputRef.current.value = '';
+      imageInputRef.current.click();
+    } else if (type === 'reel' && reelInputRef.current) {
+      reelInputRef.current.value = '';
+      reelInputRef.current.click();
     }
   };
 
@@ -175,7 +181,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
                   )}
                   {!isUploading && (
                     <button
-                      onClick={() => { setFile(null); setPreviewUrl(null); setPostType('text'); }}
+                      onClick={() => {
+                        setFile(null);
+                        setPreviewUrl(null);
+                        setPostType('text');
+                        if (imageInputRef.current) imageInputRef.current.value = '';
+                        if (reelInputRef.current) reelInputRef.current.value = '';
+                      }}
                       className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70 backdrop-blur-md"
                     >
                       <X size={16} />
@@ -189,9 +201,17 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
               <div className="flex items-center gap-2">
                 <input
                   type="file"
-                  ref={fileInputRef}
+                  accept="image/*"
+                  ref={imageInputRef}
                   className="hidden text-base"
-                  onChange={(e) => handleFileSelect(e, postType as any)}
+                  onChange={(e) => handleFileSelect(e, 'image')}
+                />
+                <input
+                  type="file"
+                  accept="video/*"
+                  ref={reelInputRef}
+                  className="hidden text-base"
+                  onChange={(e) => handleFileSelect(e, 'reel')}
                 />
 
                 <button
