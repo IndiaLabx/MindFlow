@@ -719,18 +719,6 @@ const EditQuestion: React.FC = () => {
         }
     }, [formData?.explanation]);
 
-
-    const withTimeout = <T,>(promise: PromiseLike<T>, timeoutMs: number, errorMessage: string = 'Request timed out'): Promise<T> => {
-        let timeoutHandle: NodeJS.Timeout;
-        const timeoutPromise = new Promise<T>((_, reject) => {
-            timeoutHandle = setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
-        });
-        return Promise.race([
-            promise,
-            timeoutPromise
-        ]).finally(() => clearTimeout(timeoutHandle));
-    };
-
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!searchId.trim()) return;
@@ -738,15 +726,11 @@ const EditQuestion: React.FC = () => {
         setIsSearching(true);
         setFormData(null);
         try {
-            const { data, error } = await withTimeout(
-                supabase
-                    .from('questions')
-                    .select('*')
-                    .eq('v1_id', searchId.trim())
-                    .limit(1),
-                10000,
-                'Network connection is stale or dropped. Please try again or refresh the page.'
-            );
+            const { data, error } = await supabase
+                .from('questions')
+                .select('*')
+                .eq('v1_id', searchId.trim())
+                .limit(1);
 
             if (error) throw error;
 
