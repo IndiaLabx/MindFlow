@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchReels, toggleLikeReel, Reel } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
-import { Heart, MessageCircle, Share2, ArrowLeft } from 'lucide-react';
+import { Heart, MessageCircle, Share2, ArrowLeft, Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../../utils/cn';
 import { CreatePostModal } from '../components/CreatePostModal';
+import { ReelUploadModal } from '../components/ReelUploadModal';
 import { Plus } from 'lucide-react';
 import { ReelSkeleton } from '../components/ReelSkeleton';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
@@ -19,7 +20,9 @@ export const ReelsFeed: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { data: reelsData, isLoading } = useQuery({
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const { data: reelsData, isLoading, refetch } = useQuery({
     queryKey: ['community-reels'],
     queryFn: () => fetchReels(50),
   });
@@ -54,8 +57,15 @@ export const ReelsFeed: React.FC = () => {
           </button>
         </div>
       ) : (
-        reels.map((reel) => (
-          <ReelItem key={reel.id} reel={reel} currentUser={user} />
+        reels.map((reel, index) => (
+          <ReelItem
+             key={reel.id}
+             reel={reel}
+             currentUser={user}
+             index={index}
+             activeIndex={activeIndex}
+             onVisible={() => setActiveIndex(index)}
+          />
         ))
       )}
 
@@ -67,12 +77,12 @@ export const ReelsFeed: React.FC = () => {
         <Plus size={28} />
       </button>
 
-      <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="reels" />
+      <ReelUploadModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSuccess={() => refetch()} />
     </div>
   );
 };
 
-const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUser }) => {
+const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIndex: number, onVisible: () => void }> = ({ reel, currentUser, index, activeIndex, onVisible }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -151,17 +161,25 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
     likeReelMutation.mutate(!!reel.is_liked_by_me);
   };
 
+  // DOM Memory Virtualization: Only render the video player if it's the active one, the previous one, or the next one.
+  const isNearActive = Math.abs(index - activeIndex) <= 1;
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           setIsVisible(entry.isIntersecting);
           if (entry.isIntersecting) {
-            videoRef.current?.play().catch(e => console.log('Auto-play blocked:', e));
-            setIsPlaying(true);
+            onVisible();
+            if (isNearActive) {
+                videoRef.current?.play().catch(e => console.log('Auto-play blocked:', e));
+                setIsPlaying(true);
+            }
           } else {
-            videoRef.current?.pause();
-            setIsPlaying(false);
+            if (isNearActive) {
+                videoRef.current?.pause();
+                setIsPlaying(false);
+            }
           }
         });
       },
@@ -173,7 +191,15 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [isNearActive, onVisible]);
+
+  // Handle explicit play state when isNearActive changes
+  useEffect(() => {
+    if (!isNearActive && videoRef.current) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [isNearActive]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -198,15 +224,21 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
           onClick={togglePlay}
         >
       {/* Background Media (Video) using Byte-Range Requests */}
-      {reel.video_url && (
+            {/* Background Media (Video) using DOM Virtualization */}
+      {reel.video_url && isNearActive ? (
         <video
           ref={videoRef}
           src={reel.video_url}
           className="absolute inset-0 w-full h-full object-cover"
           loop
           playsInline
-          preload="metadata"
+          preload={index === activeIndex + 1 ? "auto" : "none"}
         />
+      ) : (
+          /* Thumbnail placeholder for off-screen reels to save memory */
+          <div className="absolute inset-0 w-full h-full bg-slate-900 flex items-center justify-center">
+               <Film className="w-12 h-12 text-white/20" />
+          </div>
       )}
 
       {/* Overlay Gradient for Text Readability */}

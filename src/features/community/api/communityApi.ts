@@ -484,47 +484,35 @@ export const fetchReels = async (limit = 20, cursor?: string): Promise<{ data: R
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
-    let q = supabase
-        .from('reels')
-        .select(`
-            *,
-            profiles:user_id(id, full_name, username, avatar_url)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-    if (cursor) q = q.lt('created_at', cursor);
-
-    const { data: reelsData, error } = await q;
+    // Use the custom RPC function for the weighted chronological algorithm feed
+    const { data: reelsData, error } = await supabase
+        .rpc('get_reels_feed', {
+            p_limit: limit,
+            p_cursor: cursor || null
+        });
 
     if (error) throw error;
     if (!reelsData || reelsData.length === 0) return { data: [], nextCursor: null };
 
     const reelIds = reelsData.map((p: any) => p.id);
+    const userIds = [...new Set(reelsData.map((p: any) => p.user_id))];
 
-    const [likesReq, commentsReq, myLikesReq] = await Promise.all([
-      supabase.from('reel_likes').select('reel_id', { count: 'exact' }).in('reel_id', reelIds),
-      supabase.from('reel_comments').select('reel_id', { count: 'exact' }).in('reel_id', reelIds),
-      user ? supabase.from('reel_likes').select('reel_id').eq('user_id', user.id).in('reel_id', reelIds) : Promise.resolve({ data: [] })
+    const [myLikesReq, profilesReq] = await Promise.all([
+      user ? supabase.from('reel_likes').select('reel_id').eq('user_id', user.id).in('reel_id', reelIds) : Promise.resolve({ data: [] }),
+      supabase.from('profiles').select('id, full_name, username, avatar_url').in('id', userIds)
     ]);
-
-    const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
-      acc[curr.reel_id] = (acc[curr.reel_id] || 0) + 1;
-      return acc;
-    }, {});
-
-    const commentsCountMap = (commentsReq.data || []).reduce((acc: any, curr: any) => {
-      acc[curr.reel_id] = (acc[curr.reel_id] || 0) + 1;
-      return acc;
-    }, {});
 
     const myLikedReelIds = new Set((myLikesReq.data || []).map((l: any) => l.reel_id));
 
+    // Map profiles
+    const profilesMap = (profilesReq.data || []).reduce((acc: any, profile: any) => {
+        acc[profile.id] = profile;
+        return acc;
+    }, {});
+
     const formattedData = reelsData.map((p: any) => ({
       ...p,
-      profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
-      likes_count: likesCountMap[p.id] || 0,
-      comments_count: commentsCountMap[p.id] || 0,
+      profiles: profilesMap[p.user_id],
       is_liked_by_me: myLikedReelIds.has(p.id)
     }));
 
