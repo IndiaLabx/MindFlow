@@ -42,7 +42,7 @@ export const ReelsFeed: React.FC = () => {
   return (
     <div className="h-full w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
       {/* Absolute Back Button */}
-      <div className="fixed top-safe left-4 z-50 mt-4 pt-[env(safe-area-inset-top)]">
+      <div className="fixed top-4 left-4 z-50 mt-4 pt-[env(safe-area-inset-top,0px)]">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10 shadow-md">
           <ArrowLeft size={24} />
         </button>
@@ -246,7 +246,7 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIn
 
 
       {/* Top Controls Overlay */}
-      <div className="absolute top-safe right-4 z-50 mt-4 pt-[env(safe-area-inset-top)] flex gap-2">
+      <div className="absolute top-4 right-4 z-50 mt-4 pt-[env(safe-area-inset-top,0px)] flex gap-2">
         <button
           onClick={(e) => {
             e.stopPropagation();
