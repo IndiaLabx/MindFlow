@@ -142,15 +142,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       }
     };
 
-    updateIndicator();
-    // Using setTimeout to guarantee layout is fully rendered when clicking (fixes sudden shape changes)
+    // Delay initial measurement to ensure DOM nodes are fully painted
+    // Especially important when isSocialMode toggles and conditionally renders new tabs
     const timeoutId = setTimeout(updateIndicator, 50);
+
     window.addEventListener('resize', updateIndicator);
     return () => {
       window.removeEventListener('resize', updateIndicator);
       clearTimeout(timeoutId);
     };
-  }, [activeTab]);
+  }, [activeTab, isSocialMode]);
 
 
   const handleProfileClick = () => {
