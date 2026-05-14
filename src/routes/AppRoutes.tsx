@@ -7,6 +7,7 @@ import { useAuth } from '../features/auth/context/AuthContext';
 import { SynapticLoader } from '../components/ui/SynapticLoader';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { useHardwareBackButton } from '../hooks/useHardwareBackButton';
 
 // Lazy Loaded Components for Code Splitting
 // Groups: Main UI, Quiz Flow, Flashcard Flow, Auth Flow
@@ -115,6 +116,9 @@ const AppRoutesContent: React.FC = () => {
     const navigate = useNavigate();
     const flashcardStore = useFlashcardStore();
     const location = useLocation();
+
+    // Handle hardware back button for Android Native Build
+    useHardwareBackButton();
 
     // Helper: Standardized navigation wrapper
     const navTo = (path: string) => navigate(path);
