@@ -59,16 +59,23 @@ export const syncService = {
    * Pushes a single saved quiz to Supabase.
    */
   pushSavedQuiz: async (userId: string, quiz: SavedQuiz) => {
-    // Strip questions from payload to save space
+    // Strip activeQuestions from payload to save space (reconstructed via bridge_saved_quiz_questions),
+    // but ensure EVERYTHING else (answers, remainingTimes, timeTaken, status, etc.) is perfectly preserved.
     const { activeQuestions, ...stateWithoutQuestions } = quiz.state;
+
+    // Explicitly guarantee 'status' exists, defaulting to 'quiz' if missing,
+    // so the state is restorable correctly across devices without crashing.
+    if (!stateWithoutQuestions.status) {
+        stateWithoutQuestions.status = 'quiz';
+    }
 
     const { error } = await supabase.from('saved_quizzes').upsert({
       id: quiz.id,
       user_id: userId,
       name: quiz.name,
-      created_at: quiz.createdAt,
+      created_at: quiz.createdAt || new Date().toISOString(), // Preserve or enforce creation time
       filters: quiz.filters,
-      mode: quiz.mode,
+      mode: quiz.mode || 'learning', // Preserve or enforce mode
       state: stateWithoutQuestions,
     });
 
@@ -327,9 +334,12 @@ export const syncService = {
              const fullQuiz = {
                  ...rq,
                  questions: questions,
+                 createdAt: rq.created_at, // Ensure createdAt is populated!
                  state: {
                      ...(rq.state || {}),
-                     activeQuestions: questions
+                     activeQuestions: questions,
+                     status: (rq.state && rq.state.status) ? rq.state.status : 'quiz', // Fix status drop!
+                     mode: rq.mode // Important
                  }
              };
              delete fullQuiz.bridge_saved_quiz_questions;
