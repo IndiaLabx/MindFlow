@@ -274,10 +274,36 @@ export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   }),
 
   loadSavedQuiz: (savedState) => set((state) => {
+    // 1. Prioritize Cloud Hydration over defaults.
+    // Deep merge to ensure arrays/objects from cloud data take absolute precedence over initialState,
+    // avoiding the overwriting of users' hard-earned answers with empty defaults.
+    let newState = {
+      ...initialState,
+      ...savedState,
+      // 2. Safe Fallbacks, Not Overwrites
+      // ONLY apply empty arrays/objects if explicitly undefined/null from the database
+      remainingTimes: savedState.remainingTimes ?? {},
+      answers: savedState.answers ?? {},
+      timeTaken: savedState.timeTaken ?? {},
+      bookmarks: savedState.bookmarks ?? [],
+      markedForReview: savedState.markedForReview ?? []
+    };
+
     if (savedState.activeQuestions) {
       const uniqueQuestions = Array.from(new Map(savedState.activeQuestions.map(q => [q.id, q])).values());
-      return { ...savedState, activeQuestions: uniqueQuestions, quizId: savedState.quizId };
+      newState.activeQuestions = uniqueQuestions;
     }
-    return savedState;
+
+    // Ensure status is valid for resuming if it's not 'result'
+    if (newState.status !== 'result') {
+       newState.status = 'quiz';
+    }
+
+    // Maintain the quizId if explicitly present in the loaded state
+    if (savedState.quizId) {
+      newState.quizId = savedState.quizId;
+    }
+
+    return newState;
   }),
 }));
