@@ -75,6 +75,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const schoolRef = useRef<HTMLButtonElement>(null);
   const profileRef = useRef<HTMLButtonElement>(null);
   const aiRef = useRef<HTMLButtonElement>(null);
+  const communityRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLButtonElement>(null);
+  const reelsRef = useRef<HTMLButtonElement>(null);
+  const messagesRef = useRef<HTMLButtonElement>(null);
 
   useLayoutEffect(() => {
     const updateIndicator = () => {
@@ -83,6 +87,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (activeTab === 'home') activeRef = homeRef;
       else if (activeTab === 'school') activeRef = schoolRef;
       else if (activeTab === 'profile' || activeTab === 'login') activeRef = profileRef;
+      else if (activeTab === 'community') activeRef = communityRef;
+      else if (activeTab === 'search') activeRef = searchRef;
+      else if (activeTab === 'reels') activeRef = reelsRef;
+      else if (activeTab === 'messages') activeRef = messagesRef;
       else if (activeTab === 'ai') {
         activeRef = aiRef;
         isAi = true;
@@ -307,7 +315,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<LayoutDashboard className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'community'} 
                 onClick={() => onTabChange('community')}
-                buttonRef={homeRef}
+                buttonRef={communityRef}
               />
               
               <NavTab 
@@ -316,7 +324,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<Search className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'search'}
                 onClick={() => onTabChange('search')}
-                buttonRef={schoolRef}
+                buttonRef={searchRef}
               />
               
               <NavTab
@@ -325,7 +333,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<Play className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'reels'}
                 onClick={() => onTabChange('reels')}
-                buttonRef={aiRef}
+                buttonRef={reelsRef}
               />
 
               <NavTab
@@ -334,7 +342,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<MessageSquare className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'messages'}
                 onClick={() => onTabChange('messages')}
-                buttonRef={profileRef}
+                buttonRef={messagesRef}
               />
 
               <NavTab
@@ -343,6 +351,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<ArrowLeft className="w-6 h-6" />}
                 isActive={false}
                 onClick={() => onTabChange('home')}
+                buttonRef={homeRef}
               />
             </>
           ) : (
@@ -396,6 +405,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<Users className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'community'}
                 onClick={() => onTabChange('community')}
+                buttonRef={communityRef}
               />
 
               {user ? (
