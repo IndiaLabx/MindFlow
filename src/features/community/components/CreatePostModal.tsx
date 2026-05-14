@@ -2,10 +2,11 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Image as ImageIcon, Video, Film, Loader2 } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
-import { createPost, createReel, Post, Reel } from '../api/communityApi';
+import { createPost, createReel } from '../api/communityApi';
 import { uploadMediaWithProgress } from '../api/uploadMedia';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Post } from '../api/communityApi';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -94,91 +95,29 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
+      let mediaUrl: string | undefined = undefined;
+
+      if (file) {
+        setIsUploading(true);
+        mediaUrl = await uploadMediaWithProgress(file, user.id, (progress) => {
+          setUploadProgress(progress);
+        });
+      }
 
       const finalType = postType === 'text' && !file && feedType === 'reels' ? 'reel' : postType;
 
-      if (finalType === 'reel' || (file && file.type.startsWith('video/'))) {
-        // --- CLOUDINARY UPLOAD PIPELINE FOR VIDEOS ---
-        setIsUploading(true);
-        let secureUrl = '';
-
-        if (file) {
-          const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-          const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-          if (!cloudName || !uploadPreset) {
-              throw new Error("Cloudinary configuration missing. Please check your environment variables.");
-          }
-
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('upload_preset', uploadPreset);
-          formData.append('resource_type', 'video');
-
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, true);
-
-          const uploadPromise = new Promise<any>((resolve, reject) => {
-              xhr.upload.onprogress = (e) => {
-                  if (e.lengthComputable) {
-                      const percentComplete = Math.round((e.loaded / e.total) * 100);
-                      setUploadProgress(Math.round(percentComplete * 0.9)); // Leave 10% for DB
-                  }
-              };
-
-              xhr.onload = () => {
-                  if (xhr.status >= 200 && xhr.status < 300) {
-                      resolve(JSON.parse(xhr.responseText));
-                  } else {
-                      reject(JSON.parse(xhr.responseText));
-                  }
-              };
-
-              xhr.onerror = () => reject(new Error("Network error during upload"));
-          });
-
-          xhr.send(formData);
-
-          const cloudinaryResponse = await uploadPromise;
-          secureUrl = cloudinaryResponse.secure_url;
-          setUploadProgress(95);
-        }
-
-        // Create Reel in Supabase
-        const newReel = await createReel(user.id, secureUrl, content);
-        setUploadProgress(100);
-        return { type: 'reel', data: newReel };
-
-      } else {
-        // --- SUPABASE UPLOAD PIPELINE FOR IMAGES/TEXT ---
-        let mediaUrl: string | undefined = undefined;
-
-        if (file) {
-          setIsUploading(true);
-          mediaUrl = await uploadMediaWithProgress(file, user.id, (progress) => {
-            setUploadProgress(progress);
-          });
-        }
-
-        const newPost = await createPost(user.id, content, finalType, mediaUrl);
-        return { type: 'post', data: newPost };
-      }
+      return await createPost(user.id, content, finalType, mediaUrl);
     },
-    onSuccess: (result) => {
-      if (result.type === 'reel') {
-        queryClient.setQueryData<Reel[]>(['community-reels'], (old) => {
-          if (!old) return [result.data as any];
-          return [result.data as any, ...old];
-        });
-        showToast({ title: 'Success', message: 'Reel published successfully!', variant: 'success' });
-      } else {
-        const queryKey = feedType === 'reels' ? ['community-posts-reels'] : ['community-posts'];
-        queryClient.setQueryData<Post[]>(queryKey, (old) => {
-          if (!old) return [result.data as any];
-          return [result.data as any, ...old];
-        });
-        showToast({ title: 'Success', message: 'Post published successfully!', variant: 'success' });
-      }
+    onSuccess: (newPost) => {
+      // Optimistic update
+      const queryKey = feedType === 'reels' ? ['community-posts-reels'] : ['community-posts'];
+
+      queryClient.setQueryData<Post[]>(queryKey, (old) => {
+        if (!old) return [newPost as any];
+        return [newPost as any, ...old];
+      });
+
+      showToast({ title: 'Success', message: 'Post published successfully!', variant: 'success' });
       handleClose();
     },
     onError: (err: any) => {
