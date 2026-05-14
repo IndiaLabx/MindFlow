@@ -20,6 +20,8 @@ export const QuizLayout: React.FC = () => {
     const getActiveTab = (): TabID => {
         const path = location.pathname;
         if (path.includes('/login')) return 'login';
+        if (path.includes('/community/search')) return 'search';
+        if (path.includes('/community/reels')) return 'reels';
         if (path.includes('/community')) return 'community';
         if (path.includes('/messages')) return 'messages';
         if (path.includes('/ai')) return 'ai';
