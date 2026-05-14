@@ -183,7 +183,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className={cn(
         "flex flex-col transition-colors duration-700 relative bg-gradient-to-br from-indigo-50 via-purple-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 animate-flow",
-        (isAIFullScreen || isReelsFullScreen) ? "h-[100dvh] w-screen overflow-hidden fixed inset-0" : "min-h-screen"
+        isAIFullScreen ? "h-[100dvh] w-screen overflow-hidden fixed inset-0" : isReelsFullScreen ? "h-[calc(100dvh-3.5rem-env(safe-area-inset-bottom))] w-screen overflow-hidden fixed top-0 left-0" : "min-h-screen"
     )}>
       
       {/* --- Sticky Top Header --- */}
@@ -261,7 +261,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       <nav className={cn(
         "main-layout-nav",
         "fixed bottom-0 left-0 w-full z-[10000] transition-colors duration-300 pb-[env(safe-area-inset-bottom)] group overflow-visible",
-        isReviewMode || isAIFullScreen || isReelsFullScreen ? "hidden" : "block"
+        isReviewMode || isAIFullScreen ? "hidden" : "block"
       )}>
         {/* Glow Background Layer */}
         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
