@@ -55,6 +55,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { isSocialMode, toggleSocialMode } = useSocialStore();
   const location = useLocation();
   const isAIFullScreen = location.pathname.startsWith('/ai/chat') || location.pathname.startsWith('/ai/talk') || location.pathname.startsWith('/tools/text-exporter') || location.pathname.startsWith('/tools/flashcard-maker');
+  const isReelsFullScreen = location.pathname.startsWith('/community/reels');
 
   // Auto toggle based on pathname if user lands directly on a social route
   useEffect(() => {
@@ -74,6 +75,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const schoolRef = useRef<HTMLButtonElement>(null);
   const profileRef = useRef<HTMLButtonElement>(null);
   const aiRef = useRef<HTMLButtonElement>(null);
+  const communityRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLButtonElement>(null);
+  const reelsRef = useRef<HTMLButtonElement>(null);
+  const messagesRef = useRef<HTMLButtonElement>(null);
 
   useLayoutEffect(() => {
     const updateIndicator = () => {
@@ -82,6 +87,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       if (activeTab === 'home') activeRef = homeRef;
       else if (activeTab === 'school') activeRef = schoolRef;
       else if (activeTab === 'profile' || activeTab === 'login') activeRef = profileRef;
+      else if (activeTab === 'community') activeRef = communityRef;
+      else if (activeTab === 'search') activeRef = searchRef;
+      else if (activeTab === 'reels') activeRef = reelsRef;
+      else if (activeTab === 'messages') activeRef = messagesRef;
       else if (activeTab === 'ai') {
         activeRef = aiRef;
         isAi = true;
@@ -174,11 +183,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className={cn(
         "flex flex-col transition-colors duration-700 relative bg-gradient-to-br from-indigo-50 via-purple-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 animate-flow",
-        isAIFullScreen ? "h-[100dvh] w-screen overflow-hidden fixed inset-0" : "min-h-screen"
+        isAIFullScreen ? "h-[100dvh] w-screen overflow-hidden fixed inset-0" : isReelsFullScreen ? "h-[calc(100dvh-3.5rem-env(safe-area-inset-bottom))] w-screen overflow-hidden fixed top-0 left-0" : "min-h-screen"
     )}>
       
       {/* --- Sticky Top Header --- */}
-      {!isReviewMode && !isAIFullScreen && !isSocialMode && (
+      {!isReviewMode && !isAIFullScreen && !isReelsFullScreen && !isSocialMode && (
       <header className="sticky top-0 z-40 w-full transition-all duration-300 relative group overflow-visible">
         {/* Glow Background Layer */}
         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
@@ -240,7 +249,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* --- Main Scrollable Content --- */}
       <main className={cn(
         "flex-1 w-full relative z-0",
-        isAIFullScreen
+        (isAIFullScreen || isReelsFullScreen)
             ? "max-w-none p-0 overflow-hidden h-full"
             : cn("max-w-3xl mx-auto px-4 pt-4", isReviewMode ? "pb-4" : "pb-24")
       )}>
@@ -249,11 +258,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* --- Sticky Bottom Tab Bar --- */}
 
-      <style>{'body.hide-bottom-nav .main-layout-nav { display: none !important; }'}</style>
       <nav className={cn(
         "main-layout-nav",
         "fixed bottom-0 left-0 w-full z-[10000] transition-colors duration-300 pb-[env(safe-area-inset-bottom)] group overflow-visible",
-        isReviewMode || isAIFullScreen || activeTab === 'reels' ? "hidden" : "block"
+        isReviewMode || isAIFullScreen ? "hidden" : "block"
       )}>
         {/* Glow Background Layer */}
         <div className="absolute inset-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl transition-colors duration-300 z-0"></div>
@@ -307,7 +315,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<LayoutDashboard className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'community'} 
                 onClick={() => onTabChange('community')}
-                buttonRef={homeRef}
+                buttonRef={communityRef}
               />
               
               <NavTab 
@@ -316,7 +324,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<Search className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'search'}
                 onClick={() => onTabChange('search')}
-                buttonRef={schoolRef}
+                buttonRef={searchRef}
               />
               
               <NavTab
@@ -325,7 +333,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<Play className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'reels'}
                 onClick={() => onTabChange('reels')}
-                buttonRef={aiRef}
+                buttonRef={reelsRef}
               />
 
               <NavTab
@@ -334,7 +342,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<MessageSquare className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'messages'}
                 onClick={() => onTabChange('messages')}
-                buttonRef={profileRef}
+                buttonRef={messagesRef}
               />
 
               <NavTab
@@ -343,6 +351,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<ArrowLeft className="w-6 h-6" />}
                 isActive={false}
                 onClick={() => onTabChange('home')}
+                buttonRef={homeRef}
               />
             </>
           ) : (
@@ -396,6 +405,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 icon={<Users className="w-6 h-6" />}
                 isActive={(activeTab as any) === 'community'}
                 onClick={() => onTabChange('community')}
+                buttonRef={communityRef}
               />
 
               {user ? (

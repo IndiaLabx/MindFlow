@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, X, AlertTriangle, ArrowRight } from 'lucide-react';
 
@@ -37,13 +37,21 @@ export const ReportModal: React.FC<ReportModalProps & { targetType?: 'user' | 'p
 
     const handleSubmit = () => {
         onSubmit(selectedReason, customNote);
-        // Reset state for future opening
-        setTimeout(() => {
-            setStep(1);
-            setSelectedReason('');
-            setCustomNote('');
-        }, 300);
+        onClose(); // Close instantly for eye-blink fast experience
     };
+
+    // Reset state when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            // Slight delay to wait for exit animation to finish
+            const timer = setTimeout(() => {
+                setStep(1);
+                setSelectedReason('');
+                setCustomNote('');
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
 
     return (
         <AnimatePresence>

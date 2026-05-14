@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchReels, toggleLikeReel, Reel } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
-import { Heart, MessageCircle, Share2, ArrowLeft } from 'lucide-react';
-import { Virtuoso } from 'react-virtuoso';
+import { Heart, MessageCircle, Share2, ArrowLeft, Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../../utils/cn';
 import { CreatePostModal } from '../components/CreatePostModal';
-import { Plus } from 'lucide-react';
+import { ReelUploadModal } from '../components/ReelUploadModal';
+import { Plus, Volume2, VolumeX } from 'lucide-react';
 import { ReelSkeleton } from '../components/ReelSkeleton';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { Menu, Transition } from '@headlessui/react';
@@ -16,11 +16,15 @@ import { ShieldAlert, MoreVertical } from 'lucide-react';
 import { ReportModal } from '../components/reports/ReportModal';
 import { submitReport } from '../api/reportsApi';
 
+let sharedIsMuted = true; // Shared mute state across all reels
+
 export const ReelsFeed: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { data: reelsData, isLoading } = useQuery({
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const { data: reelsData, isLoading, refetch } = useQuery({
     queryKey: ['community-reels'],
     queryFn: () => fetchReels(50),
   });
@@ -29,16 +33,16 @@ export const ReelsFeed: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="h-[100dvh] w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
+      <div className="h-full w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
          <ReelSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
+    <div className="h-full w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
       {/* Absolute Back Button */}
-      <div className="absolute top-safe left-4 z-50 mt-4 pt-[env(safe-area-inset-top)]">
+      <div className="fixed top-4 left-4 z-50 mt-4 pt-[env(safe-area-inset-top,0px)]">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10 shadow-md">
           <ArrowLeft size={24} />
         </button>
@@ -47,39 +51,37 @@ export const ReelsFeed: React.FC = () => {
       {reels.length === 0 ? (
         <div className="h-full w-full flex flex-col items-center justify-center text-slate-500">
           <p className="mb-4">No reels available</p>
-          <button
-             onClick={() => setIsCreateModalOpen(true)}
-             className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold shadow-lg hover:bg-indigo-500 transition-colors"
-          >
-             Create the first Reel!
-          </button>
+
         </div>
       ) : (
-        <div className="w-full h-[100dvh]">
-            <Virtuoso
-                style={{ height: '100%', width: '100%' }}
-                data={reels}
-                itemContent={(index, reel) => (
-                    <ReelItem key={reel.id} reel={reel} currentUser={user} />
-                )}
-            />
-        </div>
+        reels.map((reel, index) => (
+          <ReelItem
+             key={reel.id}
+             reel={reel}
+             currentUser={user}
+             index={index}
+             activeIndex={activeIndex}
+             onVisible={() => setActiveIndex(index)}
+             sharedIsMuted={sharedIsMuted}
+             setSharedIsMuted={(val) => { sharedIsMuted = val; }}
+          />
+        ))
       )}
 
-      {/* Floating Action Button for Create Reel */}
-      <button
-        onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-24 md:bottom-20 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
-      >
-        <Plus size={28} />
-      </button>
 
-      <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="reels" />
+
+
     </div>
   );
 };
 
-const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUser }) => {
+const ReelItem: React.FC<{ reel: Reel, currentUser: any, index: number, activeIndex: number, onVisible: () => void, sharedIsMuted: boolean, setSharedIsMuted: (val: boolean) => void }> = ({ reel, currentUser, index, activeIndex, onVisible, sharedIsMuted, setSharedIsMuted }) => {
+  const [isMuted, setIsMuted] = useState(sharedIsMuted);
+
+  // Sync local mute state when shared state changes
+  useEffect(() => {
+    setIsMuted(sharedIsMuted);
+  }, [sharedIsMuted]);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -158,17 +160,25 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
     likeReelMutation.mutate(!!reel.is_liked_by_me);
   };
 
+  // DOM Memory Virtualization: Only render the video player if it's the active one, the previous one, or the next one.
+  const isNearActive = Math.abs(index - activeIndex) <= 1;
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           setIsVisible(entry.isIntersecting);
           if (entry.isIntersecting) {
-            videoRef.current?.play().catch(e => console.log('Auto-play blocked:', e));
-            setIsPlaying(true);
+            onVisible();
+            if (isNearActive) {
+                videoRef.current?.play().catch(e => console.log('Auto-play blocked:', e));
+                setIsPlaying(true);
+            }
           } else {
-            videoRef.current?.pause();
-            setIsPlaying(false);
+            if (isNearActive) {
+                videoRef.current?.pause();
+                setIsPlaying(false);
+            }
           }
         });
       },
@@ -180,7 +190,15 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [isNearActive, onVisible]);
+
+  // Handle explicit play state when isNearActive changes
+  useEffect(() => {
+    if (!isNearActive && videoRef.current) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [isNearActive]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -197,30 +215,53 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
     <AnimatePresence>
       {!isHiddenLocally && (
         <motion.div
-          initial={{ opacity: 1, height: '100dvh' }}
+          initial={{ opacity: 1, height: "100%" }}
           exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
           transition={{ duration: 0.3 }}
           ref={containerRef}
-          className="h-[100dvh] w-full snap-start relative bg-black flex items-center justify-center cursor-pointer overflow-hidden"
+          className="h-full w-full snap-start relative bg-black flex items-center justify-center cursor-pointer overflow-hidden"
           onClick={togglePlay}
         >
       {/* Background Media (Video) using Byte-Range Requests */}
-      {reel.video_url && (
+            {/* Background Media (Video) using DOM Virtualization */}
+      {reel.video_url && isNearActive ? (
         <video
           ref={videoRef}
           src={reel.video_url}
           className="absolute inset-0 w-full h-full object-cover"
           loop
           playsInline
-          preload="metadata"
+          preload={index === activeIndex + 1 ? "auto" : "none"}
+          muted={isMuted}
         />
+      ) : (
+          /* Thumbnail placeholder for off-screen reels to save memory */
+          <div className="absolute inset-0 w-full h-full bg-slate-900 flex items-center justify-center">
+               <Film className="w-12 h-12 text-white/20" />
+          </div>
       )}
 
       {/* Overlay Gradient for Text Readability */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
+
+      {/* Top Controls Overlay */}
+      <div className="absolute top-4 right-4 z-50 mt-4 pt-[env(safe-area-inset-top,0px)] flex gap-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const newMuted = !isMuted;
+            setIsMuted(newMuted);
+            setSharedIsMuted(newMuted);
+          }}
+          className="p-2 rounded-full bg-gray-900/40 backdrop-blur-md text-white border border-white/10 shadow-md"
+        >
+          {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+        </button>
+      </div>
+
       {/* Side Action Bar */}
-      <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-10 pb-[env(safe-area-inset-bottom)]" onClick={(e: any) => e.stopPropagation()}>
+      <div className="absolute right-4 bottom-6 flex flex-col items-center gap-6 z-10" onClick={(e: any) => e.stopPropagation()}>
         <button onClick={handleLike}
           className="flex flex-col items-center gap-1 group"
           aria-label={reel.is_liked_by_me ? "Unlike reel" : "Like reel"}>
@@ -316,7 +357,7 @@ const ReelItem: React.FC<{ reel: Reel, currentUser: any }> = ({ reel, currentUse
       </div>
 
       {/* Bottom Content Area */}
-      <div className="absolute bottom-0 left-0 right-16 p-4 z-10 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e: any) => e.stopPropagation()}>
+      <div className="absolute bottom-0 left-0 right-16 p-4 z-10 pb-6" onClick={(e: any) => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-3 cursor-pointer" onClick={() => navigate(`/u/${reel.profiles?.username || reel.user_id}`)}>
           <div className="w-10 h-10 rounded-full bg-gray-200 border border-white/20 overflow-hidden">
             {reel.profiles?.avatar_url ? (

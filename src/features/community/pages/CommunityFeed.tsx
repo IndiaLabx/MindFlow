@@ -5,8 +5,8 @@ import { useInView } from 'react-intersection-observer';
 import { fetchPosts, toggleLikePost, createComment, Post } from '../api/communityApi';
 import { useSocialRealtime } from '../hooks/useSocialRealtime';
 import { useAuth } from '../../auth/context/AuthContext';
-import { Heart, MessageCircle, Share2, MoreVertical, Plus, Send, Loader2 } from 'lucide-react';
-import { Virtuoso } from 'react-virtuoso';
+import { Heart, MessageCircle, Share2, MoreVertical, Plus, Send, Loader2, PenSquare, Film, X } from 'lucide-react';
+import { ReelUploadModal } from '../components/ReelUploadModal';
 import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { useNavigate } from 'react-router-dom';
@@ -46,6 +46,8 @@ export const CommunityFeed: React.FC = () => {
   const [particles, setParticles] = useState<{ id: number; x: number; y: number }[]>([]);
   const { showToast } = useNotificationStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isReelModalOpen, setIsReelModalOpen] = useState(false);
+  const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
   const { ref, inView } = useInView();
 
   const {
@@ -62,10 +64,10 @@ export const CommunityFeed: React.FC = () => {
   });
 
   useEffect(() => {
-    if (inView && hasNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const likeMutation = useMutation({
     mutationFn: ({ postId, currentlyLiked }: { postId: string, currentlyLiked: boolean }) => 
@@ -103,12 +105,7 @@ export const CommunityFeed: React.FC = () => {
     }
   });
 
-  const handleLikeClick = useCallback((postId: string, currentlyLiked: boolean) => {
-    if (!user) return;
-    likeMutation.mutate({ postId, currentlyLiked });
-  }, [user, likeMutation]);
-
-  const handleDoubleTapLike = useCallback((postId: string, currentlyLiked: boolean, x: number, y: number) => {
+  const handleDoubleTapLike = (postId: string, currentlyLiked: boolean, x: number, y: number) => {
     if (!currentlyLiked) {
       if (user) {
          likeMutation.mutate({ postId, currentlyLiked });
@@ -117,7 +114,7 @@ export const CommunityFeed: React.FC = () => {
       setParticles(prev => [...prev, newParticle]);
       if (navigator.vibrate) navigator.vibrate(50);
     }
-  }, [user, likeMutation]);
+  };
 
   const removeParticle = useCallback((id: number) => {
     setParticles(prev => prev.filter(p => p.id !== id));
@@ -144,42 +141,90 @@ export const CommunityFeed: React.FC = () => {
         ))}
       </AnimatePresence>
 
-      <div className="w-full flex-grow flex flex-col">
-          <Virtuoso
-            useWindowScroll
-            data={data?.pages.flatMap((page: any) => page.data) || []}
-            endReached={() => {
-              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-            }}
-            itemContent={(index, post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={handleLikeClick}
-                  onDoubleTap={handleDoubleTapLike}
-                  navigate={navigate}
-                  user={user}
-                />
-            )}
-            components={{
-              Footer: () => (
-                <div ref={ref} className="w-full flex justify-center py-4">
-                  {isFetchingNextPage && <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />}
-                </div>
-              )
-            }}
-          />
+      {data?.pages.map((page: any, i: number) => (
+        <React.Fragment key={i}>
+          {page.data.map((post: Post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onLike={() => {
+                if (!user) return;
+                likeMutation.mutate({ postId: post.id, currentlyLiked: !!post.is_liked_by_me });
+              }}
+              onDoubleTap={(x, y) => handleDoubleTapLike(post.id, !!post.is_liked_by_me, x, y)}
+              navigate={navigate}
+              user={user}
+            />
+          ))}
+        </React.Fragment>
+      ))}
+
+      {/* Loading Indicator for Next Page */}
+      <div ref={ref} className="w-full flex justify-center py-4">
+        {isFetchingNextPage && <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />}
       </div>
 
-      <button
-        onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-24 md:bottom-20 right-6 z-50 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all"
-      >
-        <Plus size={28} />
-      </button>
+
+      {/* --- Speed Dial FAB --- */}
+      <div className="fixed bottom-24 md:bottom-20 right-6 z-50 flex flex-col items-end gap-3">
+        <AnimatePresence>
+          {isSpeedDialOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col items-end gap-3 mb-2"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-white text-xs font-semibold px-2 py-1 bg-black/60 backdrop-blur-md rounded-md shadow-md">
+                  Upload Reel
+                </span>
+                <button
+                  onClick={() => {
+                    setIsReelModalOpen(true);
+                    setIsSpeedDialOpen(false);
+                  }}
+                  className="p-3 bg-gradient-to-br from-pink-500 to-rose-600 text-white rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all relative group"
+                >
+                  <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                  {/* Subtle Pulse Animation for Premium Feel */}
+                  <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 opacity-30 animate-pulse -z-10 blur-sm"></div>
+                  <Film size={20} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-white text-xs font-semibold px-2 py-1 bg-black/60 backdrop-blur-md rounded-md shadow-md">
+                  Create Post
+                </span>
+                <button
+                  onClick={() => {
+                    setIsCreateModalOpen(true);
+                    setIsSpeedDialOpen(false);
+                  }}
+                  className="p-3 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-gray-100 dark:border-slate-700 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all"
+                >
+                  <PenSquare size={20} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setIsSpeedDialOpen(!isSpeedDialOpen)}
+          className="p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all relative"
+        >
+          <div className={`transition-transform duration-300 ${isSpeedDialOpen ? 'rotate-45' : 'rotate-0'}`}>
+            <Plus size={28} />
+          </div>
+        </button>
+      </div>
 
       </div>
       <CreatePostModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} feedType="posts" />
+      <ReelUploadModal isOpen={isReelModalOpen} onClose={() => setIsReelModalOpen(false)} onSuccess={() => {}} />
     </div>
   );
 };

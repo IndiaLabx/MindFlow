@@ -22,12 +22,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
   const [content, setContent] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [postType, setPostType] = useState<'text' | 'image' | 'video' | 'reel'>('text');
+  const [postType, setPostType] = useState<'text' | 'image' | 'reel'>('text');
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const reelInputRef = useRef<HTMLInputElement>(null);
 
   const resetState = () => {
     setContent('');
@@ -36,6 +37,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
     setPostType('text');
     setIsUploading(false);
     setUploadProgress(0);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+    if (reelInputRef.current) reelInputRef.current.value = '';
   };
 
   const handleClose = () => {
@@ -44,7 +47,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
     onClose();
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, selectedType: 'image' | 'video' | 'reel') => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, selectedType: 'image' | 'reel') => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
@@ -56,7 +59,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
       showToast({ title: 'Invalid File', message: 'Please select a valid image file.', variant: 'error' });
       return;
     }
-    if ((selectedType === 'video' || selectedType === 'reel') && !isVideo) {
+    if (selectedType === 'reel' && !isVideo) {
       showToast({ title: 'Invalid File', message: 'Please select a valid video file.', variant: 'error' });
       return;
     }
@@ -66,8 +69,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
       showToast({ title: 'File too large', message: 'Images must be under 5MB.', variant: 'error' });
       return;
     }
-    if (isVideo && fileSizeMB > 50) {
-      showToast({ title: 'File too large', message: 'Videos/Reels must be under 50MB.', variant: 'error' });
+    if (isVideo && fileSizeMB > 15) {
+      showToast({ title: 'File too large', message: 'Videos/Reels must be under 15MB.', variant: 'error' });
       return;
     }
 
@@ -78,11 +81,14 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
     setPreviewUrl(objectUrl);
   };
 
-  const triggerFileInput = (type: 'image' | 'video' | 'reel') => {
+  const triggerFileInput = (type: 'image' | 'reel') => {
     setPostType(type);
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = type === 'image' ? 'image/*' : 'video/*';
-      fileInputRef.current.click();
+    if (type === 'image' && imageInputRef.current) {
+      imageInputRef.current.value = '';
+      imageInputRef.current.click();
+    } else if (type === 'reel' && reelInputRef.current) {
+      reelInputRef.current.value = '';
+      reelInputRef.current.click();
     }
   };
 
@@ -175,7 +181,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
                   )}
                   {!isUploading && (
                     <button
-                      onClick={() => { setFile(null); setPreviewUrl(null); setPostType('text'); }}
+                      onClick={() => {
+                        setFile(null);
+                        setPreviewUrl(null);
+                        setPostType('text');
+                        if (imageInputRef.current) imageInputRef.current.value = '';
+                        if (reelInputRef.current) reelInputRef.current.value = '';
+                      }}
                       className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70 backdrop-blur-md"
                     >
                       <X size={16} />
@@ -189,9 +201,17 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
               <div className="flex items-center gap-2">
                 <input
                   type="file"
-                  ref={fileInputRef}
+                  accept="image/*"
+                  ref={imageInputRef}
                   className="hidden text-base"
-                  onChange={(e) => handleFileSelect(e, postType as any)}
+                  onChange={(e) => handleFileSelect(e, 'image')}
+                />
+                <input
+                  type="file"
+                  accept="video/*"
+                  ref={reelInputRef}
+                  className="hidden text-base"
+                  onChange={(e) => handleFileSelect(e, 'reel')}
                 />
 
                 <button
@@ -201,14 +221,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClos
                 >
                   <ImageIcon size={20} />
                 </button>
-                <button
-                  onClick={() => triggerFileInput('video')}
-                  disabled={isUploading || !!file}
-                  className="p-3 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  <Video size={20} />
-                </button>
-                <button
+<button
                   onClick={() => triggerFileInput('reel')}
                   disabled={isUploading || !!file}
                   className="p-3 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"

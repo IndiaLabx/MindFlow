@@ -6,7 +6,7 @@ export type Post = {
   content: string | null;
   media_url: string | null;
   hls_stream_url: string | null;
-  type: 'text' | 'image' | 'video' | 'reel';
+  type: 'text' | 'image' | 'reel';
   created_at: string;
   updated_at: string;
   profiles?: { id?: string; full_name: string | null; username?: string; avatar_url: string | null };
@@ -30,6 +30,7 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
 
     let followingIds: string[] = [];
 
+    // Attempt to fetch from following list first
     if (user) {
         const { data: followersData } = await supabase
             .from('user_followers')
@@ -38,23 +39,21 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
 
         if (followersData && followersData.length > 0) {
             followingIds = followersData.map((f: any) => f.following_id);
+            // Optionally, include the user's own posts
             followingIds.push(user.id);
         }
     }
 
     let postsData: any[] = [];
 
-    const selectQuery = `
-        *,
-        profiles:user_id(id, full_name, username, avatar_url),
-        post_likes(count),
-        post_comments(count)
-    `;
-
+    // If following someone, fetch their posts
     if (followingIds.length > 0) {
         let q = supabase
             .from('posts')
-            .select(selectQuery)
+            .select(`
+            *,
+            profiles:user_id(id, full_name, username, avatar_url)
+            `)
             .in('user_id', followingIds)
             .order('created_at', { ascending: false })
             .limit(limit);
@@ -64,10 +63,14 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
         postsData = res.data || [];
     }
 
+    // Cold Start Fallback: If no posts from following or empty feed, fetch globally trending/recent
     if (!postsData || postsData.length === 0) {
         let fallbackQuery = supabase
             .from('posts')
-            .select(selectQuery)
+            .select(`
+            *,
+            profiles:user_id(id, full_name, username, avatar_url)
+            `)
             .order('created_at', { ascending: false })
             .limit(limit);
 
@@ -81,22 +84,29 @@ export const fetchPosts = async (limit = 20, cursor?: string): Promise<{ data: P
 
     const postIds = postsData.map((p: any) => p.id);
 
-    let myLikedPostIds = new Set<string>();
-    if (user) {
-        const { data: myLikesData } = await supabase
-            .from('post_likes')
-            .select('post_id')
-            .eq('user_id', user.id)
-            .in('post_id', postIds);
+    const [likesReq, commentsReq, myLikesReq] = await Promise.all([
+      supabase.from('post_likes').select('post_id', { count: 'exact' }).in('post_id', postIds),
+      supabase.from('post_comments').select('post_id', { count: 'exact' }).in('post_id', postIds),
+      user ? supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', postIds) : Promise.resolve({ data: [] })
+    ]);
 
-        myLikedPostIds = new Set((myLikesData || []).map((l: any) => l.post_id));
-    }
+    const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
+      acc[curr.post_id] = (acc[curr.post_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    const commentsCountMap = (commentsReq.data || []).reduce((acc: any, curr: any) => {
+      acc[curr.post_id] = (acc[curr.post_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    const myLikedPostIds = new Set((myLikesReq.data || []).map((l: any) => l.post_id));
 
     const formattedData = postsData.map((p: any) => ({
       ...p,
       profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
-      likes_count: p.post_likes?.[0]?.count || 0,
-      comments_count: p.post_comments?.[0]?.count || 0,
+      likes_count: likesCountMap[p.id] || 0,
+      comments_count: commentsCountMap[p.id] || 0,
       is_liked_by_me: myLikedPostIds.has(p.id)
     }));
 
@@ -130,8 +140,7 @@ export const fetchComments = async (postId: string, userId?: string): Promise<Co
             .from('post_comments')
             .select(`
                 *,
-                profiles:user_id(id, full_name, username, avatar_url),
-                comment_likes(count)
+                profiles:user_id(id, full_name, username, avatar_url)
             `)
             .eq('post_id', postId)
             .order('created_at', { ascending: true });
@@ -141,20 +150,22 @@ export const fetchComments = async (postId: string, userId?: string): Promise<Co
 
         const commentIds = commentsData.map((c: any) => c.id);
 
-        let myLikedCommentIds = new Set<string>();
-        if (userId) {
-            const { data: myLikesData } = await supabase
-                .from('comment_likes')
-                .select('comment_id')
-                .eq('user_id', userId)
-                .in('comment_id', commentIds);
-            myLikedCommentIds = new Set((myLikesData || []).map((l: any) => l.comment_id));
-        }
+        const [likesReq, myLikesReq] = await Promise.all([
+            supabase.from('comment_likes').select('comment_id', { count: 'exact' }).in('comment_id', commentIds),
+            userId ? supabase.from('comment_likes').select('comment_id').eq('user_id', userId).in('comment_id', commentIds) : Promise.resolve({ data: [] })
+        ]);
+
+        const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
+            acc[curr.comment_id] = (acc[curr.comment_id] || 0) + 1;
+            return acc;
+        }, {});
+
+        const myLikedCommentIds = new Set((myLikesReq.data || []).map((l: any) => l.comment_id));
 
         const formattedComments: Comment[] = commentsData.map((c: any) => ({
             ...c,
             profiles: Array.isArray(c.profiles) ? c.profiles[0] : c.profiles,
-            likes_count: c.comment_likes?.[0]?.count || 0,
+            likes_count: likesCountMap[c.id] || 0,
             is_liked_by_me: myLikedCommentIds.has(c.id),
             replies: []
         }));
@@ -287,7 +298,7 @@ export const toggleFollow = async (followerId: string, followingId: string, curr
     }
 };
 
-export const createPost = async (userId: string, content: string, type: 'text' | 'image' | 'video' | 'reel' = 'text', mediaUrl?: string) => {
+export const createPost = async (userId: string, content: string, type: 'text' | 'image' | 'reel' = 'text', mediaUrl?: string) => {
     try {
         let media_url = mediaUrl || null;
 
@@ -359,9 +370,7 @@ export const fetchUserPosts = async (profileId: string, limit = 20): Promise<Pos
             .from('posts')
             .select(`
                 *,
-                profiles:user_id(id, full_name, username, avatar_url),
-                post_likes(count),
-                post_comments(count)
+                profiles:user_id(id, full_name, username, avatar_url)
             `)
             .eq('user_id', profileId)
             .order('created_at', { ascending: false })
@@ -373,22 +382,29 @@ export const fetchUserPosts = async (profileId: string, limit = 20): Promise<Pos
         const postIds = postsData.map((p: any) => p.id);
         const { data: { user } } = await supabase.auth.getUser();
 
-        let myLikedPostIds = new Set<string>();
-        if (user) {
-            const { data: myLikesData } = await supabase
-                .from('post_likes')
-                .select('post_id')
-                .eq('user_id', user.id)
-                .in('post_id', postIds);
+        const [likesReq, commentsReq, myLikesReq] = await Promise.all([
+            supabase.from('post_likes').select('post_id', { count: 'exact' }).in('post_id', postIds),
+            supabase.from('post_comments').select('post_id', { count: 'exact' }).in('post_id', postIds),
+            user ? supabase.from('post_likes').select('post_id').eq('user_id', user.id).in('post_id', postIds) : Promise.resolve({ data: [] })
+        ]);
 
-            myLikedPostIds = new Set((myLikesData || []).map((l: any) => l.post_id));
-        }
+        const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
+            acc[curr.post_id] = (acc[curr.post_id] || 0) + 1;
+            return acc;
+        }, {});
+
+        const commentsCountMap = (commentsReq.data || []).reduce((acc: any, curr: any) => {
+            acc[curr.post_id] = (acc[curr.post_id] || 0) + 1;
+            return acc;
+        }, {});
+
+        const myLikedPostIds = new Set((myLikesReq.data || []).map((l: any) => l.post_id));
 
         return postsData.map((p: any) => ({
             ...p,
             profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
-            likes_count: p.post_likes?.[0]?.count || 0,
-            comments_count: p.post_comments?.[0]?.count || 0,
+            likes_count: likesCountMap[p.id] || 0,
+            comments_count: commentsCountMap[p.id] || 0,
             is_liked_by_me: myLikedPostIds.has(p.id)
         }));
     } catch (err) {
@@ -468,42 +484,35 @@ export const fetchReels = async (limit = 20, cursor?: string): Promise<{ data: R
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
-    let q = supabase
-        .from('reels')
-        .select(`
-            *,
-            profiles:user_id(id, full_name, username, avatar_url),
-            reel_likes(count),
-            reel_comments(count)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-    if (cursor) q = q.lt('created_at', cursor);
-
-    const { data: reelsData, error } = await q;
+    // Use the custom RPC function for the weighted chronological algorithm feed
+    const { data: reelsData, error } = await supabase
+        .rpc('get_reels_feed', {
+            p_limit: limit,
+            p_cursor: cursor || null
+        });
 
     if (error) throw error;
     if (!reelsData || reelsData.length === 0) return { data: [], nextCursor: null };
 
     const reelIds = reelsData.map((p: any) => p.id);
+    const userIds = [...new Set(reelsData.map((p: any) => p.user_id))];
 
-    let myLikedReelIds = new Set<string>();
-    if (user) {
-        const { data: myLikesData } = await supabase
-            .from('reel_likes')
-            .select('reel_id')
-            .eq('user_id', user.id)
-            .in('reel_id', reelIds);
+    const [myLikesReq, profilesReq] = await Promise.all([
+      user ? supabase.from('reel_likes').select('reel_id').eq('user_id', user.id).in('reel_id', reelIds) : Promise.resolve({ data: [] }),
+      supabase.from('profiles').select('id, full_name, username, avatar_url').in('id', userIds)
+    ]);
 
-        myLikedReelIds = new Set((myLikesData || []).map((l: any) => l.reel_id));
-    }
+    const myLikedReelIds = new Set((myLikesReq.data || []).map((l: any) => l.reel_id));
+
+    // Map profiles
+    const profilesMap = (profilesReq.data || []).reduce((acc: any, profile: any) => {
+        acc[profile.id] = profile;
+        return acc;
+    }, {});
 
     const formattedData = reelsData.map((p: any) => ({
       ...p,
-      profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
-      likes_count: p.reel_likes?.[0]?.count || 0,
-      comments_count: p.reel_comments?.[0]?.count || 0,
+      profiles: profilesMap[p.user_id],
       is_liked_by_me: myLikedReelIds.has(p.id)
     }));
 
@@ -521,30 +530,25 @@ export const fetchReel = async (id: string, currentUserId?: string): Promise<Ree
     try {
         const { data, error } = await supabase
             .from('reels')
-            .select(`*, profiles:user_id(id, full_name, username, avatar_url), reel_likes(count), reel_comments(count)`)
+            .select(`*, profiles:user_id(id, full_name, username, avatar_url)`)
             .eq('id', id)
             .maybeSingle();
 
         if (error) throw error;
         if (!data) return null;
 
-        let isLikedByMe = false;
-        if (currentUserId) {
-            const { data: myLike } = await supabase
-                .from('reel_likes')
-                .select('reel_id')
-                .eq('user_id', currentUserId)
-                .eq('reel_id', id)
-                .maybeSingle();
-            isLikedByMe = !!myLike;
-        }
+        const [likesReq, commentsReq, myLikesReq] = await Promise.all([
+            supabase.from('reel_likes').select('reel_id', { count: 'exact' }).eq('reel_id', id),
+            supabase.from('reel_comments').select('reel_id', { count: 'exact' }).eq('reel_id', id),
+            currentUserId ? supabase.from('reel_likes').select('reel_id').eq('user_id', currentUserId).eq('reel_id', id).maybeSingle() : Promise.resolve({ data: null })
+        ]);
 
         return {
             ...data,
             profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
-            likes_count: data.reel_likes?.[0]?.count || 0,
-            comments_count: data.reel_comments?.[0]?.count || 0,
-            is_liked_by_me: isLikedByMe
+            likes_count: likesReq.count || 0,
+            comments_count: commentsReq.count || 0,
+            is_liked_by_me: !!myLikesReq.data
         } as Reel;
     } catch (err) {
         console.error('[Supabase Error - fetchReel]:', err);
@@ -587,8 +591,7 @@ export const fetchReelComments = async (reelId: string, userId?: string): Promis
             .from('reel_comments')
             .select(`
                 *,
-                profiles:user_id(id, full_name, username, avatar_url),
-                reel_comment_likes(count)
+                profiles:user_id(id, full_name, username, avatar_url)
             `)
             .eq('reel_id', reelId)
             .order('created_at', { ascending: true });
@@ -598,20 +601,22 @@ export const fetchReelComments = async (reelId: string, userId?: string): Promis
 
         const commentIds = commentsData.map((c: any) => c.id);
 
-        let myLikedCommentIds = new Set<string>();
-        if (userId) {
-            const { data: myLikesData } = await supabase
-                .from('reel_comment_likes')
-                .select('comment_id')
-                .eq('user_id', userId)
-                .in('comment_id', commentIds);
-            myLikedCommentIds = new Set((myLikesData || []).map((l: any) => l.comment_id));
-        }
+        const [likesReq, myLikesReq] = await Promise.all([
+            supabase.from('reel_comment_likes').select('comment_id', { count: 'exact' }).in('comment_id', commentIds),
+            userId ? supabase.from('reel_comment_likes').select('comment_id').eq('user_id', userId).in('comment_id', commentIds) : Promise.resolve({ data: [] })
+        ]);
+
+        const likesCountMap = (likesReq.data || []).reduce((acc: any, curr: any) => {
+            acc[curr.comment_id] = (acc[curr.comment_id] || 0) + 1;
+            return acc;
+        }, {});
+
+        const myLikedCommentIds = new Set((myLikesReq.data || []).map((l: any) => l.comment_id));
 
         const formattedComments: ReelComment[] = commentsData.map((c: any) => ({
             ...c,
             profiles: Array.isArray(c.profiles) ? c.profiles[0] : c.profiles,
-            likes_count: c.reel_comment_likes?.[0]?.count || 0,
+            likes_count: likesCountMap[c.id] || 0,
             is_liked_by_me: myLikedCommentIds.has(c.id),
             replies: []
         }));
