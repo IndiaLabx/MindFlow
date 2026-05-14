@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSyncStore } from '../stores/useSyncStore';
 import { useAnalyticsStore } from '../stores/useAnalyticsStore';
 import { logEvent } from '../services/analyticsService';
@@ -9,7 +9,6 @@ import { db } from '../../../lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../../../lib/supabase';
 import { syncService } from '../../../lib/syncService';
-import { debounce } from 'lodash-es';
 
 /**
  * Custom hook to manage the global quiz application state.
@@ -25,40 +24,6 @@ export const useQuiz = () => {
 
   // Directly bind state and actions from the Zustand store
   const state = useQuizSessionStore();
-
-  // --- 1. Refs for Stable Access in Intervals/Callbacks ---
-  const stateRef = useRef(state);
-  stateRef.current = state;
-
-  // --- 2. Immediate Debounced Auto-Save ---
-  const debouncedSaveToDb = useCallback(
-    debounce(async (currentState: any) => {
-      if (!currentState.quizId || (currentState.status !== 'quiz' && currentState.status !== 'result')) return;
-
-      const stateToSave = { ...currentState };
-      Object.keys(stateToSave).forEach(key => {
-        if (typeof (stateToSave as any)[key] === 'function') {
-          delete (stateToSave as any)[key];
-        }
-      });
-
-      try {
-        await db.updateQuizProgress(currentState.quizId, stateToSave as any);
-      } catch (err) {
-        console.error("Failed to debounced auto-save to DB:", err);
-      }
-    }, 1000),
-    []
-  );
-
-  useEffect(() => {
-    debouncedSaveToDb(state);
-  }, [
-    state.status, state.mode, state.currentQuestionIndex, state.score,
-    state.answers, state.timeTaken, state.remainingTimes, state.quizTimeRemaining,
-    state.bookmarks, state.markedForReview, state.hiddenOptions, state.activeQuestions,
-    state.filters, state.isPaused, state.quizId, debouncedSaveToDb
-  ]);
 
   // Persistence Effect 1: LocalStorage (Active Session) - Lightweight Metadata Only
   useEffect(() => {
