@@ -4,6 +4,8 @@ import { ArrowLeft, AlertTriangle, Trash2, Loader2, Info } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { useNotification } from '../../../stores/useNotificationStore';
+import { Download } from 'lucide-react';
+import { useJSONDownloader } from '../../../hooks/useJSONDownloader';
 
 export const DeleteAccountPage: React.FC = () => {
     const navigate = useNavigate();
@@ -11,11 +13,63 @@ export const DeleteAccountPage: React.FC = () => {
     const { showToast } = useNotification();
     const [confirmationText, setConfirmationText] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
+    const [hasDownloadedData, setHasDownloadedData] = useState(false);
+    const { downloadJSON, isGenerating } = useJSONDownloader<any>();
 
     const isConfirmValid = confirmationText === 'DELETE';
 
+    const handleDownloadData = async () => {
+        try {
+            const { data, error } = await supabase.rpc('export_user_data');
+            if (error) throw error;
+
+            const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const fileName = `mindflow_userdata_${dateStr}.json`;
+
+            // downloadJSON expects an array of data according to its type definition
+            // but for this specific usecase since we have a single object we'll wrap it in array
+            // or modify the type if needed. Let's wrap in array to respect the generic signature T[]
+            const result = await downloadJSON([data], fileName);
+
+            if (result) {
+                // Trigger actual download in browser
+                const a = document.createElement('a');
+                a.href = result.url;
+                a.download = result.fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(result.url);
+
+                setHasDownloadedData(true);
+                showToast({
+                    variant: 'success',
+                    title: 'Data Downloaded',
+                    message: 'Your data has been successfully exported.'
+                });
+            }
+        } catch (err: any) {
+            console.error('Failed to export data:', err);
+            showToast({
+                variant: 'error',
+                title: 'Export Failed',
+                message: err.message || 'Could not export your data at this time.'
+            });
+        }
+    };
+
+
     const handleDeleteAccount = async () => {
         if (!isConfirmValid || !user) return;
+
+        if (!hasDownloadedData) {
+            showToast({
+                variant: 'error',
+                title: 'Data Not Downloaded',
+                message: 'Please download your data before deleting your account.'
+            });
+            return;
+        }
 
         setIsDeleting(true);
         try {
@@ -96,6 +150,36 @@ export const DeleteAccountPage: React.FC = () => {
                             <li>This includes your profile, quiz history, saved materials, bookmarks, and interactions.</li>
                             <li>This action cannot be undone once the 7-day period expires.</li>
                         </ul>
+                    </div>
+
+
+                    <div className="mb-8 p-5 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 text-center">
+                        <div className="flex justify-center mb-3">
+                            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/40 rounded-full">
+                                <Download className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                        </div>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Download Your Data</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                            Before you delete your account, we highly recommend downloading a copy of your personal data, posts, progress, and interactions.
+                        </p>
+                        <button
+                            onClick={handleDownloadData}
+                            disabled={isGenerating}
+                            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {isGenerating ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>Compiling Data...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Download className="w-5 h-5" />
+                                    <span>Download My Data</span>
+                                </>
+                            )}
+                        </button>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
