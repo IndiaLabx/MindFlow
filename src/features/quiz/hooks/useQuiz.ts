@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useSyncStore } from '../stores/useSyncStore';
 import { useAnalyticsStore } from '../stores/useAnalyticsStore';
 import { logEvent } from '../services/analyticsService';
@@ -58,7 +58,13 @@ export const useQuiz = () => {
     });
   }, [state]);
 
-  // Persistence Effect 2: IndexedDB (Saved Quizzes) - Instant Async Commits & Safety Nets
+  // Keep a mutable reference to the latest state to avoid closure traps in intervals
+  const latestStateRef = useRef(state);
+  useEffect(() => {
+    latestStateRef.current = state;
+  }, [state]);
+
+  // Persistence Effect 2A: Local IndexedDB (Instant Async Commits)
   useEffect(() => {
     if (state.quizId && (state.status === 'quiz' || state.status === 'result')) {
       const saveToDb = async () => {
@@ -76,100 +82,7 @@ export const useQuiz = () => {
         }
       };
 
-      // 1. Instant Async Commit (No more setTimeout death window)
       saveToDb();
-
-      // Implement the 30s navigator.onLine sync and the best-effort unload listeners
-      const syncToCloud = async () => {
-        if (!navigator.onLine) return;
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session?.user) return;
-
-          const quizId = state.quizId;
-          if (!quizId) return;
-
-          const quiz = await db.getQuiz(quizId);
-          if (quiz) {
-            // best-effort async push via syncService.pushSavedQuiz
-            await syncService.pushSavedQuiz(session.user.id, quiz);
-          }
-        } catch (err) {
-          console.error("Failed to sync partial progress to Supabase:", err);
-        }
-      };
-
-      // 2. 30-Second Debounced Background Sync
-      const syncInterval = setInterval(() => {
-         syncToCloud();
-      }, 30000);
-
-      // 3. Ironclad Safety Nets (Interceptors)
-      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-         // Force a final synchronous-like flush locally
-         saveToDb();
-
-         // Raw fetch with keepalive for ironclad safety net (Incognito / tab close)
-         if (navigator.onLine && state.quizId) {
-             const stateToSave = { ...state };
-             Object.keys(stateToSave).forEach(key => {
-               if (typeof (stateToSave as any)[key] === 'function') {
-                 delete (stateToSave as any)[key];
-               }
-             });
-             const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
-
-             // We use supabase.auth.getSession synchronously here which isn't possible,
-             // so we extract the access token from localStorage.
-             const authStorageStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
-             if (authStorageStr) {
-                 try {
-                     const authStorage = JSON.parse(authStorageStr);
-                     const token = authStorage?.access_token;
-                     const userId = authStorage?.user?.id;
-
-                     if (token && userId) {
-                         const payload = {
-                             id: state.quizId,
-                             user_id: userId,
-                             state: stateWithoutQuestions
-                         };
-
-                         const headers = new Headers();
-                         headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
-                         headers.append("Authorization", `Bearer ${token}`);
-                         headers.append("Content-Type", "application/json");
-                         headers.append("Prefer", "resolution=merge-duplicates");
-
-                         // Fire and forget with keepalive
-                         fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
-                             method: 'POST',
-                             headers: headers,
-                             body: JSON.stringify(payload),
-                             keepalive: true
-                         }).catch(() => {});
-                     }
-                 } catch (e) {}
-             }
-         }
-      };
-
-      const handleVisibilityChange = () => {
-          if (document.visibilityState === 'hidden') {
-              saveToDb();
-              // Immediately push to cloud on minimize/hide
-              syncToCloud();
-          }
-      };
-
-      window.addEventListener('beforeunload', handleBeforeUnload);
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
-      return () => {
-          clearInterval(syncInterval);
-          window.removeEventListener('beforeunload', handleBeforeUnload);
-          document.removeEventListener('visibilitychange', handleVisibilityChange);
-      };
     }
   }, [
     state.status, state.mode, state.currentQuestionIndex, state.score,
@@ -177,6 +90,107 @@ export const useQuiz = () => {
     state.bookmarks, state.markedForReview, state.hiddenOptions, state.activeQuestions,
     state.filters, state.isPaused, state.quizId
   ]);
+
+  // Persistence Effect 2B: Cloud Sync (30-second interval + Tab Close Safety Nets)
+  // This mounts exactly once and relies purely on latestStateRef.
+  useEffect(() => {
+    const saveToDbSync = () => {
+        const currentState = latestStateRef.current;
+        if (!currentState.quizId || (currentState.status !== 'quiz' && currentState.status !== 'result')) return;
+
+        const stateToSave = { ...currentState };
+        Object.keys(stateToSave).forEach(key => {
+          if (typeof (stateToSave as any)[key] === 'function') {
+            delete (stateToSave as any)[key];
+          }
+        });
+        db.updateQuizProgress(currentState.quizId, stateToSave as any).catch(console.error);
+    };
+
+    const syncToCloud = async () => {
+      if (!navigator.onLine) return;
+      const currentState = latestStateRef.current;
+      const quizId = currentState.quizId;
+      if (!quizId || (currentState.status !== 'quiz' && currentState.status !== 'result')) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        const quiz = await db.getQuiz(quizId);
+        if (quiz) {
+          await syncService.pushSavedQuiz(session.user.id, quiz);
+        }
+      } catch (err) {
+        console.error("Failed to sync partial progress to Supabase:", err);
+      }
+    };
+
+    const syncInterval = setInterval(() => {
+       syncToCloud();
+    }, 30000);
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+       saveToDbSync();
+
+       const currentState = latestStateRef.current;
+       if (navigator.onLine && currentState.quizId && (currentState.status === 'quiz' || currentState.status === 'result')) {
+           const stateToSave = { ...currentState };
+           Object.keys(stateToSave).forEach(key => {
+             if (typeof (stateToSave as any)[key] === 'function') {
+               delete (stateToSave as any)[key];
+             }
+           });
+           const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
+
+           const authStorageStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
+           if (authStorageStr) {
+               try {
+                   const authStorage = JSON.parse(authStorageStr);
+                   const token = authStorage?.access_token;
+                   const userId = authStorage?.user?.id;
+
+                   if (token && userId) {
+                       const payload = {
+                           id: currentState.quizId,
+                           user_id: userId,
+                           state: stateWithoutQuestions
+                       };
+
+                       const headers = new Headers();
+                       headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+                       headers.append("Authorization", `Bearer ${token}`);
+                       headers.append("Content-Type", "application/json");
+                       headers.append("Prefer", "resolution=merge-duplicates");
+
+                       fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
+                           method: 'POST',
+                           headers: headers,
+                           body: JSON.stringify(payload),
+                           keepalive: true
+                       }).catch(() => {});
+                   }
+               } catch (e) {}
+           }
+       }
+    };
+
+    const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+            saveToDbSync();
+            syncToCloud();
+        }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+        clearInterval(syncInterval);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Wrap startQuiz to include analytics
   const startQuiz = useCallback((filteredQuestions: Question[], filters: InitialFilters, mode: QuizMode = 'learning', quizId?: string) => {
