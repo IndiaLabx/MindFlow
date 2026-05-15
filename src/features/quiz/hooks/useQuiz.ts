@@ -58,107 +58,76 @@ export const useQuiz = () => {
     });
   }, [state]);
 
-  // Persistence Effect 2: IndexedDB (Saved Quizzes) - Instant Async Commits & Safety Nets
+  // Persistence Effect: Server-Side Optimistic UI + Debounce + Safety Nets
   useEffect(() => {
     if (state.quizId && (state.status === 'quiz' || state.status === 'result')) {
-      const saveToDb = async () => {
-        const stateToSave = { ...state };
-        Object.keys(stateToSave).forEach(key => {
-          if (typeof (stateToSave as any)[key] === 'function') {
-            delete (stateToSave as any)[key];
-          }
-        });
-
-        try {
-          await db.updateQuizProgress(state.quizId!, stateToSave as any);
-        } catch (err) {
-          console.error("Failed to auto-save to DB:", err);
+      const stateToSave = { ...state };
+      Object.keys(stateToSave).forEach(key => {
+        if (typeof (stateToSave as any)[key] === 'function') {
+          delete (stateToSave as any)[key];
         }
+      });
+      const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
+
+      const syncToSupabase = async (isKeepAlive = false) => {
+          if (!navigator.onLine) return;
+          try {
+              const authStorageStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
+              if (!authStorageStr) return;
+
+              const authStorage = JSON.parse(authStorageStr);
+              const token = authStorage?.access_token;
+              const userId = authStorage?.user?.id;
+
+              if (!token || !userId) return;
+
+              const payload = {
+                  id: state.quizId,
+                  user_id: userId,
+                  state: stateWithoutQuestions
+              };
+
+              const headers = new Headers();
+              headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+              headers.append("Authorization", `Bearer ${token}`);
+              headers.append("Content-Type", "application/json");
+              headers.append("Prefer", "resolution=merge-duplicates");
+
+              if (isKeepAlive) {
+                  fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
+                      method: 'POST',
+                      headers: headers,
+                      body: JSON.stringify(payload),
+                      keepalive: true
+                  }).catch(() => {});
+              } else {
+                  // Direct async fetch without keepalive for standard debounced calls
+                  await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
+                      method: 'POST',
+                      headers: headers,
+                      body: JSON.stringify(payload)
+                  });
+              }
+          } catch (e) {
+              console.error("Supabase Debounce Push Error", e);
+          }
       };
 
-      // 1. Instant Async Commit (No more setTimeout death window)
-      saveToDb();
+      // 1. Debounce Logic: 2000ms delay for Optimistic UI protection
+      const handler = setTimeout(() => {
+         syncToSupabase(false);
+      }, 2000);
 
-      // Implement the 30s navigator.onLine sync and the best-effort unload listeners
-      const syncToCloud = async () => {
-        if (!navigator.onLine) return;
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session?.user) return;
-
-          const quizId = state.quizId;
-          if (!quizId) return;
-
-          const quiz = await db.getQuiz(quizId);
-          if (quiz) {
-            // best-effort async push via syncService.pushSavedQuiz
-            await syncService.pushSavedQuiz(session.user.id, quiz);
-          }
-        } catch (err) {
-          console.error("Failed to sync partial progress to Supabase:", err);
-        }
-      };
-
-      // 2. 30-Second Debounced Background Sync
-      const syncInterval = setInterval(() => {
-         syncToCloud();
-      }, 30000);
-
-      // 3. Ironclad Safety Nets (Interceptors)
+      // 2. Ironclad Safety Nets
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-         // Force a final synchronous-like flush locally
-         saveToDb();
-
-         // Raw fetch with keepalive for ironclad safety net (Incognito / tab close)
-         if (navigator.onLine && state.quizId) {
-             const stateToSave = { ...state };
-             Object.keys(stateToSave).forEach(key => {
-               if (typeof (stateToSave as any)[key] === 'function') {
-                 delete (stateToSave as any)[key];
-               }
-             });
-             const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
-
-             // We use supabase.auth.getSession synchronously here which isn't possible,
-             // so we extract the access token from localStorage.
-             const authStorageStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
-             if (authStorageStr) {
-                 try {
-                     const authStorage = JSON.parse(authStorageStr);
-                     const token = authStorage?.access_token;
-                     const userId = authStorage?.user?.id;
-
-                     if (token && userId) {
-                         const payload = {
-                             id: state.quizId,
-                             user_id: userId,
-                             state: stateWithoutQuestions
-                         };
-
-                         const headers = new Headers();
-                         headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
-                         headers.append("Authorization", `Bearer ${token}`);
-                         headers.append("Content-Type", "application/json");
-                         headers.append("Prefer", "resolution=merge-duplicates");
-
-                         // Fire and forget with keepalive
-                         fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
-                             method: 'POST',
-                             headers: headers,
-                             body: JSON.stringify(payload),
-                             keepalive: true
-                         }).catch(() => {});
-                     }
-                 } catch (e) {}
-             }
-         }
+         clearTimeout(handler);
+         syncToSupabase(true); // Keepalive true
       };
 
       const handleVisibilityChange = () => {
           if (document.visibilityState === 'hidden') {
-              saveToDb();
-              // Immediately push to cloud on minimize/hide
-              syncToCloud();
+              clearTimeout(handler);
+              syncToSupabase(true); // Fire immediately when tab is backgrounded
           }
       };
 
@@ -166,7 +135,7 @@ export const useQuiz = () => {
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
       return () => {
-          clearInterval(syncInterval);
+          clearTimeout(handler);
           window.removeEventListener('beforeunload', handleBeforeUnload);
           document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
@@ -190,7 +159,7 @@ export const useQuiz = () => {
   }, [state.startQuiz]);
 
   // Wrap submitSessionResults to include complex logic previously in useQuiz
-  const submitSessionResults = useCallback((results: { answers: Record<string, string>, timeTaken: Record<string, number>, score: number, bookmarks: string[] }) => {
+  const submitSessionResults = useCallback(async (results: { answers: Record<string, string>, timeTaken: Record<string, number>, score: number, bookmarks: string[] }) => {
     logEvent('quiz_completed', {
       score: results.score,
       total_questions: state.activeQuestions.length,
@@ -253,15 +222,54 @@ export const useQuiz = () => {
       subjectStats
     };
 
-    db.saveQuizHistory(historyRecord).catch(err => console.error("Failed to save quiz history", err));
+    // --- ATOMIC PUSH TO SUPABASE ---
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && state.quizId) {
 
-    useSyncStore.getState().addEvent({
-      type: 'quiz_completed',
-      payload: { history: historyRecord, attempts: [] }
-    });
+            // 1. Update status to result in saved_quizzes
+            const stateToSave = { ...state, status: 'result' };
+            Object.keys(stateToSave).forEach(key => {
+              if (typeof (stateToSave as any)[key] === 'function') {
+                delete (stateToSave as any)[key];
+              }
+            });
+            const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
+
+            const { error: updateError } = await supabase.from('saved_quizzes').update({
+                status: 'result',
+                state: stateWithoutQuestions
+            }).eq('id', state.quizId);
+
+            if (updateError) {
+                console.error("Failed to mark quiz as completed:", updateError);
+            }
+
+            // 2. Insert into quiz_history
+            const { error: historyError } = await supabase.from('quiz_history').insert({
+                id: historyRecord.id,
+                user_id: session.user.id,
+                date: new Date(historyRecord.date).toISOString(),
+                total_questions: historyRecord.totalQuestions,
+                total_correct: historyRecord.totalCorrect,
+                total_incorrect: historyRecord.totalIncorrect,
+                total_skipped: historyRecord.totalSkipped,
+                total_time_spent: historyRecord.totalTimeSpent,
+                overall_accuracy: historyRecord.overallAccuracy,
+                difficulty: historyRecord.difficulty,
+                subject_stats: historyRecord.subjectStats
+            });
+
+            if (historyError) {
+                console.error("Failed to insert quiz history:", historyError);
+            }
+        }
+    } catch (err) {
+        console.error("Atomic Push Error:", err);
+    }
 
     state.submitSessionResults(results);
-  }, [state.activeQuestions, state.mode, state.filters?.difficulty, state.submitSessionResults]);
+  }, [state.activeQuestions, state.mode, state.filters?.difficulty, state.submitSessionResults, state.quizId, state]);
 
   const currentQuestion = state.activeQuestions[state.currentQuestionIndex];
   const totalQuestions = state.activeQuestions.length;

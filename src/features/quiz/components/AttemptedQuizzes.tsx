@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, PlusCircle, CheckCircle, ArrowLeft, BarChart2, LayoutGrid, List } from 'lucide-react';
 import { db } from '../../../lib/db';
+import { supabase } from '../../../lib/supabase';
 import { SavedQuiz } from '../types';
 import { AttemptedQuizCard } from './AttemptedQuizCard';
 import { useQuizContext } from '../context/QuizContext';
@@ -57,7 +58,7 @@ export const AttemptedQuizzes: React.FC = () => {
 
     const loadQuizzes = async () => {
         try {
-            const data = await db.getQuizzes();
+            const data: any[] = [];
             // Filter only completed quizzes
             setQuizzes(data.filter(q => q.state.status === 'result'));
         } catch (error) {
@@ -79,7 +80,8 @@ export const AttemptedQuizzes: React.FC = () => {
         e.stopPropagation();
         if (window.confirm('Are you sure you want to delete this quiz?')) {
             try {
-                await db.deleteQuiz(id);
+                const { error } = await supabase.from('saved_quizzes').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+                if (error) throw error;
                 setQuizzes(prev => prev.filter(q => q.id !== id));
             } catch (error) {
                 console.error("Failed to delete quiz:", error);
@@ -89,7 +91,8 @@ export const AttemptedQuizzes: React.FC = () => {
 
     const saveEditCard = async (id: string, newName: string) => {
         try {
-            await db.updateQuizName(id, newName);
+            const { error } = await supabase.from('saved_quizzes').update({ name: newName }).eq('id', id);
+            if (error) throw error;
             setQuizzes(prev => prev.map(q => q.id === id ? { ...q, name: newName } : q));
         } catch (error) {
             console.error("Failed to update quiz name:", error);

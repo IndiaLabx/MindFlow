@@ -107,8 +107,6 @@ export const db = {
      */
     clearAllUserData: async (): Promise<void> => {
         await Promise.all([
-            db.clearQuizzes(),
-            db.clearQuizHistory(),
             db.clearBookmarks(),
             db.clearSynonymInteractions(),
             db.clearOWSInteractions(),
@@ -166,8 +164,7 @@ export const db = {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session?.user) return;
-            if (type === 'quiz') await syncService.pushSavedQuiz(session.user.id, data);
-            else if (type === 'history') await syncService.pushQuizHistory(session.user.id, data);
+            if (type === 'history') await syncService.pushQuizHistory(session.user.id, data);
             else if (type === 'bookmark') await syncService.pushBookmark(session.user.id, data);
             else if (type === 'synonym_interaction') await syncService.pushSynonymInteraction(session.user.id, data);
             else if (type === 'ows_interaction') await syncService.pushOWSInteraction(session.user.id, data);
@@ -180,55 +177,9 @@ export const db = {
     /** Background delete helper to sync deletion to Supabase if logged in */
 
 
-    /**
-     * Saves a new quiz to the database.
-     *
-     * @param {SavedQuiz} quiz - The quiz object to save.
-     * @returns {Promise<void>} A promise that resolves when the quiz is successfully saved.
-     */
-    saveQuiz: async (quiz: SavedQuiz): Promise<void> => {
-        const dbInstance = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = dbInstance.transaction(STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.put(quiz);
 
-            request.onsuccess = () => {
-                db._pushToSupabase('quiz', quiz);
-                resolve();
-            };
-            request.onerror = () => reject(request.error);
-        });
-    },
 
-    /**
-     * Retrieves all saved quizzes from the database.
-     *
-     * @returns {Promise<SavedQuiz[]>} A promise that resolves to an array of saved quizzes.
-     */
-    clearQuizzes: async (): Promise<void> => {
-        const dbInstance = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = dbInstance.transaction(STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.clear();
 
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    },
-
-    getQuizzes: async (): Promise<SavedQuiz[]> => {
-        const dbInstance = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = dbInstance.transaction(STORE_NAME, 'readonly');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.getAll();
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    },
 
     /**
      * Retrieves a specific quiz by its ID.
@@ -248,25 +199,7 @@ export const db = {
         });
     },
 
-    /**
-     * Deletes a quiz from the database by its ID.
-     *
-     * @param {string} id - The unique identifier of the quiz to delete.
-     * @returns {Promise<void>} A promise that resolves when the quiz is successfully deleted.
-     */
-    deleteQuiz: async (id: string): Promise<void> => {
-        const dbInstance = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = dbInstance.transaction(STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.delete(id);
 
-            request.onsuccess = () => {
-                resolve();
-            };
-            request.onerror = () => reject(request.error);
-        });
-    },
 
     /**
      * Updates the progress state of an existing quiz.
@@ -359,49 +292,7 @@ export const db = {
         });
     },
 
-    /**
-     * Retrieves all quiz history records.
-     *
-     * @returns {Promise<QuizHistoryRecord[]>}
-     */
 
-
-
-    /**
-     * Retrieves all quiz history records.
-     *
-     * @returns {Promise<QuizHistoryRecord[]>}
-     */
-    /**
-     * Clears all quiz history records.
-     *
-     * @returns {Promise<void>}
-     */
-    clearQuizHistory: async (): Promise<void> => {
-        const dbInstance = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = dbInstance.transaction(HISTORY_STORE_NAME, 'readwrite');
-            const store = transaction.objectStore(HISTORY_STORE_NAME);
-            const request = store.clear();
-
-            request.onsuccess = () => {
-                resolve();
-            };
-            request.onerror = () => reject(request.error);
-        });
-    },
-
-    getQuizHistory: async (): Promise<QuizHistoryRecord[]> => {
-        const dbInstance = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = dbInstance.transaction(HISTORY_STORE_NAME, 'readonly');
-            const store = transaction.objectStore(HISTORY_STORE_NAME);
-            const request = store.getAll();
-
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    },
 
     /**
      * Saves a global bookmark (entire question object).

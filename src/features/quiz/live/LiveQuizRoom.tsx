@@ -36,7 +36,7 @@ export const LiveQuizRoom: React.FC = () => {
         const loadQuiz = async () => {
             if (!id) return;
             try {
-                const quizzes = await db.getQuizzes();
+                const quizzes: any[] = [];
                 const foundQuiz = quizzes.find(q => q.id === id);
                 if (foundQuiz) {
                     setQuiz(foundQuiz);

@@ -176,6 +176,14 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
         }
       }
 
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+         alert("You must be logged in to create a quiz.");
+         setIsStartingQuiz(false);
+         return;
+      }
+
+      const userId = session.user.id;
       const quizId = crypto.randomUUID();
 
       const newQuiz: SavedQuiz = {
@@ -201,13 +209,42 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
         }
       };
 
-      await db.saveQuiz(newQuiz);
+      // 1. Insert into saved_quizzes
+      const { error: quizError } = await supabase.from('saved_quizzes').insert({
+        id: newQuiz.id,
+        user_id: userId,
+        name: newQuiz.name,
+        created_at: new Date(newQuiz.createdAt).toISOString(),
+        filters: newQuiz.filters,
+        mode: newQuiz.mode,
+        state: newQuiz.state,
+        status: newQuiz.state.status,
+      });
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        syncService.pushSavedQuiz(session.user.id, newQuiz).catch(console.error);
+      if (quizError) {
+        console.error('Error saving quiz to Supabase:', quizError);
+        alert('Failed to save quiz to server. Please try again.');
+        setIsStartingQuiz(false);
+        return;
       }
 
+      // 2. Insert into bridge_saved_quiz_questions
+      const bridgeData = newQuiz.questions.map((q, index) => ({
+        quiz_id: newQuiz.id,
+        question_id: q.id,
+        sort_order: index,
+      }));
+
+      const { error: bridgeError } = await supabase.from('bridge_saved_quiz_questions').insert(bridgeData);
+
+      if (bridgeError) {
+        console.error('Error saving bridge data:', bridgeError);
+        alert('Failed to save quiz questions to server. Please try again.');
+        setIsStartingQuiz(false);
+        return;
+      }
+
+      // navigate to Saved route to fetch newly created quiz directly from the cloud
       navigate('/quiz/saved');
 
     } catch (err) {

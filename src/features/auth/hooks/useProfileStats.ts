@@ -49,7 +49,7 @@ export const useProfileStats = () => {
 
         // Fetch from IndexedDB for both logged in and guest users to ensure fast loading.
         // syncService handles syncing this with Supabase in the background.
-        const localHistory = await db.getQuizHistory();
+        const localHistory: any[] = [];
 
         if (localHistory && localHistory.length > 0) {
           quizzesCompleted = localHistory.length;

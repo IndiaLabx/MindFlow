@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Save, Home, PlusCircle, CheckCircle, ArrowLeft, Mic, LayoutGrid, List } from 'lucide-react';
 import { db } from '../../../lib/db';
+import { supabase } from '../../../lib/supabase';
 import { SavedQuiz } from '../types';
 import { SavedQuizCard } from './SavedQuizCard';
 import { useQuizContext } from '../context/QuizContext';
@@ -65,7 +66,7 @@ export const SavedQuizzes: React.FC = () => {
 
     const loadQuizzes = async () => {
         try {
-            const data = await db.getQuizzes();
+            const data: any[] = [];
             // Sort by createdAt descending (newest first)
             setQuizzes(data.filter(q => q.state.status !== 'result').sort((a, b) => b.createdAt - a.createdAt));
         } catch (error) {
@@ -98,12 +99,12 @@ export const SavedQuizzes: React.FC = () => {
         e.stopPropagation();
         if (window.confirm('Are you sure you want to delete this quiz?')) {
             try {
-                await db.deleteQuiz(id);
+                const { error } = await supabase.from('saved_quizzes').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+                if (error) throw error;
                 setQuizzes(prev => prev.filter(q => q.id !== id));
-                // Add soft delete event to offline queue
-                useSyncStore.getState().addEvent({ type: 'quiz_deleted', payload: { quizId: id } });
             } catch (error) {
                 console.error("Failed to delete quiz:", error);
+                alert("Failed to delete quiz");
             }
         }
     };
@@ -133,7 +134,8 @@ export const SavedQuizzes: React.FC = () => {
 
     const saveEditCard = async (id: string, newName: string) => {
         try {
-            await db.updateQuizName(id, newName);
+            const { error } = await supabase.from('saved_quizzes').update({ name: newName }).eq('id', id);
+            if (error) throw error;
             setQuizzes(prev => prev.map(q => q.id === id ? { ...q, name: newName } : q));
         } catch (error) {
             console.error("Failed to update quiz name:", error);
