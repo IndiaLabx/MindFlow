@@ -209,16 +209,7 @@ export const syncService = {
     if (error) console.error('Error removing bookmark from Supabase:', error);
   },
 
-  /**
-   * Deletes a saved quiz from Supabase.
-   */
-  deleteSavedQuiz: async (userId: string, quizId: string) => {
-    const { error } = await supabase.from('saved_quizzes')
-      .update({ deleted_at: new Date().toISOString() })
-      .match({ id: quizId, user_id: userId });
 
-    if (error) console.error('Error soft-deleting saved quiz from Supabase:', error);
-  },
 
   /**
    * Runs an initial bidirectional sync after login.
@@ -241,12 +232,8 @@ export const syncService = {
             // The payload is assumed to be a SynonymInteraction or similar
             await syncService.pushSynonymInteraction(userId, event.payload);
             break;
-          case 'quiz_completed':
-            await syncService.pushQuizHistory(userId, event.payload.history, event.payload.attempts);
-            break;
-          case 'quiz_deleted':
-            await syncService.deleteSavedQuiz(userId, event.payload.quizId);
-            break;
+
+
           case 'bookmark_toggled':
             if (event.payload.isBookmarked) {
                await syncService.pushBookmark(userId, event.payload.question);
@@ -283,63 +270,20 @@ export const syncService = {
     await syncService.processEventQueue(userId);
 
     try {
-      // 1. Pull from Supabase
+      // 1. Pull from Supabase for Non-Quiz data
       const [
-        { data: remoteQuizzesData },
-        { data: remoteHistory },
         { data: remoteBookmarks },
         { data: remoteSynonyms },
         { data: remoteOWS },
         { data: remoteIdioms }
       ] = await Promise.all([
-        supabase.from('saved_quizzes').select('*, bridge_saved_quiz_questions(question_id, sort_order)').eq('user_id', userId).is('deleted_at', null),
-        supabase.from('quiz_history').select('*').eq('user_id', userId),
         supabase.from('user_bookmarks').select('question_id').eq('user_id', userId),
         Promise.resolve({ data: [] }), // supabase.from('user_synonym_interactions').select('*').eq('user_id', userId),
         supabase.from('user_ows_interactions').select('*').eq('user_id', userId),
         supabase.from('user_idiom_interactions').select('*').eq('user_id', userId)
       ]);
 
-      let remoteQuizzes = remoteQuizzesData || [];
-      if (remoteQuizzes.length > 0) {
-        // Collect all distinct question IDs needed across all quizzes
-        const allQuestionIds = new Set<string>();
-        remoteQuizzes.forEach(rq => {
-            const bridgeData = rq.bridge_saved_quiz_questions || [];
-            bridgeData.forEach((bq: any) => allQuestionIds.add(bq.question_id));
-        });
-
-        // Fetch the actual question data
-        const idArray = Array.from(allQuestionIds);
-        const fetchedQuestions = await fetchQuestionsByIds(idArray);
-        const questionsMap = new Map(fetchedQuestions.map(q => [q.id, q]));
-
-        // Reconstruct full questions and state.activeQuestions for each remote quiz
-        remoteQuizzes = remoteQuizzes.map(rq => {
-             let questions: Question[] = [];
-             const bridgeData = rq.bridge_saved_quiz_questions || [];
-             bridgeData.sort((a: any, b: any) => a.sort_order - b.sort_order);
-             bridgeData.forEach((bq: any) => {
-                 const q = questionsMap.get(bq.question_id);
-                 if (q) questions.push(q);
-             });
-
-             const fullQuiz = {
-                 ...rq,
-                 questions: questions,
-                 state: {
-                     ...(rq.state || {}),
-                     activeQuestions: questions
-                 }
-             };
-             delete fullQuiz.bridge_saved_quiz_questions;
-             return fullQuiz;
-        });
-      }
-
       // 2. Fetch local data
-      const localQuizzes = await db.getQuizzes();
-      const localHistory = await db.getQuizHistory();
       const localBookmarks = await db.getAllBookmarks();
       const localSynonyms = await db.getAllSynonymInteractions();
       const localOWS = await db.getAllOWSInteractions();
@@ -348,23 +292,11 @@ export const syncService = {
       if (isSignup) {
         // --- NEW SIGNUP FLOW ---
         // 3. Push all Local Data up to the Server to merge guest progress
-        const remoteQuizIds = new Set((remoteQuizzes || []).map(q => q.id));
-        const remoteHistoryIds = new Set((remoteHistory || []).map(h => h.id));
         const remoteBookmarkIds = new Set((remoteBookmarks || []).map(b => b.question_id));
         const remoteSynonymIds = new Set((remoteSynonyms || []).map((s: any) => s.word_id));
         const remoteOWSIds = new Set((remoteOWS || []).map(o => o.word_id));
         const remoteIdiomIds = new Set((remoteIdioms || []).map(i => i.idiom_id));
 
-        for (const quiz of localQuizzes) {
-          if (!remoteQuizIds.has(quiz.id)) {
-            await syncService.pushSavedQuiz(userId, quiz);
-          }
-        }
-        for (const hist of localHistory) {
-          if (!remoteHistoryIds.has(hist.id)) {
-            await syncService.pushQuizHistory(userId, hist);
-          }
-        }
         for (const bm of localBookmarks) {
           if (!remoteBookmarkIds.has(bm.id)) {
             await syncService.pushBookmark(userId, bm);
@@ -392,38 +324,6 @@ export const syncService = {
         // --- EXISTING LOGIN FLOW ---
         // 3. Clear local IndexedDB immediately to avoid mixing guest data into existing account
         await db.clearAllUserData();
-      }
-
-      // 4. Pull fresh data from Server to Local (Hydration)
-      if (remoteQuizzes) {
-        for (const remote of remoteQuizzes) {
-          await db.saveQuiz({
-            id: remote.id,
-            name: remote.name,
-            createdAt: remote.created_at,
-            filters: remote.filters,
-            mode: remote.mode,
-            questions: remote.questions,
-            state: remote.state
-          });
-        }
-      }
-
-      if (remoteHistory) {
-        for (const remote of remoteHistory) {
-          await db.saveQuizHistory({
-            id: remote.id,
-            date: remote.date,
-            totalQuestions: remote.total_questions,
-            totalCorrect: remote.total_correct,
-            totalIncorrect: remote.total_incorrect,
-            totalSkipped: remote.total_skipped,
-            totalTimeSpent: remote.total_time_spent,
-            overallAccuracy: remote.overall_accuracy,
-            difficulty: remote.difficulty,
-            subjectStats: remote.subject_stats
-          });
-        }
       }
 
       // 5. Hydrate missing remote bookmarks
