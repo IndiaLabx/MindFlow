@@ -218,7 +218,6 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
         filters: newQuiz.filters,
         mode: newQuiz.mode,
         state: newQuiz.state,
-        status: newQuiz.state.status,
       });
 
       if (quizError) {
