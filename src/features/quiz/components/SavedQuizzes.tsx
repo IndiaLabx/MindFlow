@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Save, Home, PlusCircle, CheckCircle, ArrowLeft, Mic, LayoutGrid, List } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
+import { fetchQuestionsByIds } from '../services/questionService';
+import { Question } from '../types';
 import { db } from '../../../lib/db';
 import { SavedQuiz } from '../types';
 import { SavedQuizCard } from './SavedQuizCard';
@@ -34,7 +37,7 @@ export const SavedQuizzes: React.FC = () => {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
     useEffect(() => {
-        loadQuizzes();
+        loadQuizzes().then(() => fetchCloudQuizzes());
 
         const handleSyncStart = () => {
             setIsSyncing(true);
@@ -62,6 +65,70 @@ export const SavedQuizzes: React.FC = () => {
             window.removeEventListener('mindflow-sync-complete', handleSyncComplete);
         };
     }, []);
+
+
+    const fetchCloudQuizzes = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return;
+
+            const { data: remoteQuizzesData } = await supabase
+                .from('saved_quizzes')
+                .select('*, bridge_saved_quiz_questions(question_id, sort_order)')
+                .eq('user_id', session.user.id)
+                .is('deleted_at', null);
+
+            let remoteQuizzes = remoteQuizzesData || [];
+            if (remoteQuizzes.length > 0) {
+                const allQuestionIds = new Set<string>();
+                remoteQuizzes.forEach(rq => {
+                    const bridgeData = rq.bridge_saved_quiz_questions || [];
+                    bridgeData.forEach((bq: any) => allQuestionIds.add(bq.question_id));
+                });
+
+                const idArray = Array.from(allQuestionIds);
+                const fetchedQuestions = await fetchQuestionsByIds(idArray);
+                const questionsMap = new Map(fetchedQuestions.map(q => [q.id, q]));
+
+                remoteQuizzes = remoteQuizzes.map(rq => {
+                     let questions: Question[] = [];
+                     const bridgeData = rq.bridge_saved_quiz_questions || [];
+                     bridgeData.sort((a: any, b: any) => a.sort_order - b.sort_order);
+                     bridgeData.forEach((bq: any) => {
+                         const q = questionsMap.get(bq.question_id);
+                         if (q) questions.push(q as unknown as Question);
+                     });
+
+                     const fullQuiz = {
+                         id: rq.id,
+                         name: rq.name,
+                         createdAt: rq.created_at,
+                         filters: rq.filters,
+                         mode: rq.mode,
+                         questions: questions,
+                         state: {
+                             ...(rq.state || {}),
+                             activeQuestions: questions
+                         }
+                     };
+                     return fullQuiz;
+                });
+
+                let needsUpdate = false;
+                for (const remote of remoteQuizzes) {
+                    await db.saveQuiz(remote as SavedQuiz);
+                    needsUpdate = true;
+                }
+
+                if (needsUpdate) {
+                    const freshData = await db.getQuizzes();
+                    setQuizzes(freshData.filter((q: SavedQuiz) => q.state.status !== 'result').sort((a: SavedQuiz, b: SavedQuiz) => b.createdAt - a.createdAt));
+                }
+            }
+        } catch (error) {
+            console.error("Failed to targeted fetch cloud quizzes:", error);
+        }
+    };
 
     const loadQuizzes = async () => {
         try {
