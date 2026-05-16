@@ -108,15 +108,18 @@ export const SavedQuizzes: React.FC = () => {
                               if (q) questions.push(q);
                           });
 
+                          const parsedState = typeof rq.state === 'string' ? JSON.parse(rq.state) : (rq.state || {});
+                          const parsedFilters = typeof rq.filters === 'string' ? JSON.parse(rq.filters) : (rq.filters || {});
+
                           return {
                               id: rq.id,
                               name: rq.name,
                               createdAt: new Date(rq.created_at).getTime(),
-                              filters: rq.filters,
+                              filters: parsedFilters,
                               mode: rq.mode,
                               questions: questions,
                               state: {
-                                  ...(rq.state || {}),
+                                  ...parsedState,
                                   activeQuestions: questions
                               }
                           };
@@ -239,7 +242,8 @@ export const SavedQuizzes: React.FC = () => {
 
     /** Helper to determine if "Start" or "Resume" label should be shown. */
     const isQuizStarted = (quiz: SavedQuiz) => {
-        return quiz.state.currentQuestionIndex > 0 || Object.keys(quiz.state.answers).length > 0;
+        const state = quiz?.state || {};
+        return (state.currentQuestionIndex && state.currentQuestionIndex > 0) || (state.answers && Object.keys(state.answers).length > 0);
     };
 
     if (loading || isSyncing) {

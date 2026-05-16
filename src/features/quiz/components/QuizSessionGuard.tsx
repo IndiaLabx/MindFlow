@@ -79,9 +79,11 @@ export const QuizSessionGuard = ({ children }: { children: React.ReactNode }) =>
                         return;
                     }
 
+                    const parsedState = typeof quizData.state === 'string' ? JSON.parse(quizData.state) : (quizData.state || {});
+
                     // Load into Zustand Store explicitly merging ID
                     state.loadSavedQuiz({
-                        ...(quizData.state || {}),
+                        ...parsedState,
                         activeQuestions: fullQuestions,
                         quizId: quizId,
                         isPaused: false

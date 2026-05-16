@@ -301,7 +301,7 @@ export const SavedQuizCard: React.FC<SavedQuizCardProps> = ({ quiz, index, onRes
                                     {/* Top Left: Subject */}
                                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100/50 dark:border-indigo-800/50 text-slate-600 dark:text-slate-300 backdrop-blur-sm truncate">
                                         <BookOpen className="w-4 h-4 text-indigo-500 shrink-0" />
-                                        <span className="truncate">{quiz.filters.subject}</span>
+                                        <span className="truncate">{quiz?.filters?.subject ? (Array.isArray(quiz.filters.subject) ? quiz.filters.subject.join(', ') : quiz.filters.subject) : 'All Subjects'}</span>
                                     </div>
 
                                     {/* Top Right: Date */}
