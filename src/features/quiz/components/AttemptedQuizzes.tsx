@@ -138,7 +138,7 @@ export const AttemptedQuizzes: React.FC = () => {
     const handleViewResults = (quiz: SavedQuiz) => {
         // Hydrate the global context state with the saved session data
         loadSavedQuiz({ ...quiz.state, isPaused: false });
-        navigate('/result');
+        navigate(`/result`);
     };
 
     /** Deletes a quiz from storage. */
