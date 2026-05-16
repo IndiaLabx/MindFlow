@@ -54,7 +54,7 @@ export const QuizSessionGuard = ({ children }: { children: React.ReactNode }) =>
 
                 if (questionIds.length > 0) {
                     const { data: qData, error: qError } = await supabase
-                        .from('study_materials')
+                        .from('questions')
                         .select('*')
                         .in('id', questionIds);
 
@@ -64,17 +64,17 @@ export const QuizSessionGuard = ({ children }: { children: React.ReactNode }) =>
                          return;
                     }
 
-                    const questionsMap = new Map((qData || []).map(q => [q.id, q]));
+                    const questionsMap = new Map((qData || []).map(q => [String(q.id), q]));
 
                     const fullQuestions: any[] = [];
                     bridgeData.forEach((bq: any) => {
-                        const q = questionsMap.get(bq.question_id);
+                        const q = questionsMap.get(String(bq.question_id));
                         if (q) fullQuestions.push(q);
                     });
 
                     // Ensure we don't load an empty array if the mapping fails entirely
                     if (fullQuestions.length === 0) {
-                        console.error("Hydration failed: mapped question array is empty. DB IDs might be missing from study_materials.");
+                        console.error("Hydration failed: mapped question array is empty. DB IDs might be missing from questions.");
                         navigate('/quiz/saved');
                         return;
                     }
