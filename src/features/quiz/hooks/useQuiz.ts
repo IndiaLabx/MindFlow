@@ -25,18 +25,6 @@ export const useQuiz = () => {
   // Directly bind state and actions from the Zustand store
   const state = useQuizSessionStore();
 
-  // Persistence Effect 1: LocalStorage (Active Session) - Lightweight Metadata Only
-  useEffect(() => {
-    if (state.status === 'quiz' || state.status === 'result' || state.status === 'flashcards' || state.status === 'ows-flashcards' || state.status === 'flashcards-complete') {
-      // ONLY store lightweight metadata in synchronous LocalStorage to avoid UI blocking.
-      // The full payload is handled asynchronously by IndexedDB below.
-      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.QUIZ_SESSION, JSON.stringify({ status: state.status, quizId: state.quizId, mode: state.mode }));
-    } else if (state.status === 'idle' || state.status === 'intro') {
-      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.QUIZ_SESSION);
-    }
-  }, [state.status, state.quizId, state.mode]);
-
-
   const flushSync = useCallback(() => {
     if (!state.quizId) return;
 
@@ -72,12 +60,11 @@ export const useQuiz = () => {
       const syncToSupabase = async (isKeepAlive = false) => {
           if (!navigator.onLine) return;
           try {
-              const authStorageStr = localStorage.getItem('sb-sjcfagpjstbfxuiwhlps-auth-token');
-              if (!authStorageStr) return;
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session?.user) return;
 
-              const authStorage = JSON.parse(authStorageStr);
-              const token = authStorage?.access_token;
-              const userId = authStorage?.user?.id;
+              const token = session.access_token;
+              const userId = session.user.id;
 
               if (!token || !userId) return;
 

@@ -30,10 +30,10 @@ export const SavedQuizCard: React.FC<SavedQuizCardProps> = ({ quiz, index, onRes
         setIsTouchDevice(window.matchMedia('(pointer: coarse)').matches);
     }, []);
 
-    const isQuizFinished = quiz.state.status === 'result';
-    const isQuizStarted = quiz.state.currentQuestionIndex > 0 || Object.keys(quiz.state.answers).length > 0;
+    const isQuizFinished = quiz.state?.status === 'result';
+    const isQuizStarted = (quiz.state?.currentQuestionIndex && quiz.state.currentQuestionIndex > 0) || (quiz.state?.answers && Object.keys(quiz.state.answers).length > 0);
 
-    const progressPercent = quiz.questions.length > 0
+    const progressPercent = quiz.questions?.length > 0 && quiz.state?.answers
         ? (Object.keys(quiz.state.answers).length / quiz.questions.length) * 100
         : 0;
 
@@ -323,7 +323,7 @@ export const SavedQuizCard: React.FC<SavedQuizCardProps> = ({ quiz, index, onRes
                                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100/50 dark:border-indigo-800/50 text-slate-700 dark:text-slate-200 backdrop-blur-sm truncate justify-between">
                                         <span className="opacity-70 shrink-0">📊 Progress</span>
                                         <span className="text-indigo-600 dark:text-indigo-400 font-bold shrink-0">
-                                            {Object.keys(quiz.state.answers).length} / {quiz.questions.length}
+                                            {Object.keys(quiz.state?.answers || {}).length} / {quiz.questions?.length || 0}
                                         </span>
                                     </div>
                                 </div>
