@@ -168,8 +168,8 @@ export const useQuiz = () => {
       }
 
       const answer = results.answers[q.id];
-      const time = results.timeTaken[q.id] || useAnalyticsStore.getState().timeTaken[q.id] || 0;
-      totalTimeSpent += time;
+      const timeMs = results.timeTaken[q.id] || useAnalyticsStore.getState().timeTaken[q.id] || 0;
+      totalTimeSpent += timeMs;
 
       if (!answer) {
         totalSkipped++;
@@ -198,6 +198,9 @@ export const useQuiz = () => {
         ? state.filters.difficulty.join(', ')
         : (state.filters?.difficulty || 'Mixed');
 
+    // Convert total ms to decimal seconds for history storage
+    const totalTimeSpentSeconds = totalTimeSpent / 1000;
+
     const historyRecord: QuizHistoryRecord = {
       id: uuidv4(),
       date: Date.now(),
@@ -205,7 +208,7 @@ export const useQuiz = () => {
       totalCorrect,
       totalIncorrect,
       totalSkipped,
-      totalTimeSpent,
+      totalTimeSpent: totalTimeSpentSeconds,
       overallAccuracy,
       difficulty: difficultyStr,
       subjectStats
