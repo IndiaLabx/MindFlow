@@ -1,5 +1,5 @@
 import { Question, InitialFilters } from '../../../types/models';
-import { QuizState, QuizMode } from './store';
+import { QuizRuntimeState, QuizPersistentState, QuizMode } from './store';
 export * from './blueprint';
 
 // Re-export models so existing imports in components don't break
@@ -52,7 +52,7 @@ export interface SavedQuiz {
   /** The list of questions included in this quiz. */
   questions: Question[];
   /** The current progress state of the quiz. */
-  state: QuizState & { score?: number, timeTaken?: Record<string, number>, bookmarks?: string[] };
+  state: QuizRuntimeState & { score?: number, timeTaken?: Record<string, number>, bookmarks?: string[] };
 }
 
 /**

@@ -1,11 +1,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { quizReducer, initialState } from './quizReducer';
-import { QuizState } from '../types/store';
+import { QuizRuntimeState } from '../types/store';
 
 describe('quizReducer', () => {
     it('should handle PAUSE_QUIZ correctly', () => {
-        const state: QuizState = {
+        const state: QuizRuntimeState = {
             ...initialState,
             status: 'quiz',
             remainingTimes: { 'q1': 60 }
@@ -23,7 +23,7 @@ describe('quizReducer', () => {
     });
 
     it('should handle PAUSE_QUIZ without payload updates', () => {
-        const state: QuizState = {
+        const state: QuizRuntimeState = {
             ...initialState,
             status: 'quiz',
             remainingTimes: { 'q1': 60 }
@@ -41,7 +41,7 @@ describe('quizReducer', () => {
     });
 
     it('should handle RESUME_QUIZ correctly', () => {
-        const state: QuizState = {
+        const state: QuizRuntimeState = {
             ...initialState,
             status: 'quiz',
             isPaused: true

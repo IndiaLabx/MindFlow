@@ -1,12 +1,12 @@
 import { db } from '../../../lib/db';
-import { QuizState, QuizAction } from '../types/store';
+import { QuizRuntimeState, QuizAction } from '../types/store';
 import { APP_CONFIG } from '../../../constants/config';
 
 /**
  * The initial state for the Quiz Reducer.
  * Defines the starting values for a fresh session.
  */
-export const initialState: QuizState = {
+export const initialState: QuizRuntimeState = {
   status: 'intro',
   mode: 'learning',
   currentQuestionIndex: 0,
@@ -28,10 +28,10 @@ export const initialState: QuizState = {
 /**
  * Initializes the quiz state, attempting to restore a previous session from LocalStorage.
  *
- * @param {QuizState} defaultState - The fallback state if no saved session exists.
- * @returns {QuizState} The loaded state or the default state.
+ * @param {QuizRuntimeState} defaultState - The fallback state if no saved session exists.
+ * @returns {QuizRuntimeState} The loaded state or the default state.
  */
-export const loadState = (defaultState: QuizState): QuizState => {
+export const loadState = (defaultState: QuizRuntimeState): QuizRuntimeState => {
   if (typeof window === 'undefined') return defaultState;
   try {
     const saved = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.QUIZ_SESSION);
@@ -58,11 +58,11 @@ export const loadState = (defaultState: QuizState): QuizState => {
  * - Timing (Log Time, Sync Timers)
  * - Session Management (Load Saved, Submit Results)
  *
- * @param {QuizState} state - The current state.
+ * @param {QuizRuntimeState} state - The current state.
  * @param {QuizAction} action - The action to perform.
- * @returns {QuizState} The new state.
+ * @returns {QuizRuntimeState} The new state.
  */
-export function quizReducer(state: QuizState, action: QuizAction): QuizState {
+export function quizReducer(state: QuizRuntimeState, action: QuizAction): QuizRuntimeState {
   switch (action.type) {
     case 'ENTER_HOME':
       return { ...initialState, status: 'idle' };

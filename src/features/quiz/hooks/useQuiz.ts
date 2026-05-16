@@ -4,7 +4,7 @@ import { useAnalyticsStore } from '../stores/useAnalyticsStore';
 import { logEvent } from '../services/analyticsService';
 import { APP_CONFIG } from '../../../constants/config';
 import { useQuizSessionStore } from '../stores/useQuizSessionStore';
-import { Question, InitialFilters, QuizMode, Idiom, OneWord, SynonymWord, QuizState, QuizHistoryRecord, SubjectStats } from '../types';
+import { Question, InitialFilters, QuizMode, Idiom, OneWord, SynonymWord, QuizRuntimeState, QuizHistoryRecord, SubjectStats } from '../types';
 import { db } from '../../../lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../../lib/supabase';
