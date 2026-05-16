@@ -98,6 +98,8 @@ const SupportPage = lazy(() => import('../features/auth/components/SupportPage')
  */
 import { AppPreferencesPage } from '../features/settings/components/AppPreferencesPage';
 import { MyReportsPage } from '../features/settings/components/MyReportsPage';
+import { QuizSessionGuard } from '../features/quiz/components/QuizSessionGuard';
+import { ShareGatekeeper } from '../features/quiz/components/ShareGatekeeper';
 
 const AppRoutesContent: React.FC = () => {
     // Destructure all necessary state and actions from the global store
@@ -186,7 +188,8 @@ const AppRoutesContent: React.FC = () => {
 
                     <Route path="/english" element={<Suspense fallback={<SynapticLoader />}><EnglishQuizHome onBack={() => { enterHome(); navTo('/dashboard'); }} onIdiomsClick={() => { enterIdiomsConfig(); navTo('/idioms/config'); }} onOWSClick={() => { enterOWSConfig(); navTo('/ows/config'); }} onSynonymsClick={() => { enterSynonymsConfig(); navTo('/synonyms/config'); }} /></Suspense>} />
 
-                    <Route path="/quiz/saved" element={<Suspense fallback={<SynapticLoader />}><SavedQuizzes /></Suspense>} />
+                    <Route path="/share/:originalQuizId" element={<ShareGatekeeper />} />
+                <Route path="/quiz/saved" element={<Suspense fallback={<SynapticLoader />}><SavedQuizzes /></Suspense>} />
                     <Route path="/quiz/attempted" element={<Suspense fallback={<SynapticLoader />}><AttemptedQuizzes /></Suspense>} />
                     <Route path="/quiz/analytics" element={<Suspense fallback={<SynapticLoader />}><PerformanceAnalytics /></Suspense>} />
                     <Route path="/quiz/bookmarks" element={<Suspense fallback={<SynapticLoader />}><BookmarksPage /></Suspense>} />
@@ -363,7 +366,7 @@ const AppRoutesContent: React.FC = () => {
                             onStart={(questions, filters, mode) => {
                                 // Note: QuizConfig uses saveQuiz directly and navigates, so this might not be hit, but we pass random UUID just in case
                                 startQuiz(questions, filters || ({} as any), mode, crypto.randomUUID());
-                                navTo(mode === 'mock' ? '/quiz/session/mock' : '/quiz/session/learning');
+                                navTo(`/quiz/session/${mode}/${state.quizId}`);
                             }}
                         /></Suspense>
                     } />
@@ -372,52 +375,58 @@ const AppRoutesContent: React.FC = () => {
                 {/* Learning Mode: Interactive per-question session */}
                 <Route path="/quiz/live/:id" element={<Suspense fallback={<SynapticLoader />}><LiveQuizRoom /></Suspense>} />
 
-                <Route path="/quiz/session/learning" element={
-                    <LearningSession
-                        questions={state.activeQuestions}
-                        filters={state.filters || {} as any}
-                        remainingTimes={state.remainingTimes}
-                        isPaused={Boolean(state.isPaused)}
-                        currentIndex={state.currentQuestionIndex}
-                        answers={state.answers}
-                        bookmarks={state.bookmarks}
-                        timeTaken={state.timeTaken}
-                        onAnswer={answerQuestion}
-                        onNext={nextQuestion}
-                        onPrev={prevQuestion}
-                        onJump={jumpToQuestion}
-                        onToggleBookmark={toggleBookmark}
-                        onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
-                        onGoHome={navHome}
-                        onPause={pauseQuiz}
-                        onResume={resumeQuiz}
-                        onSaveTimer={saveTimer}
-                        onFiftyFifty={useFiftyFifty}
-                        hiddenOptions={state.hiddenOptions || {}}
-                    />
+                <Route path="/quiz/session/learning/:quizId" element={
+                    <QuizSessionGuard>
+                        <LearningSession
+                            questions={state.activeQuestions}
+                            filters={state.filters || {} as any}
+                            remainingTimes={state.remainingTimes}
+                            isPaused={Boolean(state.isPaused)}
+                            currentIndex={state.currentQuestionIndex}
+                            answers={state.answers}
+                            bookmarks={state.bookmarks}
+                            timeTaken={state.timeTaken}
+                            onAnswer={answerQuestion}
+                            onNext={nextQuestion}
+                            onPrev={prevQuestion}
+                            onJump={jumpToQuestion}
+                            onToggleBookmark={toggleBookmark}
+                            onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
+                            onGoHome={navHome}
+                            onPause={pauseQuiz}
+                            onResume={resumeQuiz}
+                            onSaveTimer={saveTimer}
+                            onFiftyFifty={useFiftyFifty}
+                            hiddenOptions={state.hiddenOptions || {}}
+                        />
+                    </QuizSessionGuard>
                 } />
 
                 {/* Mock Mode: Timed exam simulation */}
-                <Route path="/quiz/session/mock" element={
-                    <MockSession
-                        questions={state.activeQuestions}
-                        initialTime={state.quizTimeRemaining}
-                        onPause={(timeLeft) => {
-                            syncGlobalTimer(timeLeft);
-                            pauseQuiz();
-                            setTimeout(() => navTo('/quiz/saved'), 100);
-                        }}
-                        onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
-                    />
+                <Route path="/quiz/session/mock/:quizId" element={
+                    <QuizSessionGuard>
+                        <MockSession
+                            questions={state.activeQuestions}
+                            initialTime={state.quizTimeRemaining}
+                            onPause={(timeLeft) => {
+                                syncGlobalTimer(timeLeft);
+                                pauseQuiz();
+                                setTimeout(() => navTo('/quiz/saved'), 100);
+                            }}
+                            onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
+                        />
+                    </QuizSessionGuard>
                 } />
 
                 {/* God Mode: Stricter timed blueprint simulation */}
-                <Route path="/quiz/session/god" element={
-                    <GodModeSession
-                        questions={state.activeQuestions}
-                        initialTime={state.quizTimeRemaining}
-                        onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
-                    />
+                <Route path="/quiz/session/god/:quizId" element={
+                    <QuizSessionGuard>
+                        <GodModeSession
+                            questions={state.activeQuestions}
+                            initialTime={state.quizTimeRemaining}
+                            onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
+                        />
+                    </QuizSessionGuard>
                 } />
 
                 {/* Flashcard Sessions */}

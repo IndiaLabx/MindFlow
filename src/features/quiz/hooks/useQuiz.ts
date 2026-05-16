@@ -7,7 +7,7 @@ import { useQuizSessionStore } from '../stores/useQuizSessionStore';
 import { Question, InitialFilters, QuizMode, Idiom, OneWord, SynonymWord, QuizState, QuizHistoryRecord, SubjectStats } from '../types';
 import { db } from '../../../lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '../../../lib/supabase';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../../lib/supabase';
 import { syncService } from '../../../lib/syncService';
 
 /**
@@ -88,13 +88,13 @@ export const useQuiz = () => {
               };
 
               const headers = new Headers();
-              headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+              headers.append("apikey", SUPABASE_ANON_KEY);
               headers.append("Authorization", `Bearer ${token}`);
               headers.append("Content-Type", "application/json");
               headers.append("Prefer", "resolution=merge-duplicates");
 
               if (isKeepAlive) {
-                  fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
+                  fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes`, {
                       method: 'POST',
                       headers: headers,
                       body: JSON.stringify(payload),
@@ -102,7 +102,7 @@ export const useQuiz = () => {
                   }).catch(() => {});
               } else {
                   // Direct async fetch without keepalive for standard debounced calls
-                  await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
+                  await fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes`, {
                       method: 'POST',
                       headers: headers,
                       body: JSON.stringify(payload)

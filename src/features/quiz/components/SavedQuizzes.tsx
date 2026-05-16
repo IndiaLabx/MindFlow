@@ -153,9 +153,9 @@ export const SavedQuizzes: React.FC = () => {
         } else {
             // Navigate to the appropriate active session view
             if (quiz.mode === 'mock') {
-                navigate('/quiz/session/mock');
+                navigate(`/quiz/session/mock/${quiz.id}`);
             } else {
-                navigate('/quiz/session/learning');
+                navigate(`/quiz/session/learning/${quiz.id}`);
             }
         }
     };
