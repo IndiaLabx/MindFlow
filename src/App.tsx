@@ -21,9 +21,14 @@ import { PWAUpdateManager } from './components/common/PWAUpdateManager';
 import { PresenceProvider } from './components/PresenceProvider';
 import { useAppVisibilityReawakening } from './hooks/useAppVisibilityReawakening';
 
+
+const AppVisibilityWrapper = () => {
+  useAppVisibilityReawakening();
+  return null;
+};
+
 const App: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
-  useAppVisibilityReawakening();
 
   useEffect(() => {
     // 1. Check for active session on app mount (Before Router mounts completely)
@@ -64,6 +69,7 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <AppProvider>
+        <AppVisibilityWrapper />
         <PresenceProvider>
           <PWAUpdateManager />
         <AppRoutes />
