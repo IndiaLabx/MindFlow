@@ -19,6 +19,7 @@ import { SynapticLoader } from './components/ui/SynapticLoader';
  */
 import { PWAUpdateManager } from './components/common/PWAUpdateManager';
 import { PresenceProvider } from './components/PresenceProvider';
+import { useAppVisibilityReawakening } from './hooks/useAppVisibilityReawakening';
 
 
 const AppVisibilityWrapper = () => {
