@@ -53,10 +53,16 @@ export const QuizSessionGuard = ({ children }: { children: React.ReactNode }) =>
                 const questionIds = bridgeData.map((bq: any) => bq.question_id);
 
                 if (questionIds.length > 0) {
-                    const { data: qData } = await supabase
+                    const { data: qData, error: qError } = await supabase
                         .from('study_materials')
                         .select('*')
                         .in('id', questionIds);
+
+                    if (qError) {
+                         console.error("Failed to fetch study materials:", qError);
+                         navigate('/quiz/saved');
+                         return;
+                    }
 
                     const questionsMap = new Map((qData || []).map(q => [q.id, q]));
 
@@ -66,12 +72,24 @@ export const QuizSessionGuard = ({ children }: { children: React.ReactNode }) =>
                         if (q) fullQuestions.push(q);
                     });
 
-                    // Load into Zustand Store
+                    // Ensure we don't load an empty array if the mapping fails entirely
+                    if (fullQuestions.length === 0) {
+                        console.error("Hydration failed: mapped question array is empty. DB IDs might be missing from study_materials.");
+                        navigate('/quiz/saved');
+                        return;
+                    }
+
+                    // Load into Zustand Store explicitly merging ID
                     state.loadSavedQuiz({
                         ...(quizData.state || {}),
                         activeQuestions: fullQuestions,
+                        quizId: quizId,
                         isPaused: false
                     });
+                } else {
+                     console.error("Hydration failed: bridge table returned 0 question IDs.");
+                     navigate('/quiz/saved');
+                     return;
                 }
 
                 setIsHydrating(false);
