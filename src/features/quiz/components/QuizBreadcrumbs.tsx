@@ -13,8 +13,11 @@ import { InitialFilters } from '../types';
  * @returns {JSX.Element} The rendered breadcrumbs.
  */
 export function QuizBreadcrumbs({ filters, onGoHome }: { filters: InitialFilters; onGoHome: () => void; }) {
-    const activeSubjects = filters.subject.length > 0 ? filters.subject.join(', ') : 'All Subjects';
-    const activeTopics = filters.topic.length > 0 ? filters.topic.join(', ') : null;
+    const subjects = filters?.subject ?? [];
+    const activeSubjects = subjects.length > 0 ? subjects.join(', ') : 'All Subjects';
+
+    const topics = filters?.topic ?? [];
+    const activeTopics = topics.length > 0 ? topics.join(', ') : null;
 
     return (
         <div className="flex items-center text-xs font-medium text-gray-400 mb-1 overflow-hidden whitespace-nowrap">

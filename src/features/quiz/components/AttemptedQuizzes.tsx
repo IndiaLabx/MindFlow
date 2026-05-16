@@ -58,9 +58,72 @@ export const AttemptedQuizzes: React.FC = () => {
 
     const loadQuizzes = async () => {
         try {
-            const data: any[] = [];
-            // Filter only completed quizzes
-            setQuizzes(data.filter(q => q.state.status === 'result'));
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) {
+                setQuizzes([]);
+                return;
+            }
+
+            const { data, error } = await supabase
+              .from('saved_quizzes')
+              .select('*, bridge_saved_quiz_questions(question_id, sort_order)')
+              .eq('user_id', session.user.id)
+              .is('deleted_at', null)
+              .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching attempted quizzes:', error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                // Filter status dynamically in memory to handle edge cases where the DB structure holds result state inside jsonb
+                const completedQuizzes = data.filter(rq => rq.state?.status === 'result');
+
+                const allQuestionIds = new Set<string>();
+                completedQuizzes.forEach(rq => {
+                    const bridgeData = rq.bridge_saved_quiz_questions || [];
+                    bridgeData.forEach((bq: any) => allQuestionIds.add(bq.question_id));
+                });
+
+                const idArray = Array.from(allQuestionIds);
+                if (idArray.length > 0) {
+                     const { data: qData } = await supabase.from('questions').select('*').in('id', idArray);
+                     const questionsMap = new Map((qData || []).map(q => [String(q.id), q]));
+
+                     const mappedQuizzes = completedQuizzes.map(rq => {
+                          let questions: any[] = [];
+                          const bridgeData = rq.bridge_saved_quiz_questions || [];
+                          bridgeData.sort((a: any, b: any) => a.sort_order - b.sort_order);
+                          bridgeData.forEach((bq: any) => {
+                              const q = questionsMap.get(String(bq.question_id));
+                              if (q) questions.push(q);
+                          });
+
+                          const parsedState = typeof rq.state === 'string' ? JSON.parse(rq.state) : (rq.state || {});
+                          const parsedFilters = typeof rq.filters === 'string' ? JSON.parse(rq.filters) : (rq.filters || {});
+
+                          return {
+                              id: rq.id,
+                              name: rq.name,
+                              createdAt: new Date(rq.created_at).getTime(),
+                              filters: parsedFilters,
+                              mode: rq.mode,
+                              questions: questions,
+                              state: {
+                                  ...parsedState,
+                                  activeQuestions: questions
+                              }
+                          };
+                     });
+
+                     setQuizzes(mappedQuizzes);
+                } else {
+                     setQuizzes([]);
+                }
+            } else {
+                setQuizzes([]);
+            }
         } catch (error) {
             console.error("Failed to load quizzes:", error);
         } finally {
@@ -68,11 +131,17 @@ export const AttemptedQuizzes: React.FC = () => {
         }
     };
 
+    // Trigger load on mount and when sync completes
+    useEffect(() => {
+        loadQuizzes();
+    }, []);
+
+
     /** Views results for completed quiz. */
     const handleViewResults = (quiz: SavedQuiz) => {
         // Hydrate the global context state with the saved session data
         loadSavedQuiz({ ...quiz.state, isPaused: false });
-        navigate('/result');
+        navigate(`/result`);
     };
 
     /** Deletes a quiz from storage. */

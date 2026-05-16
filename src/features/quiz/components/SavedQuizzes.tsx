@@ -66,15 +66,84 @@ export const SavedQuizzes: React.FC = () => {
 
     const loadQuizzes = async () => {
         try {
-            const data: any[] = [];
-            // Sort by createdAt descending (newest first)
-            setQuizzes(data.filter(q => q.state.status !== 'result').sort((a, b) => b.createdAt - a.createdAt));
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) {
+                setQuizzes([]);
+                return;
+            }
+
+            const { data, error } = await supabase
+              .from('saved_quizzes')
+              .select('*, bridge_saved_quiz_questions(question_id, sort_order)')
+              .eq('user_id', session.user.id)
+              .is('deleted_at', null)
+              .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching saved quizzes:', error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                // Filter status dynamically in memory to handle edge cases where the DB structure holds result state inside jsonb
+                const activeQuizzes = data.filter(rq => rq.state?.status !== 'result');
+
+                const allQuestionIds = new Set<string>();
+                activeQuizzes.forEach(rq => {
+                    const bridgeData = rq.bridge_saved_quiz_questions || [];
+                    bridgeData.forEach((bq: any) => allQuestionIds.add(bq.question_id));
+                });
+
+                const idArray = Array.from(allQuestionIds);
+                if (idArray.length > 0) {
+                     const { data: qData } = await supabase.from('questions').select('*').in('id', idArray);
+                     const questionsMap = new Map((qData || []).map(q => [String(q.id), q]));
+
+                     const mappedQuizzes = activeQuizzes.map(rq => {
+                          let questions: any[] = [];
+                          const bridgeData = rq.bridge_saved_quiz_questions || [];
+                          bridgeData.sort((a: any, b: any) => a.sort_order - b.sort_order);
+                          bridgeData.forEach((bq: any) => {
+                              const q = questionsMap.get(String(bq.question_id));
+                              if (q) questions.push(q);
+                          });
+
+                          const parsedState = typeof rq.state === 'string' ? JSON.parse(rq.state) : (rq.state || {});
+                          const parsedFilters = typeof rq.filters === 'string' ? JSON.parse(rq.filters) : (rq.filters || {});
+
+                          return {
+                              id: rq.id,
+                              name: rq.name,
+                              createdAt: new Date(rq.created_at).getTime(),
+                              filters: parsedFilters,
+                              mode: rq.mode,
+                              questions: questions,
+                              state: {
+                                  ...parsedState,
+                                  activeQuestions: questions
+                              }
+                          };
+                     });
+
+                     setQuizzes(mappedQuizzes);
+                } else {
+                     setQuizzes([]);
+                }
+            } else {
+                setQuizzes([]);
+            }
         } catch (error) {
             console.error("Failed to load quizzes:", error);
         } finally {
             setLoading(false);
         }
     };
+
+    // Trigger load on mount and when sync completes
+    useEffect(() => {
+        loadQuizzes();
+    }, []);
+
 
     /** Resumes a selected quiz session or views results if completed. */
     const handleResume = (quiz: SavedQuiz) => {
@@ -87,9 +156,9 @@ export const SavedQuizzes: React.FC = () => {
         } else {
             // Navigate to the appropriate active session view
             if (quiz.mode === 'mock') {
-                navigate('/quiz/session/mock');
+                navigate(`/quiz/session/mock/${quiz.id}`);
             } else {
-                navigate('/quiz/session/learning');
+                navigate(`/quiz/session/learning/${quiz.id}`);
             }
         }
     };
@@ -173,7 +242,8 @@ export const SavedQuizzes: React.FC = () => {
 
     /** Helper to determine if "Start" or "Resume" label should be shown. */
     const isQuizStarted = (quiz: SavedQuiz) => {
-        return quiz.state.currentQuestionIndex > 0 || Object.keys(quiz.state.answers).length > 0;
+        const state = quiz?.state || {};
+        return (state.currentQuestionIndex && state.currentQuestionIndex > 0) || (state.answers && Object.keys(state.answers).length > 0);
     };
 
     if (loading || isSyncing) {

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 
@@ -34,6 +34,12 @@ export function useAppVisibilityReawakening() {
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
         if (isActive) {
           handleReawaken();
+          // Manually force React Query to recognize the window is focused and online in Native WebViews
+          focusManager.setFocused(true);
+          onlineManager.setOnline(true);
+        } else {
+          // Tell React Query we are asleep so it pauses background fetching
+          focusManager.setFocused(false);
         }
       }).then(listener => {
          capListener = listener;

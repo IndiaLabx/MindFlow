@@ -7,7 +7,7 @@ import { useQuizSessionStore } from '../stores/useQuizSessionStore';
 import { Question, InitialFilters, QuizMode, Idiom, OneWord, SynonymWord, QuizState, QuizHistoryRecord, SubjectStats } from '../types';
 import { db } from '../../../lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '../../../lib/supabase';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../../lib/supabase';
 import { syncService } from '../../../lib/syncService';
 
 /**
@@ -84,28 +84,30 @@ export const useQuiz = () => {
               const payload = {
                   id: state.quizId,
                   user_id: userId,
+                  // PostgREST merge-duplicates requires updating the whole row schema, but we only really want to update 'state'
+                  // We should ideally use PATCH instead of POST for partial updates, or include all NOT NULL fields for POST.
+                  // Since we are just updating the 'state' column of an existing row, let's switch to PATCH.
                   state: stateWithoutQuestions
               };
 
               const headers = new Headers();
-              headers.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+              headers.append("apikey", SUPABASE_ANON_KEY);
               headers.append("Authorization", `Bearer ${token}`);
               headers.append("Content-Type", "application/json");
-              headers.append("Prefer", "resolution=merge-duplicates");
 
               if (isKeepAlive) {
-                  fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
-                      method: 'POST',
+                  fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
+                      method: 'PATCH',
                       headers: headers,
-                      body: JSON.stringify(payload),
+                      body: JSON.stringify({ state: stateWithoutQuestions }),
                       keepalive: true
                   }).catch(() => {});
               } else {
                   // Direct async fetch without keepalive for standard debounced calls
-                  await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/saved_quizzes`, {
-                      method: 'POST',
+                  await fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
+                      method: 'PATCH',
                       headers: headers,
-                      body: JSON.stringify(payload)
+                      body: JSON.stringify({ state: stateWithoutQuestions })
                   });
               }
           } catch (e) {
