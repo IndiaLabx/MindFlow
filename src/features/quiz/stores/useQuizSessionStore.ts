@@ -36,6 +36,7 @@ interface QuizSessionState extends QuizState {
   goHome: () => void;
   loadSavedQuiz: (savedState: QuizState) => void;
   reorderActiveQuestions: (newOrder: Question[]) => void;
+  resetStore: () => void;
 }
 
 export const initialState: QuizState = {
@@ -55,22 +56,6 @@ export const initialState: QuizState = {
   isPaused: false,
 };
 
-const getInitialState = (): QuizState => {
-  if (typeof window === 'undefined') return initialState;
-  try {
-    const saved = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.QUIZ_SESSION);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Only restore if we are in a valid active/result state to prevent stuck UIs
-      if (parsed.status === 'quiz' || parsed.status === 'result') {
-        return { ...initialState, ...parsed };
-      }
-    }
-  } catch (e) {
-    console.warn("Failed to load quiz session:", e);
-  }
-  return initialState;
-};
 
 
 const flushToCloud = async (state: QuizState) => {
@@ -99,7 +84,8 @@ const flushToCloud = async (state: QuizState) => {
 };
 
 export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
-  ...getInitialState(),
+  ...initialState,
+  resetStore: () => set(initialState),
 
   enterHome: () => { flushToCloud(get()); set({ ...initialState, status: 'idle' }); },
   enterConfig: () => set({ status: 'config' }),

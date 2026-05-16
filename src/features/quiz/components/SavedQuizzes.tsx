@@ -108,8 +108,19 @@ export const SavedQuizzes: React.FC = () => {
                               if (q) questions.push(q);
                           });
 
-                          const parsedState = typeof rq.state === 'string' ? JSON.parse(rq.state) : (rq.state || {});
-                          const parsedFilters = typeof rq.filters === 'string' ? JSON.parse(rq.filters) : (rq.filters || {});
+                          let parsedState: any = {};
+                          try {
+                              parsedState = typeof rq.state === 'string' ? JSON.parse(rq.state) : (rq.state || {});
+                          } catch (e) {
+                              console.error("Failed to parse state jsonb for quiz", rq.id, e);
+                          }
+
+                          let parsedFilters: any = {};
+                          try {
+                              parsedFilters = typeof rq.filters === 'string' ? JSON.parse(rq.filters) : (rq.filters || {});
+                          } catch (e) {
+                              console.error("Failed to parse filters jsonb for quiz", rq.id, e);
+                          }
 
                           return {
                               id: rq.id,
@@ -240,11 +251,6 @@ export const SavedQuizzes: React.FC = () => {
         });
     }, [quizzes, sortMethod]);
 
-    /** Helper to determine if "Start" or "Resume" label should be shown. */
-    const isQuizStarted = (quiz: SavedQuiz) => {
-        const state = quiz?.state || {};
-        return (state.currentQuestionIndex && state.currentQuestionIndex > 0) || (state.answers && Object.keys(state.answers).length > 0);
-    };
 
     if (loading || isSyncing) {
         return (

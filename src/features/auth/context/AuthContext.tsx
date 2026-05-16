@@ -7,6 +7,8 @@ import { db } from '../../../lib/db';
 import { AlertTriangle, LogOut, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
+import { useQuizSessionStore } from '../../quiz/stores/useQuizSessionStore';
+
 
 /**
  * Interface for the Auth Context value.
@@ -249,6 +251,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // If explicitly signed out by Supabase event (e.g. session expired, logged out elsewhere)
         if (event === 'SIGNED_OUT') {
+           useQuizSessionStore.getState().resetStore();
            db.clearAllUserData().catch(console.error);
         }
       }
@@ -276,9 +279,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Standard cleanup without hard reload
     await db.clearAllUserData();
 
+    // Reset Zustand store to empty initial state
+    useQuizSessionStore.getState().resetStore();
+
     // Also remove Zustand persist cache
     const keysToRemove = [
-      'mindflow_quiz_session',
       'mindflow-social-mode',
       'mindflow_analytics',
       'mindflow_idiom_session',
@@ -303,9 +308,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // 1. Wipe IndexedDB (Offline storage, Saved Quizzes, History, Interactions)
     await db.clearAllUserData();
 
+    // Reset Zustand store to empty initial state
+    useQuizSessionStore.getState().resetStore();
+
     // 2. Wipe specific localStorage items used by Zustand and manual flags
     const keysToRemove = [
-      'mindflow_quiz_session',
       'mindflow-social-mode',
       'mindflow_analytics',
       'mindflow_idiom_session',
