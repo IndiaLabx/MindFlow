@@ -15,6 +15,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { ShieldAlert, MoreVertical } from 'lucide-react';
 import { ReportModal } from '../components/reports/ReportModal';
 import { submitReport } from '../api/reportsApi';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 let sharedIsMuted = true; // Shared mute state across all reels
 
@@ -24,14 +25,15 @@ export const ReelsFeed: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const { data: reelsData, isLoading, refetch } = useQuery({
+  const { data: reelsData, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['community-reels'],
     queryFn: () => fetchReels(50),
   });
 
   const reels = reelsData?.data || [];
 
-  if (isLoading) {
+  if (isError) return <ErrorState message={(error as Error)?.message || "Failed to load"} onRetry={() => refetch()} />;
+    if (isLoading) {
     return (
       <div className="h-full w-full bg-gray-900 overflow-y-scroll snap-y snap-mandatory hide-scrollbar relative z-50">
          <ReelSkeleton />

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../../components/Button/Button';
 import { ArrowLeft, User, Mail, Lock, Loader2, Check, AlertTriangle, Pencil, X, Phone, Calendar, Target, FileText, Trash2, ShieldAlert, ChevronRight } from 'lucide-react';
@@ -74,24 +74,30 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      setProfileLoading(true);
+  const { data: profileData, isLoading: profileLoadingData } = useQuery({
+    queryKey: ['settings-profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
-      if (!error && data) {
-        setProfile(data);
-      }
-      setProfileLoading(false);
-    };
+  useEffect(() => {
+    if (profileData) {
+      setProfile(profileData);
+    }
+  }, [profileData]);
 
-    fetchProfile();
-  }, [user]);
+  useEffect(() => {
+    setProfileLoading(profileLoadingData);
+  }, [profileLoadingData]);
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

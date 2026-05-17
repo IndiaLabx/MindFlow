@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { searchProfiles, toggleFollow, SearchProfile } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import { cn } from '../../../utils/cn';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 // Custom debounce hook
 function useDebounce<T>(value: T, delay: number): T {

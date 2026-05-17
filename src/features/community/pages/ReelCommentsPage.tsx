@@ -9,6 +9,7 @@ import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { CommentSkeleton } from '../components/CommentSkeleton';
 import { CommentThread } from '../components/CommentThread';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 export const ReelCommentsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

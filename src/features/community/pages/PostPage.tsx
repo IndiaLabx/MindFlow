@@ -10,6 +10,7 @@ import { Heart, MessageCircle, Share2, ArrowLeft, Send, Loader2 } from 'lucide-r
 import { cn } from '../../../utils/cn';
 import { useNotificationStore } from '../../../stores/useNotificationStore';
 import { CommentSkeleton } from '../components/CommentSkeleton';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 export const PostPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
