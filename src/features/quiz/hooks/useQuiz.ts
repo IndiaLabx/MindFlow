@@ -215,12 +215,11 @@ export const useQuiz = () => {
       subjectStats
     };
 
-    // --- ATOMIC PUSH TO SUPABASE ---
+    // --- ATOMIC PUSH TO SUPABASE VIA RPC ---
     try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user && state.quizId) {
 
-            // 1. Update status to result in saved_quizzes
             const stateToSave = { ...state, status: 'result' };
             Object.keys(stateToSave).forEach(key => {
               if (typeof (stateToSave as any)[key] === 'function') {
@@ -229,33 +228,23 @@ export const useQuiz = () => {
             });
             const { activeQuestions, ...stateWithoutQuestions } = stateToSave;
 
-            const { error: updateError } = await supabase.from('saved_quizzes').update({
-                status: 'result',
-                state: stateWithoutQuestions
-            }).eq('id', state.quizId);
-
-            if (updateError) {
-                console.error("Failed to mark quiz as completed:", updateError);
-            }
-
-            // 2. Insert into quiz_history
-            const { error: historyError } = await supabase.from('quiz_history').insert({
-                id: historyRecord.id,
-                quiz_id: state.quizId,
-                user_id: session.user.id,
-                date: new Date(historyRecord.date).toISOString(),
-                total_questions: historyRecord.totalQuestions,
-                total_correct: historyRecord.totalCorrect,
-                total_incorrect: historyRecord.totalIncorrect,
-                total_skipped: historyRecord.totalSkipped,
-                total_time_spent: historyRecord.totalTimeSpent,
-                overall_accuracy: historyRecord.overallAccuracy,
-                difficulty: historyRecord.difficulty,
-                subject_stats: historyRecord.subjectStats
+            const { data: newHistoryId, error: rpcError } = await supabase.rpc('submit_quiz_session', {
+                p_quiz_id: state.quizId,
+                p_final_state: stateWithoutQuestions,
+                p_total_questions: historyRecord.totalQuestions,
+                p_total_correct: historyRecord.totalCorrect,
+                p_total_incorrect: historyRecord.totalIncorrect,
+                p_total_skipped: historyRecord.totalSkipped,
+                p_time_taken: historyRecord.totalTimeSpent,
+                p_overall_accuracy: historyRecord.overallAccuracy,
+                p_difficulty: historyRecord.difficulty,
+                p_subject_stats: historyRecord.subjectStats
             });
 
-            if (historyError) {
-                console.error("Failed to insert quiz history:", historyError);
+            if (rpcError) {
+                console.error("Failed atomic quiz submission RPC:", rpcError);
+            } else {
+                console.log("Atomic submission successful. New history ID:", newHistoryId);
             }
         }
     } catch (err) {
