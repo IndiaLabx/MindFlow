@@ -66,7 +66,7 @@ export const AttemptedQuizCard: React.FC<AttemptedQuizCardProps> = ({ quiz, inde
     const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
         try {
-            const shareUrl = `${window.location.origin}/share/${quiz.id}`;
+            const shareUrl = `${window.location.origin}/#/share/${quiz.id}`;
             await navigator.clipboard.writeText(shareUrl);
             showToast({
                 variant: 'success',
