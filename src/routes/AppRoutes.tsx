@@ -360,6 +360,9 @@ const AppRoutesContent: React.FC = () => {
                     } />
 
 
+
+                    <Route path="/share/:originalQuizId" element={<Suspense fallback={<SynapticLoader />}><ShareGatekeeper /></Suspense>} />
+
                     <Route path="/quiz/config" element={
                         <Suspense fallback={<SynapticLoader />}><QuizConfig
                             onBack={() => { navTo('/mcqs'); }}

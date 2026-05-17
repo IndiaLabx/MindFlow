@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { BrainCircuit, ArrowLeft, Loader2 } from 'lucide-react';
@@ -42,13 +42,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack }) => {
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [privacyConfirmed, setPrivacyConfirmed] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard', { replace: true });
+      const params = new URLSearchParams(location.search);
+      const returnTo = params.get('returnTo');
+      const destination = returnTo && returnTo.startsWith('/') ? returnTo : '/dashboard';
+      navigate(destination, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.search]);
 
   /**
    * Validates the form inputs before submission.
