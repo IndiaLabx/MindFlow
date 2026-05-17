@@ -99,6 +99,7 @@ const SupportPage = lazy(() => import('../features/auth/components/SupportPage')
 import { AppPreferencesPage } from '../features/settings/components/AppPreferencesPage';
 import { MyReportsPage } from '../features/settings/components/MyReportsPage';
 import { QuizSessionGuard } from '../features/quiz/components/QuizSessionGuard';
+import { ResultGuard } from '../features/quiz/components/ResultGuard';
 import { ShareGatekeeper } from '../features/quiz/components/ShareGatekeeper';
 
 const AppRoutesContent: React.FC = () => {
@@ -257,8 +258,9 @@ const AppRoutesContent: React.FC = () => {
                         <Suspense fallback={<SynapticLoader />}><AuthPage onBack={() => { navTo('/dashboard'); }} /></Suspense>
                     } />
 
-                    <Route path="/result" element={
-                        state.mode === 'mock' ? (
+                    <Route path="/result/:quizId" element={
+                        <ResultGuard>
+                            {state.mode === 'mock' ? (
                             <Suspense fallback={<SynapticLoader />}><MockQuizResult
                                 score={state.score}
                                 total={state.activeQuestions.length}
@@ -292,6 +294,8 @@ const AppRoutesContent: React.FC = () => {
                                 onGoHome={navHome}
                             /></Suspense>
                         )
+                    }
+                        </ResultGuard>
                     } />
 
                     <Route path="/flashcards/summary" element={
@@ -394,7 +398,7 @@ const AppRoutesContent: React.FC = () => {
                             onPrev={prevQuestion}
                             onJump={jumpToQuestion}
                             onToggleBookmark={toggleBookmark}
-                            onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
+                            onComplete={(results: any) => { submitSessionResults(results); navTo(`/result/${state.quizId}`); }}
                             onGoHome={navHome}
                             onPause={pauseQuiz}
                             onResume={resumeQuiz}
@@ -416,7 +420,7 @@ const AppRoutesContent: React.FC = () => {
                                 pauseQuiz();
                                 setTimeout(() => navTo('/quiz/saved'), 100);
                             }}
-                            onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
+                            onComplete={(results: any) => { submitSessionResults(results); navTo(`/result/${state.quizId}`); }}
                         />
                     </QuizSessionGuard>
                 } />
@@ -427,7 +431,7 @@ const AppRoutesContent: React.FC = () => {
                         <GodModeSession
                             questions={state.activeQuestions}
                             initialTime={state.quizTimeRemaining}
-                            onComplete={(results: any) => { submitSessionResults(results); navTo('/result'); }}
+                            onComplete={(results: any) => { submitSessionResults(results); navTo(`/result/${state.quizId}`); }}
                         />
                     </QuizSessionGuard>
                 } />

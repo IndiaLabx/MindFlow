@@ -24,7 +24,6 @@ import { motion } from 'framer-motion';
  */
 export const AttemptedQuizzes: React.FC = () => {
     const navigate = useNavigate();
-    const { loadSavedQuiz } = useQuizContext();
     const [quizzes, setQuizzes] = useState<SavedQuiz[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(syncService.getIsSyncing());
@@ -140,8 +139,8 @@ export const AttemptedQuizzes: React.FC = () => {
     /** Views results for completed quiz. */
     const handleViewResults = (quiz: SavedQuiz) => {
         // Hydrate the global context state with the saved session data
-        loadSavedQuiz({ ...quiz.state, isPaused: false });
-        navigate(`/result`);
+
+        navigate(`/result/${quiz.id}`);
     };
 
     /** Deletes a quiz from storage. */

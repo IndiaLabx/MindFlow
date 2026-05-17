@@ -28,7 +28,6 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 export const SavedQuizzes: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const { loadSavedQuiz } = useQuizContext();
     const [quizzes, setQuizzes] = useState<SavedQuiz[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(syncService.getIsSyncing());
@@ -162,11 +161,11 @@ export const SavedQuizzes: React.FC = () => {
     /** Resumes a selected quiz session or views results if completed. */
     const handleResume = (quiz: SavedQuiz) => {
         // Hydrate the global context state with the saved session data
-        loadSavedQuiz({ ...quiz.state, isPaused: false });
+
 
         // Navigate based on completion status
         if (quiz.state.status === 'result') {
-            navigate('/result');
+            navigate(`/result/${quiz.id}`);
         } else {
             // Navigate to the appropriate active session view
             if (quiz.mode === 'mock') {
