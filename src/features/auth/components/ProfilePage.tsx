@@ -12,7 +12,7 @@ import {
 import { useProfileStats } from '../hooks/useProfileStats';
 import { useNavigate } from 'react-router-dom';
 import { useNotificationStore } from "../../../stores/useNotificationStore";
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=e2e8f0';
 
@@ -83,20 +83,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onSignOut, onNavigateToSettin
   const { user, signOut, refreshUser } = useAuth();
   const [profile, setProfile] = useState<any>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    const fetchProfile = async () => {
+  const { data: profileData } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
       const { data } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
-      if (data) {
-        setProfile(data);
-      }
-    };
-    fetchProfile();
-  }, [user]);
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (profileData) {
+      setProfile(profileData);
+    }
+  }, [profileData]);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);

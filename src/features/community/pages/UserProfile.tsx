@@ -15,6 +15,7 @@ import { useNotification } from '../../../hooks/useNotification';
 import { fetchUserProfile, fetchUserPosts, toggleFollow, getOrCreateChatRoom } from '../api/communityApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import { cn } from '../../../utils/cn';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 export const UserProfile: React.FC = () => {
     const { username } = useParams<{ username: string }>();

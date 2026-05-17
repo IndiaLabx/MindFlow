@@ -10,6 +10,8 @@ import { useSyncStore } from '../stores/useSyncStore';
 import { syncService } from '../../../lib/syncService';
 import { SynapticLoader } from '../../../components/ui/SynapticLoader';
 import { motion } from 'framer-motion';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 /**
  * Screen for managing saved quizzes.
@@ -25,6 +27,7 @@ import { motion } from 'framer-motion';
  */
 export const SavedQuizzes: React.FC = () => {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { loadSavedQuiz } = useQuizContext();
     const [quizzes, setQuizzes] = useState<SavedQuiz[]>([]);
     const [loading, setLoading] = useState(true);
@@ -181,7 +184,7 @@ export const SavedQuizzes: React.FC = () => {
             try {
                 const { error } = await supabase.from('saved_quizzes').update({ deleted_at: new Date().toISOString() }).eq('id', id);
                 if (error) throw error;
-                setQuizzes(prev => prev.filter(q => q.id !== id));
+                queryClient.setQueryData(['saved-quizzes'], (old: SavedQuiz[] = []) => old.filter(q => q.id !== id));
             } catch (error) {
                 console.error("Failed to delete quiz:", error);
                 alert("Failed to delete quiz");
@@ -216,7 +219,7 @@ export const SavedQuizzes: React.FC = () => {
         try {
             const { error } = await supabase.from('saved_quizzes').update({ name: newName }).eq('id', id);
             if (error) throw error;
-            setQuizzes(prev => prev.map(q => q.id === id ? { ...q, name: newName } : q));
+            queryClient.setQueryData(['saved-quizzes'], (old: SavedQuiz[] = []) => old.map(q => q.id === id ? { ...q, name: newName } : q));
         } catch (error) {
             console.error("Failed to update quiz name:", error);
         }

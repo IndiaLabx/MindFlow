@@ -15,6 +15,7 @@ import { PostCardSkeleton } from '../components/PostCardSkeleton';
 import { PostCard } from '../components/PostCard';
 import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import { SocialHeader } from '../components/SocialHeader';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 // --- Particle Component for "Wow" Effect ---
 const FloatingHeart: React.FC<{ x: number, y: number, onComplete: () => void }> = ({ x, y, onComplete }) => {

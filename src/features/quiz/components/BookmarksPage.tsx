@@ -7,11 +7,12 @@ import { Button } from '../../../components/Button/Button';
 import { Card } from '../../../components/ui/Card';
 import { cn } from '../../../utils/cn';
 import { SynapticLoader } from '../../../components/ui/SynapticLoader';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ErrorState } from '../../../components/ui/ErrorState';
 
 export const BookmarksPage: React.FC = () => {
     const navigate = useNavigate();
-    const [bookmarks, setBookmarks] = useState<Question[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [selectedSubject, setSelectedSubject] = useState<string>('All');
     const [showToast, setShowToast] = useState(false);
 
@@ -19,7 +20,7 @@ export const BookmarksPage: React.FC = () => {
         if (window.confirm("Are you sure you want to reset all bookmarks? This action cannot be undone.")) {
             try {
                 await db.clearBookmarks();
-                setBookmarks([]);
+                queryClient.setQueryData(['bookmarks'], []);
                 setShowToast(true);
                 setTimeout(() => setShowToast(false), 3000);
             } catch (error) {
@@ -29,34 +30,28 @@ export const BookmarksPage: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        const loadBookmarks = async () => {
-            try {
-                const records = await db.getAllBookmarks();
-                setBookmarks(records);
-            } catch (error) {
-                console.error("Failed to load bookmarks:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadBookmarks();
+    const { data: bookmarks = [], isLoading, isError, error, refetch } = useQuery({
+        queryKey: ['bookmarks'],
+        queryFn: async () => {
+            return await db.getAllBookmarks();
+        },
+        staleTime: 1000 * 60 * 5,
+    });
 
-        // Listen for sync completion to refresh data and avoid stale cache
+    useEffect(() => {
         const handleSyncComplete = () => {
-            loadBookmarks();
+            refetch();
         };
         window.addEventListener('mindflow-sync-complete', handleSyncComplete);
-
         return () => {
             window.removeEventListener('mindflow-sync-complete', handleSyncComplete);
         };
-    }, []);
+    }, [refetch]);
 
     const handleRemoveBookmark = async (id: string) => {
         try {
             await db.removeBookmark(id);
-            setBookmarks(prev => prev.filter(b => b.id !== id));
+            queryClient.setQueryData(['bookmarks'], (old: Question[] = []) => old.filter(b => b.id !== id));
         } catch (error) {
             console.error("Failed to remove bookmark:", error);
         }
@@ -74,6 +69,14 @@ export const BookmarksPage: React.FC = () => {
         if (selectedSubject === 'All') return bookmarks;
         return bookmarks.filter(q => q.classification.subject === selectedSubject);
     }, [bookmarks, selectedSubject]);
+
+    if (isError) {
+        return (
+            <div className="min-h-screen pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] bg-slate-50 dark:bg-slate-900">
+                 <ErrorState message={(error as Error)?.message || "Failed to load bookmarks"} onRetry={() => refetch()} />
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
