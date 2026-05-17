@@ -271,7 +271,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
 
              <div className="grid grid-cols-2 gap-3 pt-2">
                  <Button onClick={onRestart} variant="outline" className="justify-center h-12 border-2 hover:border-indigo-600 hover:text-indigo-600 dark:text-indigo-400">
-                    <RotateCcw className="w-4 h-4 mr-2" /> Retry
+                    <RotateCcw className="w-4 h-4 mr-2" /> Reattempt
                  </Button>
                  <Button onClick={onGoHome} variant="outline" className="justify-center h-12 border-2 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-slate-800 dark:bg-slate-800/50">
                     <Home className="w-4 h-4 mr-2" /> Home
