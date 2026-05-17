@@ -3,9 +3,9 @@ import { syncService } from '../../../lib/syncService';
 import { supabase } from '../../../lib/supabase';
 import { create } from 'zustand';
 import { APP_CONFIG } from '../../../constants/config';
-import { QuizState, QuizStatus, QuizMode, Question, InitialFilters } from '../types';
+import { QuizRuntimeState, QuizPersistentState, QuizStatus, QuizMode, Question, InitialFilters } from '../types';
 
-interface QuizSessionState extends QuizState {
+interface QuizSessionState extends QuizRuntimeState {
   // Actions
   enterHome: () => void;
   enterConfig: () => void;
@@ -34,12 +34,12 @@ interface QuizSessionState extends QuizState {
   submitSessionResults: (results: { answers: Record<string, string>; timeTaken: Record<string, number>; score: number; bookmarks: string[] }) => void;
   restartQuiz: () => void;
   goHome: () => void;
-  loadSavedQuiz: (savedState: QuizState) => void;
+  loadSavedQuiz: (savedState: QuizRuntimeState) => void;
   reorderActiveQuestions: (newOrder: Question[]) => void;
   resetStore: () => void;
 }
 
-export const initialState: QuizState = {
+export const initialState: QuizRuntimeState = {
   status: 'intro',
   mode: 'learning',
   currentQuestionIndex: 0,
@@ -58,7 +58,7 @@ export const initialState: QuizState = {
 
 
 
-const flushToCloud = async (state: QuizState) => {
+const flushToCloud = async (state: QuizRuntimeState) => {
   if (typeof window === 'undefined' || !navigator.onLine || !state.quizId) return;
   try {
     const { data: { session } } = await supabase.auth.getSession();
