@@ -257,7 +257,7 @@ export const MockQuizResult: React.FC<MockQuizResultProps> = ({
             className="flex-1 py-3"
             >
   <span className="flex items-center justify-center gap-2"><RotateCcw className="w-5 h-5" />
-            Retake Exam
+            Reattempt
           </span>
 </Button>
           {onGoHome && (

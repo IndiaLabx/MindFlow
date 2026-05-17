@@ -8,6 +8,7 @@ import { SynapticLoader } from '../components/ui/SynapticLoader';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useHardwareBackButton } from '../hooks/useHardwareBackButton';
+import { useNotificationStore } from '../stores/useNotificationStore';
 
 // Lazy Loaded Components for Code Splitting
 // Groups: Main UI, Quiz Flow, Flashcard Flow, Auth Flow
@@ -100,6 +101,7 @@ import { AppPreferencesPage } from '../features/settings/components/AppPreferenc
 import { MyReportsPage } from '../features/settings/components/MyReportsPage';
 import { QuizSessionGuard } from '../features/quiz/components/QuizSessionGuard';
 import { ResultGuard } from '../features/quiz/components/ResultGuard';
+import { supabase } from '../lib/supabase';
 import { ShareGatekeeper } from '../features/quiz/components/ShareGatekeeper';
 
 const AppRoutesContent: React.FC = () => {
@@ -127,6 +129,33 @@ const AppRoutesContent: React.FC = () => {
     const navTo = (path: string) => navigate(path);
     // Helper: Reset state and go to Dashboard
     const navHome = () => { goHome(); navigate('/dashboard'); };
+const handleReattempt = async (quizId: string, mode: string) => {
+        try {
+            const { showToast } = useNotificationStore.getState();
+            showToast({
+                variant: 'info',
+                title: 'Cloning Quiz',
+                message: 'Preparing your retake...'
+            });
+
+            const { data, error } = await supabase.rpc('clone_shared_quiz', {
+                p_original_quiz_id: quizId,
+                p_name_suffix: ' (Retake)'
+            });
+            if (error) throw error;
+            if (data && data.new_quiz_id) {
+                navigate(`/quiz/session/${mode}/${data.new_quiz_id}`);
+            }
+        } catch (err: any) {
+            console.error('Error reattempting quiz:', err);
+            const { showToast } = useNotificationStore.getState();
+            showToast({
+                variant: 'error',
+                title: 'Retake Failed',
+                message: 'Could not create a retake session.'
+            });
+        }
+    };
 
     return (
         <Suspense fallback={
@@ -268,7 +297,7 @@ const AppRoutesContent: React.FC = () => {
                                 answers={state.answers}
                                 timeTaken={state.timeTaken}
                                 bookmarks={state.bookmarks}
-                                onRestart={() => { restartQuiz(); navTo('/quiz/config'); }}
+                                onRestart={() => handleReattempt(state.quizId!, state.mode)}
                                 onGoHome={navHome}
                             /></Suspense>
                         ) : state.mode === 'god' ? (
@@ -279,7 +308,7 @@ const AppRoutesContent: React.FC = () => {
                                 answers={state.answers}
                                 timeTaken={state.timeTaken}
                                 bookmarks={state.bookmarks}
-                                onRestart={() => { restartQuiz(); navTo('/quiz/config'); }}
+                                onRestart={() => handleReattempt(state.quizId!, state.mode)}
                                 onGoHome={navHome}
                             /></Suspense>
                         ) : (
@@ -290,7 +319,7 @@ const AppRoutesContent: React.FC = () => {
                                 answers={state.answers}
                                 timeTaken={state.timeTaken}
                                 bookmarks={state.bookmarks}
-                                onRestart={() => { restartQuiz(); navTo('/quiz/config'); }}
+                                onRestart={() => handleReattempt(state.quizId!, state.mode)}
                                 onGoHome={navHome}
                             /></Suspense>
                         )
