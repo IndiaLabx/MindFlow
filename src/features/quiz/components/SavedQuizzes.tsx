@@ -28,8 +28,77 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 export const SavedQuizzes: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const [quizzes, setQuizzes] = useState<SavedQuiz[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: quizzes = [], isLoading: loading } = useQuery({
+        queryKey: ['saved-quizzes'],
+        queryFn: async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return [];
+
+            const { data, error } = await supabase
+              .from('saved_quizzes')
+              .select('*, bridge_saved_quiz_questions(question_id, sort_order)')
+              .eq('user_id', session.user.id)
+              .is('deleted_at', null)
+              .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching saved quizzes:', error);
+                throw error;
+            }
+
+            if (!data || data.length === 0) return [];
+
+            const activeQuizzes = data.filter(rq => rq.state?.status !== 'result');
+            const allQuestionIds = new Set<string>();
+            activeQuizzes.forEach(rq => {
+                const bridgeData = rq.bridge_saved_quiz_questions || [];
+                bridgeData.forEach((bq: any) => allQuestionIds.add(bq.question_id));
+            });
+
+            const idArray = Array.from(allQuestionIds);
+            if (idArray.length === 0) return [];
+
+            const { data: qData } = await supabase.from('questions').select('*').in('id', idArray);
+            const questionsMap = new Map((qData || []).map(q => [String(q.id), q]));
+
+            return activeQuizzes.map(rq => {
+                let questions: any[] = [];
+                const bridgeData = rq.bridge_saved_quiz_questions || [];
+                bridgeData.sort((a: any, b: any) => a.sort_order - b.sort_order);
+                bridgeData.forEach((bq: any) => {
+                    const q = questionsMap.get(String(bq.question_id));
+                    if (q) questions.push(q);
+                });
+
+                let parsedState: any = {};
+                try {
+                    parsedState = typeof rq.state === 'string' ? JSON.parse(rq.state) : (rq.state || {});
+                } catch (e) {
+                    console.error("Failed to parse state jsonb for quiz", rq.id, e);
+                }
+
+                let parsedFilters: any = {};
+                try {
+                    parsedFilters = typeof rq.filters === 'string' ? JSON.parse(rq.filters) : (rq.filters || {});
+                } catch (e) {
+                    console.error("Failed to parse filters jsonb for quiz", rq.id, e);
+                }
+
+                return {
+                    id: rq.id,
+                    name: rq.name,
+                    createdAt: new Date(rq.created_at).getTime(),
+                    filters: parsedFilters,
+                    mode: rq.mode,
+                    questions: questions,
+                    state: {
+                        ...parsedState,
+                        activeQuestions: questions
+                    }
+                } as SavedQuiz;
+            });
+        }
+    });
     const [isSyncing, setIsSyncing] = useState(syncService.getIsSyncing());
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
@@ -37,7 +106,7 @@ export const SavedQuizzes: React.FC = () => {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
     useEffect(() => {
-        loadQuizzes();
+        queryClient.invalidateQueries({ queryKey: ['saved-quizzes'] });
 
         const handleSyncStart = () => {
             setIsSyncing(true);
@@ -47,7 +116,7 @@ export const SavedQuizzes: React.FC = () => {
             // Add a small delay to ensure IndexedDB transactions are fully committed
             // before we try to read the hydrated data.
             setTimeout(async () => {
-                await loadQuizzes();
+                await queryClient.invalidateQueries({ queryKey: ['saved-quizzes'] });
                 setIsSyncing(false);
             }, 100);
         };
@@ -66,96 +135,7 @@ export const SavedQuizzes: React.FC = () => {
         };
     }, []);
 
-    const loadQuizzes = async () => {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session?.user) {
-                setQuizzes([]);
-                return;
-            }
 
-            const { data, error } = await supabase
-              .from('saved_quizzes')
-              .select('*, bridge_saved_quiz_questions(question_id, sort_order)')
-              .eq('user_id', session.user.id)
-              .is('deleted_at', null)
-              .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Error fetching saved quizzes:', error);
-                return;
-            }
-
-            if (data && data.length > 0) {
-                // Filter status dynamically in memory to handle edge cases where the DB structure holds result state inside jsonb
-                const activeQuizzes = data.filter(rq => rq.state?.status !== 'result');
-
-                const allQuestionIds = new Set<string>();
-                activeQuizzes.forEach(rq => {
-                    const bridgeData = rq.bridge_saved_quiz_questions || [];
-                    bridgeData.forEach((bq: any) => allQuestionIds.add(bq.question_id));
-                });
-
-                const idArray = Array.from(allQuestionIds);
-                if (idArray.length > 0) {
-                     const { data: qData } = await supabase.from('questions').select('*').in('id', idArray);
-                     const questionsMap = new Map((qData || []).map(q => [String(q.id), q]));
-
-                     const mappedQuizzes = activeQuizzes.map(rq => {
-                          let questions: any[] = [];
-                          const bridgeData = rq.bridge_saved_quiz_questions || [];
-                          bridgeData.sort((a: any, b: any) => a.sort_order - b.sort_order);
-                          bridgeData.forEach((bq: any) => {
-                              const q = questionsMap.get(String(bq.question_id));
-                              if (q) questions.push(q);
-                          });
-
-                          let parsedState: any = {};
-                          try {
-                              parsedState = typeof rq.state === 'string' ? JSON.parse(rq.state) : (rq.state || {});
-                          } catch (e) {
-                              console.error("Failed to parse state jsonb for quiz", rq.id, e);
-                          }
-
-                          let parsedFilters: any = {};
-                          try {
-                              parsedFilters = typeof rq.filters === 'string' ? JSON.parse(rq.filters) : (rq.filters || {});
-                          } catch (e) {
-                              console.error("Failed to parse filters jsonb for quiz", rq.id, e);
-                          }
-
-                          return {
-                              id: rq.id,
-                              name: rq.name,
-                              createdAt: new Date(rq.created_at).getTime(),
-                              filters: parsedFilters,
-                              mode: rq.mode,
-                              questions: questions,
-                              state: {
-                                  ...parsedState,
-                                  activeQuestions: questions
-                              }
-                          };
-                     });
-
-                     setQuizzes(mappedQuizzes);
-                } else {
-                     setQuizzes([]);
-                }
-            } else {
-                setQuizzes([]);
-            }
-        } catch (error) {
-            console.error("Failed to load quizzes:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Trigger load on mount and when sync completes
-    useEffect(() => {
-        loadQuizzes();
-    }, []);
 
 
     /** Resumes a selected quiz session or views results if completed. */
@@ -204,7 +184,7 @@ export const SavedQuizzes: React.FC = () => {
         if (editingId && editName.trim()) {
             try {
                 await db.updateQuizName(editingId, editName.trim());
-                setQuizzes(prev => prev.map(q => q.id === editingId ? { ...q, name: editName.trim() } : q));
+                queryClient.setQueryData(['saved-quizzes'], (old: SavedQuiz[] = []) => old.map(q => q.id === editingId ? { ...q, name: editName.trim() } : q));
                 setEditingId(null);
             } catch (error) {
                 console.error("Failed to update quiz name:", error);
