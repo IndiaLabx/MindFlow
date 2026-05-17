@@ -1,15 +1,19 @@
 import React from 'react';
-import { WifiOff, RefreshCw } from 'lucide-react';
+import { WifiOff, RefreshCw, LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ErrorStateProps {
   message?: string;
   onRetry: () => void;
+  actionText?: string;
+  actionIcon?: LucideIcon;
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
   message = "Unable to connect to the server. Please check your network.",
-  onRetry
+  onRetry,
+  actionText = "Retry",
+  actionIcon: ActionIcon = RefreshCw
 }) => {
   return (
     <motion.div
@@ -30,8 +34,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
         onClick={onRetry}
         className="mt-4 flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-all active:scale-95 shadow-md shadow-primary-600/20"
       >
-        <RefreshCw size={18} />
-        <span>Retry</span>
+        <ActionIcon size={18} />
+        <span>{actionText}</span>
       </button>
     </motion.div>
   );
