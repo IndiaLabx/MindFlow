@@ -33,6 +33,8 @@ export type QuizMode = 'learning' | 'mock' | 'god';
  * Strictly persistent state that gets saved to the Supabase database.
  * Does not include heavy runtime objects like full question data.
  */
+export type SyncStatus = 'saved_local' | 'syncing_cloud' | 'sync_failed_retrying';
+
 export interface QuizPersistentState {
   currentQuestionIndex: number;
   score: number;
@@ -44,6 +46,7 @@ export interface QuizPersistentState {
   markedForReview: string[];
   hiddenOptions: Record<string, string[]>;
   isPaused?: boolean;
+  syncStatus?: SyncStatus;
   quizId?: string;
   status: QuizStatus;
   mode: QuizMode;

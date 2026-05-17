@@ -23,6 +23,12 @@ export function useAppVisibilityReawakening() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         handleReawaken();
+        // Manually force React Query to recognize the window is focused and online
+        focusManager.setFocused(true);
+        onlineManager.setOnline(true);
+      } else {
+        // Tell React Query we are asleep so it pauses background fetching
+        focusManager.setFocused(false);
       }
     };
 
