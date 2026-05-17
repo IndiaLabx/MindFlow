@@ -269,7 +269,7 @@ export const GodQuizResult: React.FC<GodQuizResultProps> = ({
             className="flex-1 py-3 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:border-amber-400 hover:text-amber-300"
             >
   <span className="flex items-center justify-center gap-2"><RotateCcw className="w-5 h-5" />
-            New Run
+            Reattempt
           </span>
 </Button>
           {onGoHome && (

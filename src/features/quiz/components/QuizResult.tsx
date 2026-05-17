@@ -157,7 +157,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                   View Solutions <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button onClick={onRestart} variant="outline" className="border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
-                  <RotateCcw className="w-4 h-4 mr-2" /> Retake
+                  <RotateCcw className="w-4 h-4 mr-2" /> Reattempt
               </Button>
           </div>
       </div>
