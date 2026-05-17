@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { supabase } from '../../../lib/supabase';
@@ -13,6 +13,7 @@ export const ShareGatekeeper: React.FC = () => {
     const { user, loading: authLoading } = useAuth();
     const [cloning, setCloning] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const hasAttemptedClone = useRef(false);
 
     useEffect(() => {
         // Wait until auth state is definitively known
@@ -27,12 +28,16 @@ export const ShareGatekeeper: React.FC = () => {
         // If logged in but we are already cloning or there's an error, do nothing
         if (cloning || error) return;
 
+        // Prevent double clone execution due to React strict mode or fast re-renders
+        if (hasAttemptedClone.current) return;
+
         const cloneQuiz = async () => {
             if (!originalQuizId) {
                 setError('Invalid link: No quiz ID provided.');
                 return;
             }
 
+            hasAttemptedClone.current = true;
             setCloning(true);
             try {
                 const { data, error: rpcError } = await supabase.rpc('clone_shared_quiz', {
