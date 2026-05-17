@@ -35,7 +35,7 @@ export const SavedQuizCard: React.FC<SavedQuizCardProps> = ({ quiz, index, onRes
     const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
         try {
-            const shareUrl = `${window.location.origin}/share/${quiz.id}`;
+            const shareUrl = `${window.location.origin}/#/share/${quiz.id}`;
             await navigator.clipboard.writeText(shareUrl);
             showToast({
                 variant: 'success',
