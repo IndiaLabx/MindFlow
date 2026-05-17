@@ -1,144 +1,103 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../auth/context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { SynapticLoader } from '../../../components/ui/SynapticLoader';
+import { BrainCircuit } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-export const ShareGatekeeper = () => {
+export const ShareGatekeeper: React.FC = () => {
     const { originalQuizId } = useParams<{ originalQuizId: string }>();
     const navigate = useNavigate();
-    const [status, setStatus] = useState('Checking authorization...');
+    const location = useLocation();
+    const { user, loading: authLoading } = useAuth();
+    const [cloning, setCloning] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const processSharedQuiz = async () => {
+        // Wait until auth state is definitively known
+        if (authLoading) return;
+
+        // If not logged in, redirect to login page with returnTo parameter
+        if (!user) {
+            navigate(`/login?returnTo=/share/${originalQuizId}`, { replace: true });
+            return;
+        }
+
+        // If logged in but we are already cloning or there's an error, do nothing
+        if (cloning || error) return;
+
+        const cloneQuiz = async () => {
             if (!originalQuizId) {
-                navigate('/dashboard');
+                setError('Invalid link: No quiz ID provided.');
                 return;
             }
 
+            setCloning(true);
             try {
-                // 1. Auth Guard
-                const { data: { session } } = await supabase.auth.getSession();
-
-                if (!session?.user) {
-                    // Save intent to redirect back here after login
-                    sessionStorage.setItem('mindflow_redirect_intent', `/share/${originalQuizId}`);
-                    navigate('/login');
-                    return;
-                }
-
-                setStatus('Cloning quiz data...');
-
-                // 2. Fetch original quiz data
-                const { data: originalQuiz, error: fetchError } = await supabase
-                    .from('saved_quizzes')
-                    .select('*, bridge_saved_quiz_questions(question_id, sort_order)')
-                    .eq('id', originalQuizId)
-                    .single();
-
-                if (fetchError || !originalQuiz) {
-                    setError('This shared quiz could not be found or has been deleted.');
-                    return;
-                }
-
-                // If user is actually the owner, just redirect them to their session
-                if (originalQuiz.user_id === session.user.id) {
-                     navigate(`/quiz/session/${originalQuiz.mode}/${originalQuiz.id}`);
-                     return;
-                }
-
-                // 3. Clone engine
-                const newQuizId = crypto.randomUUID();
-                const clonedName = `${originalQuiz.name} (Shared)`;
-
-                // Reset state to empty/0
-                const clonedState = {
-                    ...originalQuiz.state,
-                    quizId: newQuizId,
-                    status: 'quiz',
-                    answers: {},
-                    score: 0,
-                    timeTaken: {},
-                    remainingTimes: {},
-                    isPaused: false
-                };
-
-                const { error: insertError } = await supabase.from('saved_quizzes').insert({
-                    id: newQuizId,
-                    user_id: session.user.id,
-                    name: clonedName,
-                    created_at: new Date().toISOString(),
-                    filters: originalQuiz.filters,
-                    mode: originalQuiz.mode,
-                    state: clonedState,
+                const { data, error: rpcError } = await supabase.rpc('clone_shared_quiz', {
+                    p_original_quiz_id: originalQuizId,
                 });
 
-                if (insertError) {
-                    console.error("Clone insert error:", insertError);
-                    setError('Failed to clone the quiz into your account.');
-                    return;
+                if (rpcError) throw rpcError;
+
+                if (data && data.new_quiz_id && data.mode) {
+                    // Navigate to the newly cloned quiz session
+                    navigate(`/quiz/session/${data.mode}/${data.new_quiz_id}`, { replace: true });
+                } else {
+                    throw new Error('Invalid response from cloning service.');
                 }
-
-                // 4. Clone Bridge Relations
-                const bridgeData = originalQuiz.bridge_saved_quiz_questions || [];
-                const newBridgeData = bridgeData.map((bq: any) => ({
-                    quiz_id: newQuizId,
-                    question_id: bq.question_id,
-                    sort_order: bq.sort_order,
-                    user_id: session.user.id
-                }));
-
-                if (newBridgeData.length > 0) {
-                    const { error: bridgeError } = await supabase.from('bridge_saved_quiz_questions').insert(newBridgeData);
-                    if (bridgeError) {
-                        console.error("Clone bridge error:", bridgeError);
-                        setError('Failed to clone the questions into your account.');
-                        return;
-                    }
-                }
-
-                // 5. Seamless Redirect to new personal instance
-                setStatus('Routing to your session...');
-                navigate(`/quiz/session/${originalQuiz.mode}/${newQuizId}`);
-
-            } catch (err) {
-                console.error("Fatal clone error:", err);
-                setError('An unexpected error occurred while processing the shared link.');
+            } catch (err: any) {
+                console.error('Error cloning quiz:', err);
+                setError(err.message || 'Failed to clone quiz. It may no longer exist.');
+            } finally {
+                setCloning(false);
             }
         };
 
-        processSharedQuiz();
-    }, [originalQuizId, navigate]);
-
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-                <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl text-center">
-                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Link Invalid</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mb-8">{error}</p>
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors"
-                    >
-                        Return to Dashboard
-                    </button>
-                </div>
-            </div>
-        );
-    }
+        cloneQuiz();
+    }, [authLoading, user, originalQuizId, cloning, error, navigate]);
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-            <SynapticLoader size="xl" />
-            <h2 className="mt-8 text-2xl font-bold text-gray-900 dark:text-white animate-pulse">
-                {status}
-            </h2>
-            <p className="mt-2 text-gray-500 dark:text-gray-400">Please wait while we set up your session...</p>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 p-6">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center"
+            >
+                <div className="mx-auto bg-primary-100 dark:bg-primary-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <BrainCircuit className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                </div>
+
+                {error ? (
+                    <>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
+                            Oops! Something went wrong.
+                        </h2>
+                        <p className="text-slate-600 dark:text-slate-400 mb-6">
+                            {error}
+                        </p>
+                        <button
+                            onClick={() => navigate('/dashboard', { replace: true })}
+                            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-xl transition-colors"
+                        >
+                            Return Home
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
+                            Preparing your quiz...
+                        </h2>
+                        <p className="text-slate-600 dark:text-slate-400 mb-6">
+                            We're cloning this shared quiz into your account so you can take it right away.
+                        </p>
+                        <div className="flex justify-center">
+                            <SynapticLoader size="md" />
+                        </div>
+                    </>
+                )}
+            </motion.div>
         </div>
     );
 };
