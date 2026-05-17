@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Mic, CheckCircle, Loader2 } from 'lucide-react';
+import { Trash2, Play, Clock, BookOpen, Edit2, Check, X, Mic, CheckCircle, Loader2, Link } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { useNotification } from '@/stores/useNotificationStore';
 import { SavedQuiz } from '../types';
@@ -31,6 +31,22 @@ export const SavedQuizCard: React.FC<SavedQuizCardProps> = ({ quiz, index, onRes
     }, []);
 
     const isQuizFinished = quiz.state?.status === 'result';
+
+    const handleShare = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const shareUrl = `${window.location.origin}/share/${quiz.id}`;
+            await navigator.clipboard.writeText(shareUrl);
+            showToast({
+                variant: 'success',
+                message: 'Link copied! Share with your friends.',
+            });
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            showToast({ variant: 'error', message: 'Failed to copy link.' });
+        }
+    };
+
     const isQuizStarted = (quiz.state?.currentQuestionIndex && quiz.state.currentQuestionIndex > 0) || (quiz.state?.answers && Object.keys(quiz.state.answers).length > 0);
 
     const progressPercent = quiz.questions?.length > 0 && quiz.state?.answers
@@ -232,6 +248,16 @@ export const SavedQuizCard: React.FC<SavedQuizCardProps> = ({ quiz, index, onRes
 
                         {/* Actions Container */}
                         <div className="flex items-center justify-end gap-3 shrink-0 w-full mt-2">
+
+                            {/* Share Button */}
+                            <button
+                                onClick={handleShare}
+                                className="p-2.5 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200/50 dark:border-indigo-700/50 rounded-full transition-colors shadow-sm backdrop-blur-sm"
+                                title="Share Quiz Link"
+                            >
+                                <motion.div whileHover={{ scale: 1.1, y: -2 }} transition={{ type: "spring", stiffness: 300 }}><Link className="w-4 h-4" /></motion.div>
+                            </button>
+
                             {/* Talk Button (Visible by default) */}
                             {!isQuizFinished && (
                                 <button

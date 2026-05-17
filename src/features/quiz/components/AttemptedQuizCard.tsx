@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Clock, BookOpen, Edit2, Check, X, CheckCircle, Loader2, Award } from 'lucide-react';
+import { Trash2, Clock, BookOpen, Edit2, Check, X, CheckCircle, Loader2, Award, Link } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
 import { useNotification } from '@/stores/useNotificationStore';
 import { SavedQuiz } from '../types';
@@ -59,6 +59,22 @@ export const AttemptedQuizCard: React.FC<AttemptedQuizCardProps> = ({ quiz, inde
     const handleCardClick = () => {
         if (!isEditing) {
             setIsExpanded(!isExpanded);
+        }
+    };
+
+
+    const handleShare = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const shareUrl = `${window.location.origin}/share/${quiz.id}`;
+            await navigator.clipboard.writeText(shareUrl);
+            showToast({
+                variant: 'success',
+                message: 'Link copied! Share with your friends.',
+            });
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            showToast({ variant: 'error', message: 'Failed to copy link.' });
         }
     };
 
@@ -192,6 +208,16 @@ export const AttemptedQuizCard: React.FC<AttemptedQuizCardProps> = ({ quiz, inde
 
                         {/* Actions Container */}
                         <div className="flex items-center gap-3 shrink-0 mt-4">
+
+                            {/* Share Button */}
+                            <button
+                                onClick={handleShare}
+                                className="p-2.5 bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200/50 dark:border-indigo-700/50 rounded-full transition-colors shadow-sm backdrop-blur-sm shrink-0"
+                                title="Share Quiz Link"
+                            >
+                                <motion.div whileHover={{ scale: 1.1, y: -2 }} transition={{ type: "spring", stiffness: 300 }}><Link className="w-4 h-4" /></motion.div>
+                            </button>
+
                             {/* Rectangular Action Button with Progress Fill */}
                             <button
                                 onClick={handleActionClick}
