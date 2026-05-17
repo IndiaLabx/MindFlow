@@ -7,7 +7,7 @@ import { useQuizSessionStore } from '../stores/useQuizSessionStore';
 import { Question, InitialFilters, QuizMode, Idiom, OneWord, SynonymWord, QuizRuntimeState, QuizHistoryRecord, SubjectStats } from '../types';
 import { db } from '../../../lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { syncService } from '../../../lib/syncService';
 
 /**
@@ -63,52 +63,24 @@ export const useQuiz = () => {
               const { data: { session } } = await supabase.auth.getSession();
               if (!session?.user) return;
 
-              const token = session.access_token;
               const userId = session.user.id;
 
-              if (!token || !userId) return;
-
-              const payload = {
-                  id: state.quizId,
-                  user_id: userId,
-                  // PostgREST merge-duplicates requires updating the whole row schema, but we only really want to update 'state'
-                  // We should ideally use PATCH instead of POST for partial updates, or include all NOT NULL fields for POST.
-                  // Since we are just updating the 'state' column of an existing row, let's switch to PATCH.
-                  state: stateWithoutQuestions
-              };
-
-              const headers = new Headers();
-              headers.append("apikey", SUPABASE_ANON_KEY);
-              headers.append("Authorization", `Bearer ${token}`);
-              headers.append("Content-Type", "application/json");
+              if (!userId) return;
 
               state.setSyncStatus('syncing_cloud');
-              let response;
-              if (isKeepAlive) {
-                  response = await fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
-                      method: 'PATCH',
-                      headers: headers,
-                      body: JSON.stringify({ state: stateWithoutQuestions }),
-                      keepalive: true
-                  }).catch((err) => {
-                      state.setSyncStatus('sync_failed_retrying');
-                      console.error("Keepalive push error:", err);
-                      return null;
-                  });
-              } else {
-                  // Direct async fetch without keepalive for standard debounced calls
-                  response = await fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
-                      method: 'PATCH',
-                      headers: headers,
-                      body: JSON.stringify({ state: stateWithoutQuestions })
-                  });
-              }
 
-              if (response && !response.ok) {
-                  state.setSyncStatus('sync_failed_retrying');
-                  console.error("Supabase Debounce Push Error:", await response.text());
-              } else if (response) {
-                  state.setSyncStatus('saved_local');
+              // Route through Supabase client so global timeout/auth handling is consistently applied.
+              const { error: updateError } = await supabase
+                .from('saved_quizzes')
+                .update({ state: stateWithoutQuestions })
+                .eq('id', state.quizId)
+                .eq('user_id', userId);
+
+              if (updateError) {
+                state.setSyncStatus('sync_failed_retrying');
+                console.error('Supabase Debounce Push Error:', updateError);
+              } else {
+                state.setSyncStatus('saved_local');
               }
           } catch (e) {
               state.setSyncStatus('sync_failed_retrying');

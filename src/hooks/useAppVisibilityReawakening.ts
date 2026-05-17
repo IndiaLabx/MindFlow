@@ -1,62 +1,84 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useQueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { useNotificationStore } from '../stores/useNotificationStore';
 
 export function useAppVisibilityReawakening() {
   const queryClient = useQueryClient();
+  const lastRecoverAtRef = useRef(0);
 
   useEffect(() => {
-    const handleReawaken = async () => {
-      console.log('App woke up! Forcing session refresh and network reconnect...');
+    const recoverApp = async (source: string) => {
+      const now = Date.now();
+      if (now - lastRecoverAtRef.current < 1500) return;
+      lastRecoverAtRef.current = now;
 
-      // 1. Force Supabase to check and refresh the auth session
-      await supabase.auth.getSession();
-
-      // 2. Tell React Query that the network is back online
-      // This forces React Query to retry any stalled "pending" queries
-      queryClient.resumePausedMutations();
-    };
-
-    // Web / PWA listener
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        handleReawaken();
-        // Manually force React Query to recognize the window is focused and online
-        focusManager.setFocused(true);
-        onlineManager.setOnline(true);
-      } else {
-        // Tell React Query we are asleep so it pauses background fetching
-        focusManager.setFocused(false);
+      console.log(`App recovery triggered from: ${source}`);
+      try {
+        await supabase.auth.getSession();
+        // Don't block on unresolved network promises during bad/offline transitions.
+        await queryClient.resumePausedMutations();
+        queryClient.cancelQueries();
+        queryClient.invalidateQueries({ refetchType: 'active' }).catch(console.error);
+        queryClient.refetchQueries({ type: 'active' }).catch(console.error);
+      } catch (error) {
+        console.error('App recovery failed:', error);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    const handleVisibilityChange = () => {
+      const isVisible = document.visibilityState === 'visible';
+      focusManager.setFocused(isVisible);
+      if (isVisible) {
+        onlineManager.setOnline(navigator.onLine);
+        recoverApp('visibilitychange');
+      }
+    };
 
-    // Native App (Capacitor) listener
+    const handleOnline = () => {
+      onlineManager.setOnline(true);
+      useNotificationStore.getState().showToast({
+        title: 'Reconnected',
+        message: 'Connection restored. Syncing latest quiz data...',
+        variant: 'sync',
+        duration: 3500,
+      });
+      recoverApp('online');
+    };
+
+    const handleOffline = () => {
+      onlineManager.setOnline(false);
+      useNotificationStore.getState().showToast({
+        title: 'You are offline',
+        message: 'Changes are kept locally and will sync when internet returns.',
+        variant: 'offline',
+      });
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     let capListener: any = null;
     if (Capacitor.isNativePlatform()) {
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        focusManager.setFocused(isActive);
         if (isActive) {
-          handleReawaken();
-          // Manually force React Query to recognize the window is focused and online in Native WebViews
-          focusManager.setFocused(true);
           onlineManager.setOnline(true);
-        } else {
-          // Tell React Query we are asleep so it pauses background fetching
-          focusManager.setFocused(false);
+          recoverApp('capacitor-appStateChange');
         }
       }).then(listener => {
-         capListener = listener;
+        capListener = listener;
       });
     }
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (capListener) {
-        capListener.remove();
-      }
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      if (capListener) capListener.remove();
     };
   }, [queryClient]);
 }
