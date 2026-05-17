@@ -3,7 +3,7 @@ import { syncService } from '../../../lib/syncService';
 import { supabase } from '../../../lib/supabase';
 import { create } from 'zustand';
 import { APP_CONFIG } from '../../../constants/config';
-import { QuizRuntimeState, QuizPersistentState, QuizStatus, QuizMode, Question, InitialFilters } from '../types';
+import { QuizRuntimeState, QuizPersistentState, QuizStatus, QuizMode, Question, InitialFilters, SyncStatus } from '../types';
 
 interface QuizSessionState extends QuizRuntimeState {
   // Actions
@@ -37,6 +37,7 @@ interface QuizSessionState extends QuizRuntimeState {
   loadSavedQuiz: (savedState: QuizRuntimeState) => void;
   reorderActiveQuestions: (newOrder: Question[]) => void;
   resetStore: () => void;
+  setSyncStatus: (status: SyncStatus) => void;
 }
 
 export const initialState: QuizRuntimeState = {
@@ -54,6 +55,7 @@ export const initialState: QuizRuntimeState = {
   activeQuestions: [],
   filters: undefined,
   isPaused: false,
+  syncStatus: 'saved_local',
 };
 
 
@@ -86,6 +88,7 @@ const flushToCloud = async (state: QuizRuntimeState) => {
 export const useQuizSessionStore = create<QuizSessionState>((set, get) => ({
   ...initialState,
   resetStore: () => set(initialState),
+  setSyncStatus: (status) => set({ syncStatus: status } as Partial<QuizSessionState>),
 
   enterHome: () => { flushToCloud(get()); set({ ...initialState, status: 'idle' }); },
   enterConfig: () => set({ status: 'config' }),

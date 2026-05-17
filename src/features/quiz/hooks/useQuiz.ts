@@ -82,22 +82,36 @@ export const useQuiz = () => {
               headers.append("Authorization", `Bearer ${token}`);
               headers.append("Content-Type", "application/json");
 
+              state.setSyncStatus('syncing_cloud');
+              let response;
               if (isKeepAlive) {
-                  fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
+                  response = await fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
                       method: 'PATCH',
                       headers: headers,
                       body: JSON.stringify({ state: stateWithoutQuestions }),
                       keepalive: true
-                  }).catch(() => {});
+                  }).catch((err) => {
+                      state.setSyncStatus('sync_failed_retrying');
+                      console.error("Keepalive push error:", err);
+                      return null;
+                  });
               } else {
                   // Direct async fetch without keepalive for standard debounced calls
-                  await fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
+                  response = await fetch(`${SUPABASE_URL}/rest/v1/saved_quizzes?id=eq.${state.quizId}`, {
                       method: 'PATCH',
                       headers: headers,
                       body: JSON.stringify({ state: stateWithoutQuestions })
                   });
               }
+
+              if (response && !response.ok) {
+                  state.setSyncStatus('sync_failed_retrying');
+                  console.error("Supabase Debounce Push Error:", await response.text());
+              } else if (response) {
+                  state.setSyncStatus('saved_local');
+              }
           } catch (e) {
+              state.setSyncStatus('sync_failed_retrying');
               console.error("Supabase Debounce Push Error", e);
           }
       };
@@ -324,7 +338,36 @@ export const useQuiz = () => {
     toggleBookmark: state.toggleBookmark,
     toggleReview: state.toggleReview,
     useFiftyFifty: state.useFiftyFifty,
-    pauseQuiz: state.pauseQuiz,
+    pauseQuiz: async (questionId?: string, remainingTime?: number) => {
+        // Trigger hard checkpoint before transitioning to paused state
+        state.setSyncStatus('syncing_cloud');
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user && state.quizId) {
+                // Update local DB first
+                const stateToSave = { ...state, remainingTimes: (questionId && remainingTime !== undefined) ? { ...state.remainingTimes, [questionId]: remainingTime } : state.remainingTimes, isPaused: true };
+                Object.keys(stateToSave).forEach(key => {
+                    if (typeof (stateToSave as any)[key] === 'function') {
+                        delete (stateToSave as any)[key];
+                    }
+                });
+                await db.updateQuizProgress(state.quizId, stateToSave as any);
+
+                // Push full quiz object
+                const quiz = await db.getQuiz(state.quizId);
+                if (quiz) {
+                    await syncService.pushSavedQuiz(session.user.id, quiz);
+                }
+            }
+            state.setSyncStatus('saved_local');
+            // Only update local state once checkpoint succeeds
+            state.pauseQuiz(questionId, remainingTime);
+        } catch (err) {
+            console.error("Failed explicit flush to cloud on pause:", err);
+            state.setSyncStatus('sync_failed_retrying');
+            alert('Failed to save progress. Please check your connection.');
+        }
+    },
     resumeQuiz: state.resumeQuiz,
     finishQuiz,
     restartQuiz: state.restartQuiz,

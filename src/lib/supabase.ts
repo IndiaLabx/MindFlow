@@ -13,4 +13,26 @@ export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
  * Note: While the key is hardcoded here (likely for a demo or public read-only access),
  * it is best practice to use environment variables in production.
  */
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const customFetch = async (url: RequestInfo | URL, options?: RequestInit) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if ((error as any).name === 'AbortError') {
+      throw new Error('TimeoutError: Supabase request timed out after 15 seconds.');
+    }
+    throw error;
+  }
+};
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  global: {
+    fetch: customFetch,
+  },
+});

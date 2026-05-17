@@ -209,37 +209,19 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
         }
       };
 
-      // 1. Insert into saved_quizzes
-      const { error: quizError } = await supabase.from('saved_quizzes').insert({
-        id: newQuiz.id,
-        user_id: userId,
-        name: newQuiz.name,
-        created_at: newQuiz.createdAt,
-        filters: newQuiz.filters,
-        mode: newQuiz.mode,
-        state: newQuiz.state,
+      // Atomic Insert via RPC
+      const { error: createError } = await supabase.rpc('create_quiz_session', {
+          p_quiz_id: newQuiz.id,
+          p_name: newQuiz.name,
+          p_filters: newQuiz.filters,
+          p_mode: newQuiz.mode,
+          p_state: newQuiz.state,
+          p_question_ids: newQuiz.questions.map(q => q.id)
       });
 
-      if (quizError) {
-        console.error('Error saving quiz to Supabase:', quizError);
+      if (createError) {
+        console.error('Error saving quiz to Supabase:', createError);
         alert('Failed to save quiz to server. Please try again.');
-        setIsStartingQuiz(false);
-        return;
-      }
-
-      // 2. Insert into bridge_saved_quiz_questions
-      const bridgeData = newQuiz.questions.map((q, index) => ({
-        quiz_id: newQuiz.id,
-        question_id: q.id,
-        sort_order: index,
-        user_id: userId // Add user_id so RLS allows the insert
-      }));
-
-      const { error: bridgeError } = await supabase.from('bridge_saved_quiz_questions').insert(bridgeData);
-
-      if (bridgeError) {
-        console.error('Error saving bridge data:', bridgeError);
-        alert('Failed to save quiz questions to server. Please try again.');
         setIsStartingQuiz(false);
         return;
       }
