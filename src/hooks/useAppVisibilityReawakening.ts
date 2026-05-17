@@ -18,9 +18,11 @@ export function useAppVisibilityReawakening() {
       console.log(`App recovery triggered from: ${source}`);
       try {
         await supabase.auth.getSession();
+        // Don't block on unresolved network promises during bad/offline transitions.
         await queryClient.resumePausedMutations();
-        await queryClient.invalidateQueries();
-        await queryClient.refetchQueries({ type: 'active' });
+        queryClient.cancelQueries();
+        queryClient.invalidateQueries({ refetchType: 'active' }).catch(console.error);
+        queryClient.refetchQueries({ type: 'active' }).catch(console.error);
       } catch (error) {
         console.error('App recovery failed:', error);
       }

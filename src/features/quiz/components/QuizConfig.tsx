@@ -74,6 +74,7 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [showEmptyError, setShowEmptyError] = useState(false);
+  const [stuckTimeout, setStuckTimeout] = useState(false);
 
   // 0. Fetch Metadata on Mount
   const loadMetadata = useCallback(async () => {
@@ -81,6 +82,7 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
       setIsLoadingMetadata(true);
       setError(null);
       setProgress({ current: 0, total: 0 });
+      setStuckTimeout(false);
 
       const data = await fetchQuestionMetadata((current, total) => {
         setProgress({ current, total });
@@ -102,6 +104,24 @@ export const QuizConfig: React.FC<QuizConfigProps> = ({ onStart, onBack }) => {
   useEffect(() => {
     loadMetadata();
   }, [loadMetadata]);
+
+  useEffect(() => {
+    if (!isLoadingMetadata) return;
+    const timeoutId = window.setTimeout(() => {
+      setStuckTimeout(true);
+      setError('Loading is taking too long. Please retry or check your connection.');
+      setIsLoadingMetadata(false);
+    }, 12000);
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingMetadata]);
+
+  useEffect(() => {
+    const onOnline = () => {
+      if (error || stuckTimeout) loadMetadata();
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [error, stuckTimeout, loadMetadata]);
 
   // 1. Build Indexes (Performance Optimization)
   const questionIndex = useQuestionIndex(metadata);
