@@ -1,5 +1,5 @@
 import { Question, InitialFilters, QuizMode, SavedQuiz, QuizHistoryRecord } from '../features/quiz/types';
-import { QuizState } from '../features/quiz/types/store';
+import { QuizRuntimeState } from '../features/quiz/types/store';
 
 import { supabase } from './supabase';
 import { syncService } from './syncService';
@@ -205,10 +205,10 @@ export const db = {
      * Updates the progress state of an existing quiz.
      *
      * @param {string} id - The unique identifier of the quiz to update.
-     * @param {QuizState} state - The new state object to save.
+     * @param {QuizRuntimeState} state - The new state object to save.
      * @returns {Promise<void>} A promise that resolves when the update is complete.
      */
-    updateQuizProgress: async (id: string, state: QuizState): Promise<void> => {
+    updateQuizProgress: async (id: string, state: QuizRuntimeState): Promise<void> => {
         const dbInstance = await openDB();
         return new Promise((resolve, reject) => {
             const transaction = dbInstance.transaction(STORE_NAME, 'readwrite');

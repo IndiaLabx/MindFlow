@@ -30,41 +30,38 @@ export type QuizStatus =
 export type QuizMode = 'learning' | 'mock' | 'god';
 
 /**
- * The core state object for the Quiz Reducer.
- * Manages the entire session state including navigation, progress, scores, and active data.
+ * Strictly persistent state that gets saved to the Supabase database.
+ * Does not include heavy runtime objects like full question data.
  */
-export interface QuizState {
-  /** Current screen/view of the application. */
-  status: QuizStatus;
-  /** Current quiz mode (Learning vs Mock). */
-  mode: QuizMode;
-  /** Index of the currently active question or flashcard. */
+export interface QuizPersistentState {
   currentQuestionIndex: number;
-  /** Current score (number of correct answers). */
   score: number;
-  /** Map of Question ID to the selected answer text. */
   answers: Record<string, string>;
-  /** Map of Question ID to seconds spent on that question. */
   timeTaken: Record<string, number>;
-  /** Map of Question ID to remaining seconds (Learning Mode per-question timer). */
   remainingTimes: Record<string, number>;
-  /** Global seconds remaining for the entire session (Mock Mode). */
   quizTimeRemaining: number;
-  /** List of bookmarked Question IDs. */
   bookmarks: string[];
-  /** List of Question IDs marked for review. */
   markedForReview: string[];
-  /** Map of Question ID to list of options hidden by 50:50 lifeline. */
   hiddenOptions: Record<string, string[]>;
-  /** The subset of questions active in the current session. */
-  activeQuestions: Question[];
-  /** The filters configuration used to start this session. */
-  filters?: InitialFilters;
-  /** Whether the session is currently paused. */
   isPaused?: boolean;
-  /** The database ID of the saved quiz (if loaded from history). */
   quizId?: string;
+  status: QuizStatus;
+  mode: QuizMode;
 }
+
+/**
+ * The runtime state used in-memory by Zustand and the UI.
+ * Extends persistent state with heavy data arrays and metadata.
+ */
+export interface QuizRuntimeState extends QuizPersistentState {
+  activeQuestions: Question[];
+  filters?: InitialFilters;
+}
+
+/**
+ * Alias for backward compatibility.
+ */
+export type QuizState = QuizRuntimeState;
 
 /**
  * Discriminated Union of all possible actions for the Quiz Reducer.
@@ -100,5 +97,5 @@ export type QuizAction =
   | { type: 'SUBMIT_SESSION_RESULTS'; payload: { answers: Record<string, string>; timeTaken: Record<string, number>; score: number; bookmarks: string[] } }
   | { type: 'FINISH_FLASHCARDS' }
   | { type: 'RESTART_QUIZ' }
-  | { type: 'LOAD_SAVED_QUIZ'; payload: QuizState }
+  | { type: 'LOAD_SAVED_QUIZ'; payload: QuizRuntimeState }
   | { type: 'GO_HOME' };
