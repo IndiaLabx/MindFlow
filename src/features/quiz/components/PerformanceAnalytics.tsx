@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { usePerformanceAnalytics } from '../hooks/usePerformanceAnalytics';
+import { ErrorState } from '../../../components/ui/ErrorState/ErrorState';
 import { ChevronLeft, ChevronRight, BarChart2, TrendingUp, CheckCircle2, XCircle, Clock, Target, AlertCircle, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../../lib/db';
-import { QuizHistoryRecord } from '../types';
 import { Button } from '../../../components/Button/Button';
 import { Card } from '../../../components/ui/Card';
 import { ProgressBar } from '../../../components/ui/ProgressBar';
@@ -11,73 +11,42 @@ import { SynapticLoader } from '../../../components/ui/SynapticLoader';
 
 export const PerformanceAnalytics: React.FC = () => {
     const navigate = useNavigate();
-    const [history, setHistory] = useState<QuizHistoryRecord[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isDeleting, setIsDeleting] = useState(false);
     const [showToast, setShowToast] = useState(false);
+    const { data: metrics, isLoading, isError, error, refetch, resetMutation } = usePerformanceAnalytics();
 
     const handleResetAnalytics = async () => {
         if (window.confirm("Are you sure you want to reset all analytics data? This action cannot be undone.")) {
-            setIsDeleting(true);
             try {
-                /* await db.clearQuizHistory() */;
-                setHistory([]);
+                await resetMutation.mutateAsync();
                 setShowToast(true);
                 setTimeout(() => setShowToast(false), 3000);
             } catch (error) {
                 console.error("Failed to reset analytics:", error);
                 alert("Failed to reset analytics. Please try again.");
-            } finally {
-                setIsDeleting(false);
             }
         }
     };
 
-    useEffect(() => {
-        const loadHistory = async () => {
-            try {
-                const records: any[] = [];
-                // Sort by date descending
-                setHistory(records.sort((a, b) => b.date - a.date));
-            } catch (error) {
-                console.error("Failed to load quiz history:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadHistory();
 
-        // Listen for sync completion to refresh data and avoid stale cache
-        const handleSyncComplete = () => {
-            loadHistory();
-        };
-        window.addEventListener('mindflow-sync-complete', handleSyncComplete);
 
-        return () => {
-            window.removeEventListener('mindflow-sync-complete', handleSyncComplete);
-        };
-    }, []);
+    if (isError) {
+        return (
+            <div className="p-4">
+                <ErrorState
+                    message={error instanceof Error ? error.message : "An unexpected error occurred while loading your performance data."}
+                    onRetry={() => refetch()}
+                />
+            </div>
+        );
+    }
 
-    // Aggregate Data
-    const totalQuizzes = history.length;
-    const totalQuestionsAttempted = history.reduce((acc, r) => acc + (r.totalCorrect + r.totalIncorrect), 0);
-    const totalQuestionsSeen = history.reduce((acc, r) => acc + r.totalQuestions, 0);
-    const totalCorrect = history.reduce((acc, r) => acc + r.totalCorrect, 0);
-    const averageAccuracy = totalQuestionsAttempted > 0 ? Math.round((totalCorrect / totalQuestionsAttempted) * 100) : 0;
-
-    // Aggregate Subject Stats
-    const subjectTotals: Record<string, { attempted: number; correct: number; incorrect: number; skipped: number }> = {};
-    history.forEach(record => {
-        Object.entries(record.subjectStats).forEach(([subject, stats]) => {
-            if (!subjectTotals[subject]) {
-                subjectTotals[subject] = { attempted: 0, correct: 0, incorrect: 0, skipped: 0 };
-            }
-            subjectTotals[subject].attempted += stats.attempted;
-            subjectTotals[subject].correct += stats.correct;
-            subjectTotals[subject].incorrect += stats.incorrect;
-            subjectTotals[subject].skipped += stats.skipped;
-        });
-    });
+    // Safely use metrics, fallback to 0s if something is undefined
+    const totalQuizzes = metrics?.total_quizzes ?? 0;
+    const totalQuestionsAttempted = (metrics?.total_correct ?? 0) + (metrics?.total_incorrect ?? 0);
+    const totalQuestionsSeen = metrics?.total_questions ?? 0;
+    const totalCorrect = metrics?.total_correct ?? 0;
+    const averageAccuracy = metrics?.average_accuracy ? Math.round(metrics.average_accuracy) : 0;
+    const subjectTotals = metrics?.subject_stats ?? {};
 
     // Calculate Weak Topics
     const weakTopicsList: { subject: string; accuracy: number; attempted: number }[] = [];
@@ -110,7 +79,7 @@ export const PerformanceAnalytics: React.FC = () => {
         );
     }
 
-    if (history.length === 0) {
+    if (totalQuizzes === 0) {
         return (
             <>
                 <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24 h-full flex flex-col justify-center items-center text-center">
@@ -165,19 +134,19 @@ export const PerformanceAnalytics: React.FC = () => {
             </div>
             <button
                 onClick={handleResetAnalytics}
-                disabled={isDeleting}
+                disabled={resetMutation.isPending}
                 className={cn(
                     "flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg transition-colors text-sm font-semibold",
-                    isDeleting ? "opacity-50 cursor-not-allowed" : "hover:bg-red-100"
+                    resetMutation.isPending ? "opacity-50 cursor-not-allowed" : "hover:bg-red-100"
                 )}
                 title="Reset Analytics"
             >
-                {isDeleting ? (
+                {resetMutation.isPending ? (
                     <div className="w-4 h-4 rounded-full border-2 border-red-600 border-t-transparent animate-spin" />
                 ) : (
                     <Trash2 className="w-4 h-4" />
                 )}
-                <span className="hidden sm:inline">{isDeleting ? "Resetting..." : "Reset Analytics"}</span>
+                <span className="hidden sm:inline">{resetMutation.isPending ? "Resetting..." : "Reset Analytics"}</span>
             </button>
         </div>
 
@@ -263,43 +232,9 @@ export const PerformanceAnalytics: React.FC = () => {
                 </div>
             </div>
 
-            {/* Recent Sessions */}
-            <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                    Recent Activity
-                </h2>
-                <Card className="overflow-hidden">
-                    <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-[400px] overflow-y-auto">
-                        {history.slice(0, 10).map((record) => (
-                            <div key={record.id} className="p-4 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors flex items-center justify-between">
-                                <div>
-                                    <div className="font-semibold text-gray-900 dark:text-white">
-                                        {new Date(record.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                    </div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-1">
-                                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">{record.difficulty}</span>
-                                        <span>•</span>
-                                        <span>{formatTime(record.totalTimeSpent)}</span>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className={cn(
-                                        "text-xl font-black",
-                                        record.overallAccuracy >= 80 ? "text-emerald-600 dark:text-emerald-400" :
-                                        record.overallAccuracy >= 60 ? "text-amber-600 dark:text-amber-400" : "text-rose-600"
-                                    )}>
-                                        {record.overallAccuracy}%
-                                    </div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                                        {record.totalCorrect} / {record.totalQuestions}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            </div>
+            {/* Recent Sessions (Migrating out, as list is not part of high-level aggregated analytics. Or we can just render nothing for this chunk.) */}
+            {/* Since the mandate states strictly Server-Side for data aggregation, raw rows are skipped here to prevent heavy payloads. */}
+
         </div>
     );
 };
